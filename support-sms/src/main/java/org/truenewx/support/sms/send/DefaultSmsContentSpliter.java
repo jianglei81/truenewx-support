@@ -1,0 +1,99 @@
+package org.truenewx.support.sms.send;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.truenewx.core.util.StringUtil;
+
+/**
+ * 默认的短信内容分割器<br/>
+ * 数字、英文字母、英文标点可设置计为1个字符还是半个字符，其它字符均计为1个字符
+ *
+ * @author jianglei
+ * @since JDK 1.7
+ */
+public class DefaultSmsContentSpliter implements SmsContentSpliter {
+    private int size = 70;
+    private boolean numberAs1;
+    private boolean letterAs1;
+    private boolean punctuationAs1;
+
+    /**
+     *
+     * @param size
+     *            每条短信内容的最大长度
+     */
+    public void setSize(final int size) {
+        this.size = size;
+    }
+
+    /**
+     *
+     * @param numberAs1
+     *            数字是否计为1个字符
+     */
+    public void setNumberAs1(final boolean numberAs1) {
+        this.numberAs1 = numberAs1;
+    }
+
+    /**
+     *
+     * @param letterAs1
+     *            字母是否计为1个字符
+     */
+    public void setLetterAs1(final boolean letterAs1) {
+        this.letterAs1 = letterAs1;
+    }
+
+    /**
+     *
+     * @param punctuationAs1
+     *            标点是否计为1个字符
+     */
+    public void setPunctuationAs1(final boolean punctuationAs1) {
+        this.punctuationAs1 = punctuationAs1;
+    }
+
+    @Override
+    public List<String> split(final String content, final int maxCount) {
+        if (content.length() <= this.size) { // 总长度都不超过1条限制，直接返回
+            return Arrays.asList(content);
+        }
+        final List<String> result = new ArrayList<>();
+        StringBuffer sb = new StringBuffer();
+        double length = 0;
+        for (int i = 0; i < content.length(); i++) {
+            final char c = content.charAt(i);
+            final double clen = length(c);
+            length += clen;
+            if (length > this.size) { // 加上新字符长度后，长度已大于限制，则创建新的内容，重新开始计算长度
+                result.add(sb.toString());
+                if (result.size() >= maxCount) {
+                    return result;
+                }
+                sb = new StringBuffer();
+                length = clen;
+            }
+            sb.append(c);
+        }
+        if (sb.length() > 0 && result.size() < maxCount) { // 加上最后一段内容
+            result.add(sb.toString());
+        }
+        return result;
+    }
+
+    private double length(final char c) {
+        if (StringUtil.isNumberChar(c) && !this.numberAs1) {
+            return 0.5;
+        }
+        if (StringUtil.isLetterChar(c) && !this.letterAs1) {
+            return 0.5;
+        }
+        if (StringUtil.isPunctuationChar(c) && !this.punctuationAs1) {
+            return 0.5;
+        }
+        return 1;
+    }
+
+}

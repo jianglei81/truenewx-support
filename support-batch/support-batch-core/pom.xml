@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.truenewx.support</groupId>
+        <artifactId>support-batch</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <groupId>org.truenewx.support.batch</groupId>
+    <artifactId>support-batch-core</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>3.0.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>4.2.12.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.truenewx.support.batch</groupId>
+            <artifactId>support-batch-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.truenewx</groupId>
+            <artifactId>truenewx-service</artifactId>
+            <version>${truenewx.version}</version>
+        </dependency>
+    </dependencies>
+</project>

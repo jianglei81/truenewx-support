@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.truenewx</groupId>
+        <artifactId>support</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <groupId>org.truenewx.support</groupId>
+    <artifactId>support-email</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.truenewx</groupId>
+            <artifactId>truenewx-core</artifactId>
+            <version>${truenewx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.truenewx.support.batch</groupId>
+            <artifactId>support-batch-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+</project>
