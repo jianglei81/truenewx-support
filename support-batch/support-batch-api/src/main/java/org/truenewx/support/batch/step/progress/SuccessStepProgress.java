@@ -8,7 +8,7 @@ import java.util.Collection;
  * 包含成功对象清单的作业步骤进度
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SuccessStepProgress extends StepProgress {
 

@@ -13,7 +13,7 @@ import org.truenewx.core.Strings;
  * 自动生成简单作业
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

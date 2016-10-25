@@ -7,7 +7,7 @@ import java.util.List;
  * 短信
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface Sms {
 

@@ -12,7 +12,7 @@ import org.truenewx.service.ServiceSupport;
  * 抽象任务，提供终止支持
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class AbstractTasklet extends ServiceSupport implements StoppableTasklet {
 

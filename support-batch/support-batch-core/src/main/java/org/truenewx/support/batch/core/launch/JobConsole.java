@@ -14,7 +14,7 @@ import org.truenewx.support.batch.core.JobSummary;
  * 作业控制台
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface JobConsole {
 

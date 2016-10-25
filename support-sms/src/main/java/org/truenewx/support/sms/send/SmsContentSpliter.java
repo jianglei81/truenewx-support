@@ -7,7 +7,7 @@ import java.util.List;
  * 短信对内容有长度限制，各短信接口对字符长度的计算可能不一致，需针对性的进行内容分割
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface SmsContentSpliter {
     /**

@@ -14,7 +14,7 @@ import org.truenewx.support.batch.core.launch.JobConsole;
  * 用于在系统启动初始启动作业
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class JobInitializedStarter implements ContextInitializedBean {
 

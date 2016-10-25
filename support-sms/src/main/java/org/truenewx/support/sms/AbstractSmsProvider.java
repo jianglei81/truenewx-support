@@ -4,7 +4,7 @@ package org.truenewx.support.sms;
  * 抽象的短信提供者
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class AbstractSmsProvider implements SmsProvider {
     private String type;

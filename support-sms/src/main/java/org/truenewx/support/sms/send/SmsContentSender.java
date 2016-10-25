@@ -5,7 +5,7 @@ package org.truenewx.support.sms.send;
  * 仅负责发送提供的短信内容，不管内容如何生成
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface SmsContentSender {
     /**

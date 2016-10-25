@@ -9,7 +9,7 @@ import org.truenewx.core.util.concurrent.DefaultThreadPoolExecutor;
  * 抽象的短信内容发送器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class AbstractSmsContentSender implements SmsContentSender {
     private SmsContentSpliter contentSpliter;

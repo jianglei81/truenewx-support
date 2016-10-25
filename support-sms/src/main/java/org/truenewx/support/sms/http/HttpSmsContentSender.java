@@ -19,7 +19,7 @@ import org.truenewx.support.sms.send.SmsSendResult;
  * HTTP方式的短信内容发送器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class HttpSmsContentSender extends AbstractSmsContentSender {
 

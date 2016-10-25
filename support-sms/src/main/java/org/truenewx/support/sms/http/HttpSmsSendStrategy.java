@@ -8,7 +8,7 @@ import java.util.Set;
  * HTTP短信发送策略
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface HttpSmsSendStrategy {
 

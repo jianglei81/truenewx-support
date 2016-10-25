@@ -20,7 +20,7 @@ import org.truenewx.support.batch.core.launch.JobConsole;
  * 注意：必须在调用{@link JobConsole}的方法前确保包含至少一个代理目标，否则会导致{@link NullPointerException}
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class JobConsoleProxy implements JobConsole {
     private long offset;

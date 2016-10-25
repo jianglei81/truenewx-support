@@ -12,7 +12,7 @@ import org.truenewx.support.batch.core.UniqueJobParametersBuilder;
  * 批量任务工具类
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class BatchUtil {
 

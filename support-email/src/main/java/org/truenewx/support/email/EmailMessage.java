@@ -10,7 +10,7 @@ import org.truenewx.core.functor.impl.PredEqual;
  * 邮件消息
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class EmailMessage implements Serializable {
 

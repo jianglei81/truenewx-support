@@ -12,7 +12,7 @@ import org.truenewx.core.parser.TemplateParser;
  * 基于模版的短信提供者
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class TemplateSmsProvider extends AbstractSmsProvider implements MessageSourceAware {
     private String code;

@@ -8,7 +8,7 @@ import java.util.Collection;
  * 仅包含失败对象清单的步骤进度
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class FailureStepProgress extends StepProgress {
 

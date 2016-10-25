@@ -13,7 +13,7 @@ import org.truenewx.support.batch.core.step.tasklet.ProgressTasklet;
  * 如需传入参数，或者关注执行进度，则需通过继承 {@link AbstractTasklet} 或 {@link ProgressTasklet} 实现
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface Itemlet<I, O> extends ItemReader<I>, ItemProcessor<I, O>, ItemWriter<O> {
 

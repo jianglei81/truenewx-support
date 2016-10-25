@@ -16,7 +16,7 @@ import org.truenewx.support.email.EmailSource;
  * 简单的多用消息准备器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SimpleMimeMessagePreparator implements MimeMessagePreparator {
 

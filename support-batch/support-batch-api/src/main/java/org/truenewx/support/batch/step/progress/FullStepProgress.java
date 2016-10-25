@@ -8,7 +8,7 @@ import java.util.Map;
  * 完整的步骤进度，包含成功和失败对象清单，且包含失败原因异常
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class FullStepProgress extends SuccessStepProgress {
 

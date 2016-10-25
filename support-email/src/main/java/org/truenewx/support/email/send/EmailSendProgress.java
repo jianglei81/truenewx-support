@@ -7,7 +7,7 @@ import org.truenewx.support.batch.step.progress.FullStepProgress;
  *
  * @author jianglei
  * @version 1.0.0 2013-8-7
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class EmailSendProgress extends FullStepProgress {
 

@@ -11,7 +11,7 @@ import org.truenewx.data.orm.dao.EntityDao;
  *
  * @author jianglei
  * @version 1.0.0 2015年12月23日
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class EntityItemlet<T extends Entity, D extends EntityDao<T>>
         implements Itemlet<T, T> {

@@ -14,7 +14,7 @@ import org.truenewx.support.email.EmailSource;
  *
  * @author jianglei
  * @version 1.0.0 2013-9-29
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class EmailSendCommand implements Runnable {
     /**

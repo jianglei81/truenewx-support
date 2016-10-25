@@ -22,7 +22,7 @@ import org.truenewx.support.batch.step.progress.StepProgress;
  * 作业上下文协助者
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 @Component
 public class JobContextHelper {

@@ -11,7 +11,7 @@ import org.truenewx.support.batch.step.progress.StepProgress;
  * 关心进度的任务
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  * @param <P>
  *            步骤进度类型
  */

@@ -6,7 +6,7 @@ import org.truenewx.core.Strings;
  * 邮件源
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class EmailSource {
     /**

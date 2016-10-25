@@ -8,7 +8,7 @@ import org.truenewx.support.batch.step.progress.StepProgress;
  * 作业步骤汇总摘要
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class StepSummary extends BatchSummary {
 

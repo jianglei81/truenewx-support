@@ -4,7 +4,7 @@ package org.truenewx.support.email;
  * 邮件提供者抽象实现
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class AbstractEmailProvider implements EmailProvider {
     /**

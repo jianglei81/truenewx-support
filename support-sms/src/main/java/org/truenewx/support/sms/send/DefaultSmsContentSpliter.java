@@ -11,7 +11,7 @@ import org.truenewx.core.util.StringUtil;
  * 数字、英文字母、英文标点可设置计为1个字符还是半个字符，其它字符均计为1个字符
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class DefaultSmsContentSpliter implements SmsContentSpliter {
     private int size = 70;

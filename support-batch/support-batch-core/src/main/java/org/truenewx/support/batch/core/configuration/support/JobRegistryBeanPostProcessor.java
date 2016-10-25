@@ -19,7 +19,7 @@ import org.truenewx.support.batch.item.Itemlet;
  * 作业注册提交处理器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class JobRegistryBeanPostProcessor
         extends org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor {

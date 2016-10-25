@@ -9,7 +9,7 @@ import org.springframework.batch.core.BatchStatus;
  * 批量任务汇总摘要
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class BatchSummary implements Serializable {
 

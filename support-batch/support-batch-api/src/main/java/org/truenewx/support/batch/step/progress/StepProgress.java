@@ -8,7 +8,7 @@ import org.truenewx.data.query.Paging;
  * 步骤进度
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class StepProgress implements Serializable {
     /**

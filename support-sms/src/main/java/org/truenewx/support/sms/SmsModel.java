@@ -8,7 +8,7 @@ import java.util.List;
  * 短信模型
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SmsModel implements Sms {
     /**

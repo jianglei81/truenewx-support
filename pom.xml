@@ -17,5 +17,9 @@
         <module>support-email</module>
         
         <module>support-sms</module>
+        
+        
+        <module>support-verify</module>
+        <module>support-audit</module>
     </modules>
 </project>

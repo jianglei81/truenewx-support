@@ -18,7 +18,7 @@ import org.truenewx.web.rpc.server.annotation.RpcResultFilter;
  * JobConsoleController
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 @RpcController
 public class JobConsoleController {

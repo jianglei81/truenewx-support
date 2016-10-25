@@ -29,7 +29,7 @@ import org.truenewx.support.batch.core.launch.JobConsole;
  * 简单的作业控制台
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SimpleJobConsole implements JobConsole, InitializingBean {
 

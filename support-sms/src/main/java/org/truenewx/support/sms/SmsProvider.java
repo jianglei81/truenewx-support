@@ -7,7 +7,7 @@ import java.util.Map;
  * 短信提供者
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface SmsProvider {
     /**

@@ -20,7 +20,7 @@ import org.truenewx.support.batch.step.progress.StepProgress;
  * 解决上下文数据的作业执行侦听器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class ResolveContextJobExecutionListener implements JobExecutionListener, InitializingBean {
     private ListableJobLocator jobRegistry;

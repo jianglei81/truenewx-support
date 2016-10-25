@@ -4,7 +4,7 @@ package org.truenewx.support.sms.send;
  * 短信发送回调
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface SmsSendCallback {
     /**

@@ -8,7 +8,7 @@ import org.truenewx.core.Strings;
  * 抽象的HTTP短信发送策略
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public abstract class AbstractHttpSmsSendStrategy implements HttpSmsSendStrategy {
 

@@ -14,7 +14,7 @@ import org.springframework.batch.core.converter.JobParametersConverter;
  * 基于类型的作业参数集转换器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class ClassBasedJobParametersConverter implements JobParametersConverter {
 

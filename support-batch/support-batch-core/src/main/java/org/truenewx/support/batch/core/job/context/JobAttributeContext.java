@@ -11,7 +11,7 @@ import org.springframework.core.AttributeAccessor;
  * 作业属性上下文，用于在内存中存放作业上下文，不保存至数据库
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class JobAttributeContext extends SynchronizedAttributeAccessor {
 

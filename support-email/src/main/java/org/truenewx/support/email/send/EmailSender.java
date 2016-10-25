@@ -9,7 +9,7 @@ import org.truenewx.support.email.EmailProvider;
  * 邮件发送器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public interface EmailSender {
 

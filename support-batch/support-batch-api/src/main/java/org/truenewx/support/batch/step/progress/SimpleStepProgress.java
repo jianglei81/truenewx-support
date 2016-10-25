@@ -6,7 +6,7 @@ import java.io.Serializable;
  * 简单的步骤进度，仅包含成功和失败数量
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SimpleStepProgress extends StepProgress {
 

@@ -12,7 +12,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
  * 使Hibernate Session线程安全的作业执行侦听器
  *
  * @author jianglei
- * @since JDK 1.7.0
+ * @since JDK 1.8.0
  */
 public class ConcurrentHibernateSessionJobExecutionListener implements JobExecutionListener {
 

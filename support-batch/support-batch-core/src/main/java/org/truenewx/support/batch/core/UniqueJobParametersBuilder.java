@@ -9,7 +9,7 @@ import org.truenewx.core.util.StringUtil;
  * 唯一性作业参数集的构建器
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 @Component
 public class UniqueJobParametersBuilder extends JobParametersBuilder {

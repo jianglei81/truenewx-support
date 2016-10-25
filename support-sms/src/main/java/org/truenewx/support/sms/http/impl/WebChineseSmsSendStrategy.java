@@ -13,7 +13,7 @@ import org.truenewx.support.sms.http.AbstractHttpSmsSendStrategy;
  * 中国网建的短信发送策略
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class WebChineseSmsSendStrategy extends AbstractHttpSmsSendStrategy {
 

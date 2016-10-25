@@ -13,7 +13,7 @@ import org.truenewx.support.sms.http.AbstractHttpSmsSendStrategy;
  * 瑞信通的短信发送策略
  *
  * @author liuzhiyi
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class RxtSmsSendStrategy extends AbstractHttpSmsSendStrategy {
 

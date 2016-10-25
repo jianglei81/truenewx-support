@@ -13,7 +13,7 @@ import org.truenewx.support.sms.SmsProvider;
  * 短信发送器实现
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class SmsSenderImpl implements SmsSender, InitializingBean {
     private Map<String, SmsContentSender> contentSenders = new HashMap<>();

@@ -11,7 +11,7 @@ import org.truenewx.core.util.NetUtil;
  * 基于URL的邮件提供者
  *
  * @author jianglei
- * @since JDK 1.7
+ * @since JDK 1.8
  */
 public class UrlEmailProvider extends AbstractEmailProvider {
 
