@@ -3,7 +3,7 @@ package org.truenewx.support.audit.data.param;
 import java.util.Set;
 
 import org.truenewx.data.query.QueryParameterImpl;
-import org.truenewx.support.audit.data.enums.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditStatus;
 
 /**
  * 审核申请单体查询参数

@@ -7,7 +7,6 @@ import org.truenewx.data.model.unity.AbstractUnity;
 import org.truenewx.data.validation.constraint.NotContainsAngleBracket;
 import org.truenewx.data.validation.constraint.NotContainsSpecialChars;
 import org.truenewx.data.validation.constraint.NotContainsSqlChars;
-import org.truenewx.support.audit.data.enums.AuditStatus;
 
 /**
  * 抽象的审核申请单体

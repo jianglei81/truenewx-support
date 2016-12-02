@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.data.model.unity.OwnedUnity;
-import org.truenewx.support.audit.data.enums.AuditStatus;
 
 /**
  * 审核申请单体

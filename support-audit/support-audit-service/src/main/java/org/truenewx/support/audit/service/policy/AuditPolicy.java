@@ -65,9 +65,8 @@ public interface AuditPolicy<U extends AuditApplymentUnity<T, A>, T extends Enum
      * 审核拒绝后调用
      *
      * @param applyment
+     *            申请实体
      * @throws HandleableException
-     *
-     * @author wuwencong
      */
     void onRejected(U applyment) throws HandleableException;
 }

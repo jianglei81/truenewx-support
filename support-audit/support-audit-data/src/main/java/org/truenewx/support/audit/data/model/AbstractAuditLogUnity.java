@@ -4,7 +4,6 @@ import java.util.Date;
 
 import org.truenewx.data.model.unity.AbstractUnity;
 import org.truenewx.data.validation.constraint.NotContainsSpecialChars;
-import org.truenewx.support.audit.data.enums.AuditStatus;
 
 /**
  * 抽象的审核日志单体
@@ -16,7 +15,7 @@ import org.truenewx.support.audit.data.enums.AuditStatus;
  * @param <A>
  *            审核者类型
  */
-public class AbstractAuditLogUnity<T extends Enum<T>, A extends Auditor<T>>
+public abstract class AbstractAuditLogUnity<T extends Enum<T>, A extends Auditor<T>>
         extends AbstractUnity<Long> {
 
     private A auditor;

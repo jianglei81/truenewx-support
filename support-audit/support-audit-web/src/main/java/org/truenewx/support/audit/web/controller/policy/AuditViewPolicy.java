@@ -44,28 +44,11 @@ public interface AuditViewPolicy<U extends AuditApplymentUnity<T, A>, T extends 
      *            申请内容
      *
      * @return 显示内容模型
-     *
-     *         Map<String, Object> getContentModel(int applicantId, Map<String,
-     *         Object> content);
      */
 
     Object getListContent(U applyment);
 
     Map<String, Object> getDetailContentModel(U applyment);
-
-    /**
-     * 获取显示内容模型
-     *
-     * @param applicantId
-     *            申请者id
-     * @param content
-     *            申请内容
-     *
-     * @return 显示内容模型
-     *
-     *         Map<String, Object> getContentModel(int applicantId, Map<String,
-     *         Object> content);
-     */
 
     /**
      * 准备通过审核。在决定审核通过之后，真正通过审核之前，可插入页面进行一些准备工作

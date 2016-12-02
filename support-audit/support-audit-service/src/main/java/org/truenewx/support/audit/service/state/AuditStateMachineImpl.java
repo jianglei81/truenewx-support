@@ -3,8 +3,8 @@ package org.truenewx.support.audit.service.state;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.service.fsm.StateMachineImpl;
-import org.truenewx.support.audit.data.enums.AuditStatus;
-import org.truenewx.support.audit.data.enums.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.service.AuditApplymentUnityService;
 
 /**

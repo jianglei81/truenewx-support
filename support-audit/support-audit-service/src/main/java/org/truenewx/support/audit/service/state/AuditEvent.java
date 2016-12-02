@@ -1,7 +1,7 @@
 package org.truenewx.support.audit.service.state;
 
 import org.truenewx.service.fsm.TransitEvent;
-import org.truenewx.support.audit.data.enums.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
 

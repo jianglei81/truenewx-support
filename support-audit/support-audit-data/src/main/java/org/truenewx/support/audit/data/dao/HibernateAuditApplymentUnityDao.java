@@ -14,8 +14,8 @@ import org.truenewx.data.orm.dao.support.OqlUtil;
 import org.truenewx.data.orm.dao.support.hibernate.HibernateOwnedUnityDaoSupport;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.data.query.QueryResultImpl;
-import org.truenewx.support.audit.data.enums.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
+import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 

@@ -7,8 +7,8 @@ import java.util.Set;
 
 import org.truenewx.data.orm.dao.OwnedUnityDao;
 import org.truenewx.data.query.QueryResult;
-import org.truenewx.support.audit.data.enums.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
+import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 

@@ -1,4 +1,4 @@
-package org.truenewx.support.audit.data.enums;
+package org.truenewx.support.audit.data.model;
 
 import org.truenewx.core.annotation.Caption;
 import org.truenewx.core.enums.annotation.EnumValue;

@@ -1,8 +1,8 @@
 package org.truenewx.support.audit.service.state;
 
-import org.truenewx.support.audit.data.enums.AuditStatus;
-import org.truenewx.support.audit.data.enums.AuditTransition;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
+import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 
 /**
