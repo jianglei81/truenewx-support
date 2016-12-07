@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.truenewx.support.email.send.EmailSender;
 import org.truenewx.support.sms.send.SmsSender;
-import org.truenewx.verify.data.model.VerifyEntity;
+import org.truenewx.verify.data.model.VerifyUnity;
 
 /**
  * 抽象的校验方针
@@ -14,7 +14,7 @@ import org.truenewx.verify.data.model.VerifyEntity;
  * @param <T>
  *            验证类型枚举类型
  */
-public abstract class AbstractVerifyPolicy<E extends VerifyEntity<T>, T extends Enum<T>>
+public abstract class AbstractVerifyPolicy<E extends VerifyUnity<T>, T extends Enum<T>>
         implements VerifyPolicy<E, T> {
     protected long emailExpiredInterval = 7 * 24 * 60 * 60 * 1000; // 默认7天
     protected EmailSender emailSender;
