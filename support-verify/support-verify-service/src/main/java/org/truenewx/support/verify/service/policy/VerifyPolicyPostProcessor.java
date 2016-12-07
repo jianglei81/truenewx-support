@@ -13,13 +13,13 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @since JDK 1.8
  */
 @Component
-public class VerifyPolicyPostProcessor<E extends VerifyUnity<T>, T extends Enum<T>>
+public class VerifyPolicyPostProcessor<U extends VerifyUnity<T>, T extends Enum<T>>
         implements BeanPostProcessor {
 
-    private VerifyPolicyRegistrar<E, T> registrar;
+    private VerifyPolicyRegistrar<U, T> registrar;
 
     @Autowired(required = false)
-    public void setRegistrar(final VerifyPolicyRegistrar<E, T> registrar) {
+    public void setRegistrar(final VerifyPolicyRegistrar<U, T> registrar) {
         this.registrar = registrar;
     }
 
@@ -34,7 +34,7 @@ public class VerifyPolicyPostProcessor<E extends VerifyUnity<T>, T extends Enum<
     public Object postProcessAfterInitialization(final Object bean, final String beanName)
             throws BeansException {
         if (bean instanceof VerifyPolicy && this.registrar != null) {
-            this.registrar.register((VerifyPolicy<E, T>) bean);
+            this.registrar.register((VerifyPolicy<U, T>) bean);
         }
         return bean;
     }

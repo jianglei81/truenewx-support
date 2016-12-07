@@ -14,8 +14,8 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public abstract class AbstractVerifyPolicy<E extends VerifyUnity<T>, T extends Enum<T>>
-        implements VerifyPolicy<E, T> {
+public abstract class AbstractVerifyPolicy<U extends VerifyUnity<T>, T extends Enum<T>>
+        implements VerifyPolicy<U, T> {
     protected long emailExpiredInterval = 7 * 24 * 60 * 60 * 1000; // 默认7天
     protected EmailSender emailSender;
     protected long smsExpiredInterval = 10 * 60 * 1000; // 默认10分钟

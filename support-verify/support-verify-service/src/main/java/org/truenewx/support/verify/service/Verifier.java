@@ -12,12 +12,12 @@ import org.truenewx.verify.data.model.VerifyUnity;
  *
  * @author jianglei
  * @since JDK 1.8
- * @param <E>
+ * @param <U>
  *            验证实体类型
  * @param <T>
  *            验证类型枚举类型
  */
-public interface Verifier<E extends VerifyUnity<T>, T extends Enum<T>> extends Service {
+public interface Verifier<U extends VerifyUnity<T>, T extends Enum<T>> extends Service {
 
     /**
      * 首次发送验证信息
@@ -79,7 +79,7 @@ public interface Verifier<E extends VerifyUnity<T>, T extends Enum<T>> extends S
      * @throws HandleableException
      *             如果验证确认过程中出现错误
      */
-    E verify(long id, String code, Object context) throws HandleableException;
+    U verify(long id, String code, Object context) throws HandleableException;
 
     /**
      * 验证确认
@@ -93,7 +93,7 @@ public interface Verifier<E extends VerifyUnity<T>, T extends Enum<T>> extends S
      * @throws HandleableException
      *             如果验证确认过程中出现错误
      */
-    E verify(String code, Object context) throws HandleableException;
+    U verify(String code, Object context) throws HandleableException;
 
     /**
      * 清理过期的验证信息

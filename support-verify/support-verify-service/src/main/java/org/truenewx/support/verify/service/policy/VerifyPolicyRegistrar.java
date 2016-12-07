@@ -10,12 +10,12 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public interface VerifyPolicyRegistrar<E extends VerifyUnity<T>, T extends Enum<T>> {
+public interface VerifyPolicyRegistrar<U extends VerifyUnity<T>, T extends Enum<T>> {
     /**
      * 注册方针
      *
      * @param policy
      *            方针
      */
-    void register(VerifyPolicy<E, T> policy);
+    void register(VerifyPolicy<U, T> policy);
 }

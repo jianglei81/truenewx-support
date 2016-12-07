@@ -13,11 +13,11 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public class HibernateVerifyUnityDao<E extends VerifyUnity<T>, T extends Enum<T>>
-        extends HibernateUnityDaoSupport<E, Long> implements VerifyUnityDao<E, T> {
+public class HibernateVerifyUnityDao<U extends VerifyUnity<T>, T extends Enum<T>>
+        extends HibernateUnityDaoSupport<U, Long> implements VerifyUnityDao<U, T> {
 
     @Override
-    public E findByCode(final String code) {
+    public U findByCode(final String code) {
         final String hql = "from " + getEntityName() + " where code=:code order by createTime desc";
         return getHibernateTemplate().first(hql, "code", code);
     }

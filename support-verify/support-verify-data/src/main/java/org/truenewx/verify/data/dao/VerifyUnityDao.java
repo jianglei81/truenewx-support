@@ -10,15 +10,15 @@ import org.truenewx.verify.data.model.VerifyUnity;
  *
  * @author jianglei
  * @since JDK 1.8
- * @param <E>
- *            验证实体类型
+ * @param <U>
+ *            验证单体类型
  * @param <T>
  *            验证类型枚举类型
  */
-public interface VerifyUnityDao<E extends VerifyUnity<T>, T extends Enum<T>>
-        extends UnityDao<E, Long> {
+public interface VerifyUnityDao<U extends VerifyUnity<T>, T extends Enum<T>>
+        extends UnityDao<U, Long> {
 
-    E findByCode(String code);
+    U findByCode(String code);
 
     int deleteByLatestExpiredTime(Date latestExpiredTime);
 

@@ -14,7 +14,7 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public interface VerifyPolicy<E extends VerifyUnity<T>, T extends Enum<T>> {
+public interface VerifyPolicy<U extends VerifyUnity<T>, T extends Enum<T>> {
     /**
      * 获取当前方针支持的验证类型。一个方针支持且仅能支持一个验证类型
      *
@@ -74,5 +74,5 @@ public interface VerifyPolicy<E extends VerifyUnity<T>, T extends Enum<T>> {
      * @throws HandleableException
      *             处理过程中如果出现错误
      */
-    boolean onVerified(E entity, Object context) throws HandleableException;
+    boolean onVerified(U entity, Object context) throws HandleableException;
 }

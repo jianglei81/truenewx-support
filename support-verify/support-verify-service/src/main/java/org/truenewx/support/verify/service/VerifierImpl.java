@@ -23,18 +23,18 @@ import org.truenewx.verify.data.model.VerifyUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends AbstractService<E>
-        implements Verifier<E, T>, VerifyPolicyRegistrar<E, T> {
+public class VerifierImpl<U extends VerifyUnity<T>, T extends Enum<T>> extends AbstractService<U>
+        implements Verifier<U, T>, VerifyPolicyRegistrar<U, T> {
 
-    private VerifyUnityDao<E, T> dao;
-    private Map<T, VerifyPolicy<E, T>> policies = new HashMap<>();
+    private VerifyUnityDao<U, T> dao;
+    private Map<T, VerifyPolicy<U, T>> policies = new HashMap<>();
 
-    public void setDao(final VerifyUnityDao<E, T> dao) {
+    public void setDao(final VerifyUnityDao<U, T> dao) {
         this.dao = dao;
     }
 
     @Override
-    public void register(final VerifyPolicy<E, T> policy) {
+    public void register(final VerifyPolicy<U, T> policy) {
         this.policies.put(policy.getVerifyType(), policy);
     }
 
@@ -42,11 +42,11 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
     @WriteTransactional
     public Long send(final T type, final Map<String, Object> content, final Locale locale)
             throws HandleableException {
-        final VerifyPolicy<E, T> policy = getPolicy(type);
+        final VerifyPolicy<U, T> policy = getPolicy(type);
         policy.validate(content);
         final String code = policy.generateCode(content);
         if (code != null) {
-            final E entity = ensureNonnull(null);
+            final U entity = ensureNonnull(null);
             entity.setType(type);
             entity.setContent(content);
             entity.setCode(code);
@@ -61,8 +61,8 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
         return null;
     }
 
-    private VerifyPolicy<E, T> getPolicy(final T type) throws BusinessException {
-        final VerifyPolicy<E, T> policy = this.policies.get(type);
+    private VerifyPolicy<U, T> getPolicy(final T type) throws BusinessException {
+        final VerifyPolicy<U, T> policy = this.policies.get(type);
         if (policy == null) {
             throw new BusinessException(VerifyExceptionCodes.UNSUPPORTED_TYPE, type);
         }
@@ -72,9 +72,9 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
     @Override
     @WriteTransactional
     public void resend(final long id, final Locale locale) throws HandleableException {
-        final E entity = this.dao.find(id);
+        final U entity = this.dao.find(id);
         if (entity != null) {
-            final VerifyPolicy<E, T> policy = getPolicy(entity.getType());
+            final VerifyPolicy<U, T> policy = getPolicy(entity.getType());
             final Map<String, Object> content = entity.getContent();
             if (entity.isExpired()) { // 如已过期则生成新的验证码
                 entity.setCode(policy.generateCode(content));
@@ -89,31 +89,31 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
     @Override
     @ReadTransactional
     public boolean isValid(final long id, final String code) {
-        final E entity = this.dao.find(id);
+        final U entity = this.dao.find(id);
         return isValid(entity, code);
     }
 
-    private boolean isValid(final E entity, final String code) {
+    private boolean isValid(final U entity, final String code) {
         return entity != null && entity.getCode().equals(code) && !entity.isExpired();
     }
 
     @Override
     @ReadTransactional
     public boolean isValid(final String code) {
-        final E entity = this.dao.findByCode(code);
+        final U entity = this.dao.findByCode(code);
         return isValid(entity, code);
     }
 
     @Override
     @WriteTransactional
-    public E verify(final long id, final String code, final Object context)
+    public U verify(final long id, final String code, final Object context)
             throws HandleableException {
-        final E entity = this.dao.find(id);
+        final U entity = this.dao.find(id);
         verify(entity, code, context);
         return entity;
     }
 
-    private void verify(final E entity, final String code, final Object context)
+    private void verify(final U entity, final String code, final Object context)
             throws HandleableException {
         if (entity == null || !entity.getCode().equals(code)) {
             throw new BusinessException(VerifyExceptionCodes.WRONG_CODE);
@@ -121,7 +121,7 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
         if (entity.isExpired()) {
             throw new BusinessException(VerifyExceptionCodes.OVERDUE_CODE);
         }
-        final VerifyPolicy<E, T> policy = getPolicy(entity.getType());
+        final VerifyPolicy<U, T> policy = getPolicy(entity.getType());
         final Map<String, Object> content = entity.getContent();
         policy.validate(content);
         if (policy.onVerified(entity, context)) {
@@ -131,8 +131,8 @@ public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends A
 
     @Override
     @WriteTransactional
-    public E verify(final String code, final Object context) throws HandleableException {
-        final E entity = this.dao.findByCode(code);
+    public U verify(final String code, final Object context) throws HandleableException {
+        final U entity = this.dao.findByCode(code);
         verify(entity, code, context);
         return entity;
     }
