@@ -14,7 +14,7 @@ import org.truenewx.data.model.unity.AbstractUnity;
  * @param <T>
  *            验证类型枚举类型
  */
-public class VerifyEntity<T extends Enum<T>> extends AbstractUnity<Long> {
+public class VerifyUnity<T extends Enum<T>> extends AbstractUnity<Long> {
     private T type;
     private String code;
     private Map<String, Object> content;

@@ -1,6 +1,6 @@
 package org.truenewx.support.verify.service.policy;
 
-import org.truenewx.verify.data.model.VerifyEntity;
+import org.truenewx.verify.data.model.VerifyUnity;
 
 /**
  * 验证方针注册器
@@ -10,7 +10,7 @@ import org.truenewx.verify.data.model.VerifyEntity;
  * @param <T>
  *            验证类型枚举类型
  */
-public interface VerifyPolicyRegistrar<E extends VerifyEntity<T>, T extends Enum<T>> {
+public interface VerifyPolicyRegistrar<E extends VerifyUnity<T>, T extends Enum<T>> {
     /**
      * 注册方针
      *

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.service.Service;
-import org.truenewx.verify.data.model.VerifyEntity;
+import org.truenewx.verify.data.model.VerifyUnity;
 
 /**
  * 验证器
@@ -17,7 +17,7 @@ import org.truenewx.verify.data.model.VerifyEntity;
  * @param <T>
  *            验证类型枚举类型
  */
-public interface Verifier<E extends VerifyEntity<T>, T extends Enum<T>> extends Service {
+public interface Verifier<E extends VerifyUnity<T>, T extends Enum<T>> extends Service {
 
     /**
      * 首次发送验证信息

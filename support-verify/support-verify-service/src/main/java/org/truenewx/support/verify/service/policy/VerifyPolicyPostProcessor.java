@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
-import org.truenewx.verify.data.model.VerifyEntity;
+import org.truenewx.verify.data.model.VerifyUnity;
 
 /**
  * 校验方针Bean提交处理器
@@ -13,7 +13,7 @@ import org.truenewx.verify.data.model.VerifyEntity;
  * @since JDK 1.8
  */
 @Component
-public class VerifyPolicyPostProcessor<E extends VerifyEntity<T>, T extends Enum<T>>
+public class VerifyPolicyPostProcessor<E extends VerifyUnity<T>, T extends Enum<T>>
         implements BeanPostProcessor {
 
     private VerifyPolicyRegistrar<E, T> registrar;

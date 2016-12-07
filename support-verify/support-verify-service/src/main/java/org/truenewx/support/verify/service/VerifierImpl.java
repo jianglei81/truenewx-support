@@ -12,8 +12,8 @@ import org.truenewx.core.spring.transaction.annotation.WriteTransactional;
 import org.truenewx.service.AbstractService;
 import org.truenewx.support.verify.service.policy.VerifyPolicy;
 import org.truenewx.support.verify.service.policy.VerifyPolicyRegistrar;
-import org.truenewx.verify.data.dao.VerifyEntityDao;
-import org.truenewx.verify.data.model.VerifyEntity;
+import org.truenewx.verify.data.dao.VerifyUnityDao;
+import org.truenewx.verify.data.model.VerifyUnity;
 
 /**
  * 验证器实现
@@ -23,14 +23,14 @@ import org.truenewx.verify.data.model.VerifyEntity;
  * @param <T>
  *            验证类型枚举类型
  */
-public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends AbstractService<E>
+public class VerifierImpl<E extends VerifyUnity<T>, T extends Enum<T>> extends AbstractService<E>
         implements Verifier<E, T>, VerifyPolicyRegistrar<E, T> {
 
-    private VerifyEntityDao<E, T> verifyEntityDao;
+    private VerifyUnityDao<E, T> dao;
     private Map<T, VerifyPolicy<E, T>> policies = new HashMap<>();
 
-    public void setVerifyEntityDao(final VerifyEntityDao<E, T> verifyEntityDao) {
-        this.verifyEntityDao = verifyEntityDao;
+    public void setDao(final VerifyUnityDao<E, T> dao) {
+        this.dao = dao;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
             final long expiredTime = entity.getCreateTime().getTime()
                     + policy.getExpiredInterval(content);
             entity.setExpiredTime(new Date(expiredTime));
-            this.verifyEntityDao.save(entity);
+            this.dao.save(entity);
             policy.send(code, content, locale);
             return entity.getId();
         }
@@ -72,7 +72,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
     @Override
     @WriteTransactional
     public void resend(final long id, final Locale locale) throws HandleableException {
-        final E entity = this.verifyEntityDao.find(id);
+        final E entity = this.dao.find(id);
         if (entity != null) {
             final VerifyPolicy<E, T> policy = getPolicy(entity.getType());
             final Map<String, Object> content = entity.getContent();
@@ -80,7 +80,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
                 entity.setCode(policy.generateCode(content));
                 final long expiredTime = new Date().getTime() + policy.getExpiredInterval(content);
                 entity.setExpiredTime(new Date(expiredTime));
-                this.verifyEntityDao.save(entity);
+                this.dao.save(entity);
             }
             policy.send(entity.getCode(), content, locale);
         }
@@ -89,7 +89,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
     @Override
     @ReadTransactional
     public boolean isValid(final long id, final String code) {
-        final E entity = this.verifyEntityDao.find(id);
+        final E entity = this.dao.find(id);
         return isValid(entity, code);
     }
 
@@ -100,7 +100,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
     @Override
     @ReadTransactional
     public boolean isValid(final String code) {
-        final E entity = this.verifyEntityDao.findByCode(code);
+        final E entity = this.dao.findByCode(code);
         return isValid(entity, code);
     }
 
@@ -108,7 +108,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
     @WriteTransactional
     public E verify(final long id, final String code, final Object context)
             throws HandleableException {
-        final E entity = this.verifyEntityDao.find(id);
+        final E entity = this.dao.find(id);
         verify(entity, code, context);
         return entity;
     }
@@ -125,14 +125,14 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
         final Map<String, Object> content = entity.getContent();
         policy.validate(content);
         if (policy.onVerified(entity, context)) {
-            this.verifyEntityDao.delete(entity);
+            this.dao.delete(entity);
         }
     }
 
     @Override
     @WriteTransactional
     public E verify(final String code, final Object context) throws HandleableException {
-        final E entity = this.verifyEntityDao.findByCode(code);
+        final E entity = this.dao.findByCode(code);
         verify(entity, code, context);
         return entity;
     }
@@ -140,7 +140,7 @@ public class VerifierImpl<E extends VerifyEntity<T>, T extends Enum<T>> extends 
     @Override
     @WriteTransactional
     public void clean() {
-        this.verifyEntityDao.deleteByLatestExpiredTime(new Date());
+        this.dao.deleteByLatestExpiredTime(new Date());
     }
 
 }
