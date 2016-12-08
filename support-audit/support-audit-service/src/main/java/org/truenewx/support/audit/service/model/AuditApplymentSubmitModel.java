@@ -1,8 +1,6 @@
 package org.truenewx.support.audit.service.model;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.truenewx.data.model.SubmitModel;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
@@ -20,52 +18,52 @@ import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 public class AuditApplymentSubmitModel<U extends AuditApplymentUnity<?, ?>>
         implements SubmitModel<U> {
     private int applicantId;
-    private Object content;
+    private Map<String, Object> content;
     private String reason;
 
+    /**
+     * @return 申请者id
+     */
     public int getApplicantId() {
         return this.applicantId;
     }
 
+    /**
+     * @param applicantId
+     *            申请者id
+     */
     public void setApplicantId(final int applicantId) {
         this.applicantId = applicantId;
     }
 
-    public Object getContent() {
+    /**
+     * @return 审核内容
+     */
+    public Map<String, Object> getContent() {
         return this.content;
     }
 
-    public void setContent(final Object content) {
+    /**
+     * @param content
+     *            审核内容
+     */
+    public void setContent(final Map<String, Object> content) {
         this.content = content;
     }
 
+    /**
+     * @return 申请原因
+     */
     public String getReason() {
         return this.reason;
     }
 
+    /**
+     * @param reason
+     *            申请原因
+     */
     public void setReason(final String reason) {
         this.reason = reason;
     }
 
-    /**
-     * 合并新内容，以已有内容为优先
-     *
-     * @param content
-     *            新内容
-     */
-    @SuppressWarnings("unchecked")
-    public void mergeContent(final Map<String, Object> content) {
-        if (content != null && !content.isEmpty()) {
-            if (this.content == null) {
-                this.content = new HashMap<>(content);
-            } else {
-                for (final Entry<String, Object> entry : content.entrySet()) {
-                    final String key = entry.getKey();
-                    if (!((Map<String, Object>) this.content).containsKey(key)) { // 原本不包含才加入
-                        ((Map<String, Object>) this.content).put(key, entry.getValue());
-                    }
-                }
-            }
-        }
-    }
 }

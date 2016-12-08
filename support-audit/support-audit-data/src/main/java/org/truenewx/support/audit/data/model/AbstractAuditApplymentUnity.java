@@ -3,6 +3,7 @@ package org.truenewx.support.audit.data.model;
 import java.util.Date;
 import java.util.List;
 
+import org.truenewx.data.annotation.Redundant;
 import org.truenewx.data.model.unity.AbstractUnity;
 import org.truenewx.data.validation.constraint.NotContainsAngleBracket;
 import org.truenewx.data.validation.constraint.NotContainsSpecialChars;
@@ -32,6 +33,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
     private int applicantId;
     private Date createTime;
     private Date applyTime;
+    @Redundant
     private long lastAuditTime;
     private List<? extends AuditLogUnity<T, A>> logs;
 

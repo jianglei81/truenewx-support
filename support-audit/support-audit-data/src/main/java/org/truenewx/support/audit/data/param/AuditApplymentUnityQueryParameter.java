@@ -1,5 +1,7 @@
 package org.truenewx.support.audit.data.param;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.truenewx.data.query.QueryParameterImpl;
@@ -9,14 +11,21 @@ import org.truenewx.support.audit.data.model.AuditStatus;
  * 审核申请单体查询参数
  *
  * @author jianglei
- * @version 1.0.0 2014年9月27日
  * @since JDK 1.8
  */
 public class AuditApplymentUnityQueryParameter extends QueryParameterImpl {
 
-    private Set<Integer> applicantIds;
-    private String keyword;
     private AuditStatus[] statuses;
+    private Set<Integer> applicantIds;
+    private Map<String, String> contentParams;
+
+    public AuditStatus[] getStatuses() {
+        return this.statuses;
+    }
+
+    public void setStatuses(final AuditStatus... statuses) {
+        this.statuses = statuses;
+    }
 
     public Set<Integer> getApplicantIds() {
         return this.applicantIds;
@@ -26,20 +35,15 @@ public class AuditApplymentUnityQueryParameter extends QueryParameterImpl {
         this.applicantIds = applicantIds;
     }
 
-    public String getKeyword() {
-        return this.keyword;
+    public Map<String, String> getContentParams() {
+        return this.contentParams;
     }
 
-    public void setKeyword(final String keyword) {
-        this.keyword = keyword;
-    }
-
-    public AuditStatus[] getStatuses() {
-        return this.statuses;
-    }
-
-    public void setStatuses(final AuditStatus... statuses) {
-        this.statuses = statuses;
+    public void addContentParam(final String name, final String value) {
+        if (this.contentParams == null) {
+            this.contentParams = new HashMap<>();
+        }
+        this.contentParams.put(name, value);
     }
 
 }

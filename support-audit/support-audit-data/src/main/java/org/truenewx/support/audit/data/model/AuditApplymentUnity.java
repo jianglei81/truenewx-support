@@ -3,6 +3,7 @@ package org.truenewx.support.audit.data.model;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.data.model.unity.OwnedUnity;
 
@@ -63,9 +64,43 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
                 || status == AuditStatus.REJECTED_1 || status == AuditStatus.REJECTED_2;
     }
 
+    public void setContent(final Map<String, Object> content) {
+        if (content == null || content.isEmpty()) {
+            setContentString(null);
+        } else {
+            final StringBuffer contentString = new StringBuffer(JsonUtil.bean2Json(content));
+            // 将json格式的内容去掉花括弧，以,开头和结尾
+            if (contentString.charAt(0) == '{') {
+                contentString.setCharAt(0, ',');
+            }
+            final int lastIndex = contentString.length() - 1;
+            if (contentString.charAt(lastIndex) == '}') {
+                contentString.setCharAt(lastIndex, ',');
+            }
+            setContentString(contentString.toString());
+        }
+    }
+
+    public Map<String, Object> getContent() {
+        final String contentString = getContentString();
+        if (StringUtils.isNotBlank(contentString)) {
+            // 替换开头和结尾的,为花括弧，转换为json格式
+            final StringBuffer sb = new StringBuffer(contentString);
+            if (sb.charAt(0) == ',') {
+                sb.setCharAt(0, '{');
+            }
+            final int lastIndex = contentString.length() - 1;
+            if (sb.charAt(lastIndex) == ',') {
+                sb.setCharAt(lastIndex, '}');
+            }
+            return JsonUtil.json2Map(contentString);
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
-    public <V> V getContent(final String name) {
-        final Map<String, Object> content = JsonUtil.json2Map(getContentString());
+    public <V> V getContentValue(final String name) {
+        final Map<String, Object> content = getContent();
         return content == null ? null : (V) content.get(name);
     }
 }

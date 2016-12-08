@@ -34,21 +34,18 @@ public class AuditPassAction<U extends AuditApplymentUnity<T, A>, T extends Enum
     public AuditStatus getNextState(final AuditStatus state, final Object context) {
         @SuppressWarnings("unchecked")
         final T type = (T) context;
-        final AuditPolicy<U, T, A> policy = getPolicy(type);
-        if (policy != null) {
-            final byte levels = policy.getLevels();
-            switch (state) {
-            case PENDING:
-                return levels == 1 ? AuditStatus.PASSED_LAST : AuditStatus.PASSED_1;
-            case PASSED_1:
-                return levels == 2 ? AuditStatus.PASSED_LAST : null;
-            case REJECTED_2:
-                return levels == 2 ? AuditStatus.PASSED_1 : null;
-            default:
-                return null;
-            }
+        final AuditPolicy<U, T, A> policy = loadPolicy(type);
+        final byte levels = policy.getLevels();
+        switch (state) {
+        case PENDING:
+            return levels == 1 ? AuditStatus.PASSED_LAST : AuditStatus.PASSED_1;
+        case PASSED_1:
+            return levels == 2 ? AuditStatus.PASSED_LAST : null;
+        case REJECTED_2:
+            return levels == 2 ? AuditStatus.PASSED_1 : null;
+        default:
+            return null;
         }
-        return null;
     }
 
 }

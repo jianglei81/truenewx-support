@@ -32,8 +32,12 @@ abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends
     }
 
     @SuppressWarnings("unchecked")
-    protected AuditPolicy<U, T, A> getPolicy(final T type) {
-        return getService(AuditApplymentUnityService.class).getPolicy(type);
+    protected final AuditApplymentUnityService<U, T, A> getService() {
+        return getService(AuditApplymentUnityService.class);
+    }
+
+    protected final AuditPolicy<U, T, A> loadPolicy(final T type) {
+        return getService().loadPolicy(type);
     }
 
 }

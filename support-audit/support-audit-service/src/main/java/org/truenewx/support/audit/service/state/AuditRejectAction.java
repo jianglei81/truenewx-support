@@ -33,21 +33,18 @@ public class AuditRejectAction<U extends AuditApplymentUnity<T, A>, T extends En
     public AuditStatus getNextState(final AuditStatus state, final Object context) {
         @SuppressWarnings("unchecked")
         final T type = (T) context;
-        final AuditPolicy<U, T, A> policy = getPolicy(type);
-        if (policy != null) {
-            final byte levels = policy.getLevels();
-            switch (state) {
-            case PENDING:
-                return AuditStatus.REJECTED_1;
-            case PASSED_1:
-                return levels == 2 ? AuditStatus.REJECTED_2 : null;
-            case REJECTED_2:
-                return levels == 2 ? AuditStatus.REJECTED_1 : null;
-            default:
-                return null;
-            }
+        final AuditPolicy<U, T, A> policy = loadPolicy(type);
+        final byte levels = policy.getLevels();
+        switch (state) {
+        case PENDING:
+            return AuditStatus.REJECTED_1;
+        case PASSED_1:
+            return levels == 2 ? AuditStatus.REJECTED_2 : null;
+        case REJECTED_2:
+            return levels == 2 ? AuditStatus.REJECTED_1 : null;
+        default:
+            return null;
         }
-        return null;
     }
 
 }

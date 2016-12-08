@@ -132,26 +132,19 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     }
 
     @Override
-    public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter) {
-        final StringBuffer hql = new StringBuffer("from ").append(getEntityName())
+    public QueryResult<U> find(final T type, AuditApplymentUnityQueryParameter parameter) {
+        final String entityName = getEntityName();
+        final StringBuffer hql = new StringBuffer("from ").append(entityName)
                 .append(" where type=:type");
         final Map<String, Object> params = new HashMap<>();
         params.put("type", type);
-        if (parameter != null) {
-            appendCondition(parameter, hql, params);
+        if (parameter == null) {
+            parameter = new AuditApplymentUnityQueryParameter();
         }
-        final int total = getHibernateTemplate()
-                .count(StringUtils.join("select count(*) ", hql.toString()), params);
-        final int pageSize = parameter.getPageSize();
-        final int pageNo = parameter.getPageNo();
-        List<U> list;
-        if (total == 0) {
-            list = new ArrayList<>();
-        } else {
-            hql.append(" order by lastAuditTime desc, applyTime desc");
-            list = getHibernateTemplate().list(hql.toString(), params, pageSize, pageNo);
-        }
-        return new QueryResultImpl<>(list, pageSize, pageNo, total);
+        appendCondition(parameter, hql, params);
+        parameter.setOrder("lastAuditTime", Boolean.TRUE);
+        parameter.setOrder("applyTime", Boolean.TRUE);
+        return pagingQuery(entityName, hql, params, parameter);
     }
 
     protected void appendCondition(final AuditApplymentUnityQueryParameter parameter,
@@ -169,16 +162,21 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
                 hql.append(" and ").append(condition);
             }
         }
-        if (StringUtils.isNotBlank(parameter.getKeyword())) {
-            final String keywordCondition = getKeywordCondition(parameter.getKeyword(), params);
-            if (StringUtils.isNotBlank(keywordCondition)) {
-                hql.append(" and ").append(keywordCondition);
-            }
-        }
+        appendContentCondition(parameter.getContentParams(), hql, params);
     }
 
-    protected String getKeywordCondition(final String keyword, final Map<String, Object> params) {
-        return null;
+    protected void appendContentCondition(final Map<String, String> contentParams,
+            final StringBuffer hql, final Map<String, Object> params) {
+        if (contentParams != null) {
+            for (final Entry<String, String> entry : contentParams.entrySet()) {
+                final String name = entry.getKey();
+                hql.append(" and content like :").append(name);
+                // 形如： %,"name":value,%，必须确保content以,开头和结尾，以便于查询
+                final StringBuffer value = new StringBuffer("%,\"").append(name).append("\":")
+                        .append(entry.getValue()).append(",%");
+                params.put(name, value);
+            }
+        }
     }
 
     @Override

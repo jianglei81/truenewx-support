@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.truenewx.core.exception.HandleableException;
+import org.truenewx.data.model.SubmitModel;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.service.fsm.StateGetter;
+import org.truenewx.service.transform.SubmitModelTransformer;
 import org.truenewx.service.unity.OwnedUnityService;
 import org.truenewx.service.unity.UnityService;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
@@ -30,7 +32,7 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  */
 public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends UnityService<U, Long>, OwnedUnityService<U, Long, Integer>,
-        StateGetter<Long, AuditStatus> {
+        SubmitModelTransformer<SubmitModel<U>, U>, StateGetter<Long, AuditStatus> {
 
     /**
      * 获取指定审核类型的审核方针
@@ -39,7 +41,7 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
      *            审核类型
      * @return 审核方针
      */
-    AuditPolicy<U, T, A> getPolicy(T type);
+    AuditPolicy<U, T, A> loadPolicy(T type);
 
     U findLast(T type, Integer applicantId, Long relatedId, AuditStatus... statuses);
 
@@ -49,7 +51,7 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
 
     Map<T, Integer> countAuditingGroupByType(A auditor);
 
-    QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter);
+    QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter, Map<String, String[]> params);
 
     int count(T type, int relatedId, AuditStatus... status);
 

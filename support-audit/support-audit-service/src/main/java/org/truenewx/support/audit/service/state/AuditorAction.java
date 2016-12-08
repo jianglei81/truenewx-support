@@ -11,7 +11,6 @@ import org.truenewx.support.audit.data.model.AuditLogUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
-import org.truenewx.support.audit.service.AuditApplymentUnityService;
 import org.truenewx.support.audit.service.AuditExceptionCodes;
 import org.truenewx.support.audit.service.AuditLogEntityCreator;
 import org.truenewx.support.audit.service.policy.AuditPolicy;
@@ -32,9 +31,8 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         this.logEntityCreator = logEntityCreator;
     }
 
-    @SuppressWarnings("unchecked")
-    protected U get(final long id) throws BusinessException {
-        return (U) getService(AuditApplymentUnityService.class).load(id);
+    protected U load(final long id) throws BusinessException {
+        return getService().load(id);
     }
 
     @Override
@@ -46,7 +44,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
             throw new BusinessException(AuditExceptionCodes.BLANK_REJECT_ATTITUDE);
         }
 
-        final U applyment = get(key);
+        final U applyment = load(key);
         final T type = applyment.getType();
         final A auditor = operateContext.getAuditor();
         if (!auditor.isAuditable(type, applyment.getStatus().getLevel())) { // 无审核权限
@@ -66,19 +64,16 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         applyment.setLastAuditTime(now.getTime());
         this.dao.save(applyment);
 
-        final AuditPolicy<U, T, A> policy = getPolicy(type);
-        if (policy != null) {
-            switch (newState) {
-            case PASSED_LAST:
-                policy.onPassed(applyment, operateContext.getAddition());
-                break;
-            case REJECTED_1:
-                policy.onRejected(applyment);
-                break;
-            default:
-                break;
-            }
+        final AuditPolicy<U, T, A> policy = loadPolicy(type);
+        switch (newState) {
+        case PASSED_LAST:
+            policy.onPassed(applyment, operateContext.getAddition());
+            break;
+        case REJECTED_1:
+            policy.onRejected(applyment);
+            break;
+        default:
+            break;
         }
-
     }
 }

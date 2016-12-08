@@ -37,7 +37,7 @@ public class CancelApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     @Override
     public void execute(final Long key, final Object context) throws HandleableException {
         final int applicantId = (Integer) context;
-        final U entity = get(applicantId, key);
+        final U entity = load(applicantId, key);
         entity.setStatus(AuditStatus.CANCELED);
         this.dao.save(entity);
     }

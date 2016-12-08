@@ -8,7 +8,6 @@ import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
-import org.truenewx.support.audit.service.policy.AuditPolicy;
 
 /**
  * 修改申请动作
@@ -39,14 +38,11 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     public void execute(final Long key, final Object context) throws HandleableException {
         @SuppressWarnings("unchecked")
         final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) context;
-        final U entity = get(model.getApplicantId(), key);
-        final AuditPolicy<U, T, A> policy = getPolicy(entity.getType());
-        if (policy != null) {
-            policy.transform(model, entity);
-            entity.setStatus(getNextState(entity.getStatus(), context));
-            entity.setApplyTime(getApplyTime());
-            this.dao.save(entity);
-        }
+        final U unity = load(model.getApplicantId(), key);
+        getService().transform(model, unity);
+        unity.setStatus(getNextState(unity.getStatus(), context));
+        unity.setApplyTime(getApplyTime());
+        this.dao.save(unity);
     }
 
     protected Date getApplyTime() {

@@ -1,12 +1,11 @@
 package org.truenewx.support.audit.service.policy;
 
-import org.truenewx.core.exception.BusinessException;
+import java.util.Map;
+
 import org.truenewx.core.exception.HandleableException;
-import org.truenewx.service.transform.SubmitModelTransformer;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
-import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
 
 /**
  * 审核方针
@@ -20,8 +19,7 @@ import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
  * @param <A>
  *            审核者类型
  */
-public interface AuditPolicy<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends SubmitModelTransformer<AuditApplymentSubmitModel<U>, U> {
+public interface AuditPolicy<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>> {
 
     T getType();
 
@@ -33,22 +31,14 @@ public interface AuditPolicy<U extends AuditApplymentUnity<T, A>, T extends Enum
     byte getLevels();
 
     /**
-     * 预处理查询参数
+     * 将指定参数集合中的有效参数追加到查询参数中
      *
      * @param parameter
      *            查询参数
+     * @param params
+     *            待追加的参数集合
      */
-    void prepareQueryParameter(AuditApplymentUnityQueryParameter parameter)
-            throws BusinessException;
-
-    /**
-     * 解析内容字符串
-     *
-     * @param contentString
-     *            内容字符串
-     * @return 内容值
-     */
-    Object parseContent(String contentString);
+    void appendParams(AuditApplymentUnityQueryParameter parameter, Map<String, String[]> params);
 
     /**
      * 终审通过后调用

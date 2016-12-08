@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.springframework.util.Assert;
 import org.truenewx.core.exception.HandleableException;
+import org.truenewx.data.model.SubmitModel;
 import org.truenewx.data.orm.dao.OwnedUnityDao;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.service.unity.AbstractOwnedUnityService;
@@ -69,8 +71,10 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public AuditPolicy<U, T, A> getPolicy(final T type) {
-        return this.polices.get(type);
+    public AuditPolicy<U, T, A> loadPolicy(final T type) {
+        final AuditPolicy<U, T, A> policy = this.polices.get(type);
+        Assert.notNull(policy);
+        return policy;
     }
 
     @Override
@@ -80,25 +84,34 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
+    public void transform(final SubmitModel<U> submitModel, final U unity)
+            throws HandleableException {
+        if (submitModel instanceof AuditApplymentSubmitModel) {
+            final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) submitModel;
+            unity.setApplicantId(model.getApplicantId());
+            unity.setContent(model.getContent());
+            unity.setReason(model.getReason());
+        }
+    }
+
+    @Override
     public U add(final T type, final AuditApplymentSubmitModel<U> model, final boolean submitted)
             throws HandleableException {
-        final AuditPolicy<U, T, A> policy = getPolicy(type);
-        if (policy != null) {
-            final U unity = ensureNonnull(null);
-            unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED); // 立即提交则为待审核状态，否则为未提交状态
-            policy.transform(model, unity);
-            // 转换完成后再设置重要属性，以避免转换方法中错误设置
-            unity.setType(type);
-            unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED);
-            unity.setCreateTime(new Date());
-            if (unity.getStatus() == AuditStatus.PENDING) { // 直接待审核的申请，申请时间即为创建时间
-                unity.setApplyTime(unity.getCreateTime());
-            }
-            unity.setLastAuditTime(Long.MAX_VALUE); // 添加申请时默认最后审核时间为最未来时间
-            this.dao.save(unity);
-            return unity;
+        loadPolicy(type); // 加载方针以确保type有效
+
+        final U unity = ensureNonnull(null);
+        unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED); // 立即提交则为待审核状态，否则为未提交状态
+        transform(model, unity);
+        // 转换完成后再设置重要属性，以避免转换方法中错误设置
+        unity.setType(type);
+        unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED);
+        unity.setCreateTime(new Date());
+        if (unity.getStatus() == AuditStatus.PENDING) { // 直接待审核的申请，申请时间即为创建时间
+            unity.setApplyTime(unity.getCreateTime());
         }
-        return null;
+        unity.setLastAuditTime(Long.MAX_VALUE); // 添加申请时默认最后审核时间为最未来时间
+        this.dao.save(unity);
+        return unity;
     }
 
     @Override
@@ -146,7 +159,9 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter) {
+    public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter,
+            final Map<String, String[]> params) {
+        loadPolicy(type).appendParams(parameter, params);
         return this.dao.find(type, parameter);
     }
 
