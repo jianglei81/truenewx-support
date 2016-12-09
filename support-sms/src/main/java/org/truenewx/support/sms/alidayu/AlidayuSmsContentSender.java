@@ -69,7 +69,7 @@ public class AlidayuSmsContentSender implements SmsContentSender {
     }
 
     private SmsSendResult send(final String content, final String... mobilePhones) {
-        // TODO content此时已经为json格式，将其作为sms_param发送
+        // TODO content此时已经为json格式，将其作为sms_param发送。记得要签名
         return null;
     }
 

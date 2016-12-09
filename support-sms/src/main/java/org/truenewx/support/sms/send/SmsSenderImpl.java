@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.truenewx.core.Strings;
 import org.truenewx.support.sms.SmsContentProvider;
 
@@ -15,18 +14,18 @@ import org.truenewx.support.sms.SmsContentProvider;
  * @author jianglei
  * @since JDK 1.8
  */
-public class SmsSenderImpl implements SmsSender, InitializingBean {
+public class SmsSenderImpl implements SmsSender {
     private Map<String, SmsContentSender> contentSenders = new HashMap<>();
-    private Map<String, SmsContentProvider> providers = new HashMap<>();
+    private Map<String, SmsContentProvider> contentProviders = new HashMap<>();
     private boolean disabled;
 
     public void setContentSenders(final Map<String, SmsContentSender> contentSenders) {
         this.contentSenders = contentSenders;
     }
 
-    public void setProviders(final List<SmsContentProvider> providers) {
-        for (final SmsContentProvider provider : providers) {
-            this.providers.put(provider.getType(), provider);
+    public void setContentProviders(final List<SmsContentProvider> contentProviders) {
+        for (final SmsContentProvider contentProvider : contentProviders) {
+            this.contentProviders.put(contentProvider.getType(), contentProvider);
         }
     }
 
@@ -34,11 +33,15 @@ public class SmsSenderImpl implements SmsSender, InitializingBean {
         this.disabled = disabled;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (this.disabled) {
-            this.providers.clear();
+    private SmsContentProvider getContentProvider(final String type) {
+        if (this.disabled) { // 禁用时始终返回空的内容提供者，以实际控制不发送短信
+            return null;
         }
+        SmsContentProvider contentSender = this.contentProviders.get(type);
+        if (contentSender == null) {
+            contentSender = this.contentProviders.get(Strings.ASTERISK); // 默认内容提供者
+        }
+        return contentSender;
     }
 
     private SmsContentSender getContentSender(final String type) {
@@ -52,13 +55,13 @@ public class SmsSenderImpl implements SmsSender, InitializingBean {
     @Override
     public SmsSendResult send(final String type, final Map<String, Object> params,
             final Locale locale, final String... mobilePhones) {
-        final SmsContentProvider provider = this.providers.get(type);
-        if (provider != null) {
-            final String content = provider.getContent(params, locale);
+        final SmsContentProvider contentProvider = getContentProvider(type);
+        if (contentProvider != null) {
+            final String content = contentProvider.getContent(params, locale);
             if (content != null) {
                 final SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
-                    return contentSender.send(content, provider.getMaxCount(), mobilePhones);
+                    return contentSender.send(content, contentProvider.getMaxCount(), mobilePhones);
                 }
             }
         }
@@ -68,13 +71,14 @@ public class SmsSenderImpl implements SmsSender, InitializingBean {
     @Override
     public void send(final String type, final Map<String, Object> params, final Locale locale,
             final String[] mobilePhones, final SmsSendCallback callback) {
-        final SmsContentProvider provider = this.providers.get(type);
-        if (provider != null) {
-            final String content = provider.getContent(params, locale);
+        final SmsContentProvider contentProvider = getContentProvider(type);
+        if (contentProvider != null) {
+            final String content = contentProvider.getContent(params, locale);
             if (content != null) {
                 final SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
-                    contentSender.send(content, provider.getMaxCount(), mobilePhones, callback);
+                    contentSender.send(content, contentProvider.getMaxCount(), mobilePhones,
+                            callback);
                 }
             }
         }
