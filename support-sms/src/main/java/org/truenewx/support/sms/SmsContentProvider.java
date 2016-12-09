@@ -4,12 +4,12 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 短信提供者
+ * 短信内容提供者
  *
  * @author jianglei
  * @since JDK 1.8
  */
-public interface SmsProvider {
+public interface SmsContentProvider {
     /**
      *
      * @return 短信类型
@@ -28,7 +28,7 @@ public interface SmsProvider {
      * @param params
      *            参数映射集
      * @param locale
-     *            TODO
+     *            区域
      * @return 短信内容
      */
     String getContent(Map<String, Object> params, Locale locale);

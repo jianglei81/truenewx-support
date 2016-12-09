@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.truenewx.core.Strings;
-import org.truenewx.support.sms.SmsProvider;
+import org.truenewx.support.sms.SmsContentProvider;
 
 /**
  * 短信发送器实现
@@ -17,15 +17,15 @@ import org.truenewx.support.sms.SmsProvider;
  */
 public class SmsSenderImpl implements SmsSender, InitializingBean {
     private Map<String, SmsContentSender> contentSenders = new HashMap<>();
-    private Map<String, SmsProvider> providers = new HashMap<>();
+    private Map<String, SmsContentProvider> providers = new HashMap<>();
     private boolean disabled;
 
     public void setContentSenders(final Map<String, SmsContentSender> contentSenders) {
         this.contentSenders = contentSenders;
     }
 
-    public void setProviders(final List<SmsProvider> providers) {
-        for (final SmsProvider provider : providers) {
+    public void setProviders(final List<SmsContentProvider> providers) {
+        for (final SmsContentProvider provider : providers) {
             this.providers.put(provider.getType(), provider);
         }
     }
@@ -52,7 +52,7 @@ public class SmsSenderImpl implements SmsSender, InitializingBean {
     @Override
     public SmsSendResult send(final String type, final Map<String, Object> params,
             final Locale locale, final String... mobilePhones) {
-        final SmsProvider provider = this.providers.get(type);
+        final SmsContentProvider provider = this.providers.get(type);
         if (provider != null) {
             final String content = provider.getContent(params, locale);
             if (content != null) {
@@ -68,7 +68,7 @@ public class SmsSenderImpl implements SmsSender, InitializingBean {
     @Override
     public void send(final String type, final Map<String, Object> params, final Locale locale,
             final String[] mobilePhones, final SmsSendCallback callback) {
-        final SmsProvider provider = this.providers.get(type);
+        final SmsContentProvider provider = this.providers.get(type);
         if (provider != null) {
             final String content = provider.getContent(params, locale);
             if (content != null) {

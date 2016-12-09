@@ -47,6 +47,17 @@ public abstract class AbstractSmsContentSender implements SmsContentSender {
         this.executor.execute(new SendCommand(contents, mobilePhones, callback));
     }
 
+    /**
+     * 分成指定条数的内容发送短信
+     *
+     * @param contents
+     *            内容清单，每一个内容为一条短信
+     * @param mobilePhones
+     *            手机号码清单
+     * @return 发送结果
+     */
+    protected abstract SmsSendResult send(List<String> contents, String... mobilePhones);
+
     protected class SendCommand implements Runnable {
         private List<String> contents;
         private String[] mobilePhones;
@@ -66,16 +77,5 @@ public abstract class AbstractSmsContentSender implements SmsContentSender {
         }
 
     }
-
-    /**
-     * 分成指定条数的内容发送短信
-     *
-     * @param contents
-     *            内容清单，每一个内容为一条短信
-     * @param mobilePhones
-     *            手机号码清单
-     * @return 发送结果
-     */
-    protected abstract SmsSendResult send(List<String> contents, String... mobilePhones);
 
 }

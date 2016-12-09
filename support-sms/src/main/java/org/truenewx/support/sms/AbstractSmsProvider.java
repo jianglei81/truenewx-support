@@ -6,7 +6,7 @@ package org.truenewx.support.sms;
  * @author jianglei
  * @since JDK 1.8
  */
-public abstract class AbstractSmsProvider implements SmsProvider {
+public abstract class AbstractSmsProvider implements SmsContentProvider {
     private String type;
     private int maxCount;
 
