@@ -51,7 +51,7 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
 
     Map<T, Integer> countAuditingGroupByType(A auditor);
 
-    QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter, Map<String, String[]> params);
+    QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter);
 
     int count(T type, int relatedId, AuditStatus... status);
 

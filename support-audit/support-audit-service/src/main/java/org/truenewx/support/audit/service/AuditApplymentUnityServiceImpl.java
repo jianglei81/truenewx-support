@@ -159,9 +159,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter,
-            final Map<String, String[]> params) {
-        loadPolicy(type).appendParams(parameter, params);
+    public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter) {
         return this.dao.find(type, parameter);
     }
 
