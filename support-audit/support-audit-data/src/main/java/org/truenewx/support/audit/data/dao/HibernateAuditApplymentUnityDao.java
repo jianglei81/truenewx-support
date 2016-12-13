@@ -1,6 +1,7 @@
 package org.truenewx.support.audit.data.dao;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +11,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
+import org.truenewx.core.util.JsonUtil;
 import org.truenewx.data.orm.dao.support.OqlUtil;
 import org.truenewx.data.orm.dao.support.hibernate.HibernateOwnedUnityDaoSupport;
+import org.truenewx.data.query.Comparison;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.data.query.QueryResultImpl;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
@@ -165,18 +168,44 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
         appendContentCondition(parameter.getContentParams(), hql, params);
     }
 
-    protected void appendContentCondition(final Map<String, String> contentParams,
+    protected void appendContentCondition(final Map<String, Object> contentParams,
             final StringBuffer hql, final Map<String, Object> params) {
         if (contentParams != null) {
-            for (final Entry<String, String> entry : contentParams.entrySet()) {
-                final String name = entry.getKey();
-                hql.append(" and content like :").append(name);
-                // 形如： %,"name":value,%，必须确保content以,开头和结尾，以便于查询
-                final StringBuffer value = new StringBuffer("%,\"").append(name).append("\":")
-                        .append(entry.getValue()).append(",%");
-                params.put(name, value);
+            for (final Entry<String, Object> entry : contentParams.entrySet()) {
+                final String fieldName = entry.getKey();
+                final Object fieldParamValue = entry.getValue();
+                // 尝试处理参数为集合的情况
+                final List<String> paramValues = new ArrayList<>();
+                if (fieldParamValue instanceof Object[]) {
+                    for (final Object fieldParam : (Object[]) fieldParamValue) {
+                        paramValues.add(buildContentParamValue(fieldName, fieldParam));
+                    }
+                } else if (fieldParamValue instanceof Collection) {
+                    for (final Object fieldParam : (Collection<?>) fieldParamValue) {
+                        paramValues.add(buildContentParamValue(fieldName, fieldParam));
+                    }
+                }
+                if (paramValues.size() > 0) { // 如果参数为集合，则构建content的OR条件语句
+                    hql.append(" and ").append(OqlUtil.buildOrConditionString(params, "content",
+                            paramValues, Comparison.LIKE));
+                } else { // 如果参数不为集合，则构建简单的content条件语句
+                    hql.append(" and content like :content");
+                    Object fieldParam = fieldParamValue;
+                    if (fieldParamValue instanceof String) { // 查询字段参数为字符串时，支持模糊查询
+                        fieldParam = "%" + fieldParamValue + "%";
+                    }
+                    final String paramValue = buildContentParamValue(fieldName, fieldParam);
+                    params.put("content", paramValue);
+                }
             }
         }
+    }
+
+    private String buildContentParamValue(final String fieldName, final Object fieldParam) {
+        // 形如： ,"name":value,，必须确保content以,开头和结尾，以便于查询
+        final StringBuffer paramValue = new StringBuffer(",\"").append(fieldName).append("\":")
+                .append(JsonUtil.bean2Json(fieldParam));
+        return paramValue.toString();
     }
 
     @Override

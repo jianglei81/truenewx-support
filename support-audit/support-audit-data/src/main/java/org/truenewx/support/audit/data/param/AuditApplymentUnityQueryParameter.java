@@ -17,7 +17,7 @@ public class AuditApplymentUnityQueryParameter extends QueryParameterImpl {
 
     private AuditStatus[] statuses;
     private Set<Integer> applicantIds;
-    private Map<String, String> contentParams;
+    private Map<String, Object> contentParams;
 
     public AuditStatus[] getStatuses() {
         return this.statuses;
@@ -35,11 +35,11 @@ public class AuditApplymentUnityQueryParameter extends QueryParameterImpl {
         this.applicantIds = applicantIds;
     }
 
-    public Map<String, String> getContentParams() {
+    public Map<String, Object> getContentParams() {
         return this.contentParams;
     }
 
-    public void addContentParam(final String name, final String value) {
+    public void addContentParam(final String name, final Object value) {
         if (this.contentParams == null) {
             this.contentParams = new HashMap<>();
         }
