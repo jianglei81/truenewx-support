@@ -21,6 +21,6 @@
         
         <module>support-verify</module>
         <module>support-audit</module>
-        <module>support-qrcode</module>
+        
     </modules>
 </project>
