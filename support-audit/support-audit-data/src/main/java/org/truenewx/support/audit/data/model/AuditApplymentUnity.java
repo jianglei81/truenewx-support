@@ -93,7 +93,7 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
             if (sb.charAt(lastIndex) == ',') {
                 sb.setCharAt(lastIndex, '}');
             }
-            return JsonUtil.json2Map(contentString);
+            return JsonUtil.json2Map(sb.toString());
         }
         return null;
     }
