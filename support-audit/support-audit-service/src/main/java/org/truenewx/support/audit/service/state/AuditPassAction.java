@@ -1,5 +1,6 @@
 package org.truenewx.support.audit.service.state;
 
+import org.springframework.stereotype.Service;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditTransition;
@@ -16,6 +17,7 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  * @param <A>
  *            审核者类型
  */
+@Service
 public class AuditPassAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends AuditorAction<U, T, A> {
 

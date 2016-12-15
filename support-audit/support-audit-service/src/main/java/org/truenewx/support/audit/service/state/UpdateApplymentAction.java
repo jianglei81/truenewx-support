@@ -2,6 +2,7 @@ package org.truenewx.support.audit.service.state;
 
 import java.util.Date;
 
+import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
@@ -15,6 +16,7 @@ import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
  * @author jianglei
  * @since JDK 1.8
  */
+@Service
 public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends ApplicantAction<U, T, A> {
 

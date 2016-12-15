@@ -1,5 +1,6 @@
 package org.truenewx.support.audit.service.state;
 
+import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
@@ -16,6 +17,7 @@ import org.truenewx.support.audit.data.model.Auditor;
  * @param <A>
  *            审核者类型
  */
+@Service
 public class CancelApplymentAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends ApplicantAction<U, T, A> {
 
