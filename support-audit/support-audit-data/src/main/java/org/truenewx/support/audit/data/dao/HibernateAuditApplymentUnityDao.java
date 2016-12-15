@@ -186,10 +186,10 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
                     }
                 }
                 if (paramValues.size() > 0) { // 如果参数为集合，则构建content的OR条件语句
-                    hql.append(" and ").append(OqlUtil.buildOrConditionString(params, "content",
-                            paramValues, Comparison.LIKE));
+                    hql.append(" and ").append(OqlUtil.buildOrConditionString(params,
+                            "contentString", paramValues, Comparison.LIKE));
                 } else { // 如果参数不为集合，则构建简单的content条件语句
-                    hql.append(" and content like :content");
+                    hql.append(" and contentString like :content");
                     Object fieldParam = fieldParamValue;
                     if (fieldParamValue instanceof String) { // 查询字段参数为字符串时，支持模糊查询
                         fieldParam = "%" + fieldParamValue + "%";
@@ -203,8 +203,8 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
 
     private String buildContentParamValue(final String fieldName, final Object fieldParam) {
         // 形如： ,"name":value,，必须确保content以,开头和结尾，以便于查询
-        final StringBuffer paramValue = new StringBuffer(",\"").append(fieldName).append("\":")
-                .append(JsonUtil.bean2Json(fieldParam));
+        final StringBuffer paramValue = new StringBuffer("%,\"").append(fieldName).append("\":")
+                .append(JsonUtil.bean2Json(fieldParam)).append(",%");
         return paramValue.toString();
     }
 
