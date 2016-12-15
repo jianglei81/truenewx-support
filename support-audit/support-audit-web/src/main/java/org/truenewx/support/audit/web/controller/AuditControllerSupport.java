@@ -2,6 +2,7 @@ package org.truenewx.support.audit.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.ModelAndView;
+import org.truenewx.core.exception.HandleableException;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
@@ -23,8 +24,9 @@ public abstract class AuditControllerSupport<U extends AuditApplymentUnity<T, A>
 
     public abstract ModelAndView toPass(long applymentId, String attitude);
 
-    public abstract ModelAndView pass(long applymentId, String attitude);
+    public abstract ModelAndView pass(long applymentId, String attitude) throws HandleableException;
 
-    public abstract ModelAndView reject(long applymentId, String attitude);
+    public abstract ModelAndView reject(long applymentId, String attitude)
+            throws HandleableException;
 
 }
