@@ -40,7 +40,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
         implements AuditApplymentUnityService<U, T, A>, AuditPolicyRegistrar<U, T, A> {
 
     private AuditApplymentUnityDao<U, T, A> dao;
-    private Map<T, AuditPolicy<U, T, A>> polices = new HashMap<>();
+    private Map<T, AuditPolicy<U, T, A>> policies = new HashMap<>();
 
     public void setDao(final AuditApplymentUnityDao<U, T, A> dao) {
         this.dao = dao;
@@ -58,7 +58,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
 
     @Override
     public void addPolicy(final AuditPolicy<U, T, A> policy) {
-        this.polices.put(policy.getType(), policy);
+        this.policies.put(policy.getType(), policy);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
 
     @Override
     public AuditPolicy<U, T, A> loadPolicy(final T type) {
-        final AuditPolicy<U, T, A> policy = this.polices.get(type);
+        final AuditPolicy<U, T, A> policy = this.policies.get(type);
         Assert.notNull(policy);
         return policy;
     }
