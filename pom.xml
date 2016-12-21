@@ -13,14 +13,11 @@
         <spring.version>4.0.5.RELEASE</spring.version>
     </properties>
     <modules>
+        <module>support-audit</module>
         <module>support-batch</module>
         <module>support-email</module>
-        
         <module>support-sms</module>
-        
-        
+        <module>support-unstructured</module>
         <module>support-verify</module>
-        <module>support-audit</module>
-        
     </modules>
 </project>
