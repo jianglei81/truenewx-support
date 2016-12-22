@@ -78,7 +78,8 @@ public class AliyunPolicyBuilder {
     }
 
     private String buildResource(final String bucket, final String path) {
-        String resource = "acs:oss:*:" + this.accountId + ":" + bucket + path;
+        String resource = "acs:oss:*:" + this.accountId + Strings.COLON + bucket + Strings.SLASH
+                + path;
         if (resource.endsWith(Strings.SLASH)) { // 为目录授权则追加*
             resource += Strings.ASTERISK;
         }

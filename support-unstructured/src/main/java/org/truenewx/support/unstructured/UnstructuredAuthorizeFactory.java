@@ -13,7 +13,7 @@ import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
 public interface UnstructuredAuthorizeFactory<T extends Enum<T>, K extends Serializable> {
 
     /**
-     * 指定用户获取指定授权类型资源的读写权限
+     * 指定用户获取指定授权类型资源的写权限
      *
      * @param authorizeType
      *            授权类型
@@ -21,7 +21,7 @@ public interface UnstructuredAuthorizeFactory<T extends Enum<T>, K extends Seria
      *            用户id
      * @return 写权限令牌
      */
-    UnstructuredWriteToken authorize(T authorizeType, K userId);
+    UnstructuredWriteToken authorizeWrite(T authorizeType, K userId);
 
     /**
      * 公开指定用户在指定授权类型资源中指定文件的读取授权，可供匿名用户访问

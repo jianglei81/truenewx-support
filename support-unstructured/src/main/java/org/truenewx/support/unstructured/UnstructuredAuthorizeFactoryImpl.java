@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
-import org.truenewx.core.Strings;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
 
@@ -36,17 +35,13 @@ public class UnstructuredAuthorizeFactoryImpl<T extends Enum<T>, K extends Seria
     }
 
     @Override
-    public UnstructuredWriteToken authorize(final T authorizeType, final K userId) {
+    public UnstructuredWriteToken authorizeWrite(final T authorizeType, final K userId) {
         final UnstructuredAuthorizePolicy<T, K> policy = this.policies.get(authorizeType);
         if (policy != null) {
             final String userKey = policy.getUserKey(userId);
             final String bucket = policy.getBucket(userId);
-            String path = policy.getPath(userId, null);
-            // 确保授权路径以斜杠开头
-            if (!path.startsWith(Strings.SLASH)) {
-                path = Strings.SLASH + path;
-            }
-            final UnstructuredWriteToken token = this.authorizer.authorize(userKey, bucket, path);
+            final String path = policy.getPath(userId, null);
+            final UnstructuredWriteToken token = this.authorizer.authorizeWrite(userKey, bucket, path);
             if (token != null) {
                 token.setPublicReadable(policy.isPublicReadable(userId));
             }

@@ -105,35 +105,35 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public UnstructuredWriteToken authorize(final String userKey, final String bucket,
+    public UnstructuredWriteToken authorizeWrite(final String userKey, final String bucket,
             String path) {
         UnstructuredAccount account = findAccount(userKey);
         if (account == null) {
             account = createAccount(userKey);
         }
 
-        final String readPolicyName = ensurePolicy(bucket, path, true);
-        if (readPolicyName != null) {
-            attachPolicy(readPolicyName, userKey);
+        path = standardizePath(path);
+        final String policyName = ensureWritePolicy(bucket, path);
+        if (policyName != null) {
+            attachPolicy(policyName, userKey);
 
-            final String writePolicyName = ensurePolicy(bucket, path, false);
-            if (writePolicyName != null) {
-                attachPolicy(writePolicyName, userKey);
-
-                final UnstructuredWriteToken token = new UnstructuredWriteToken();
-                token.setProvider(UnstructuredProvider.ALIYUN);
-                token.setAccountId(account.getId());
-                token.setAccountSecret(account.getSecret());
-                token.setHost(this.ossEndpoint);
-                token.setBucket(bucket);
-                if (path.endsWith(Strings.SLASH)) { // 阿里云限定路径不能以斜杠开头，返回给授权申请者的路径应遵循
-                    path = path.substring(1);
-                }
-                token.setPath(path);
-                return token;
-            }
+            final UnstructuredWriteToken token = new UnstructuredWriteToken();
+            token.setProvider(UnstructuredProvider.ALIYUN);
+            token.setAccountId(account.getId());
+            token.setAccountSecret(account.getSecret());
+            token.setHost(this.ossEndpoint);
+            token.setBucket(bucket);
+            token.setPath(path);
+            return token;
         }
         return null;
+    }
+
+    private String standardizePath(final String path) {
+        if (path.startsWith(Strings.SLASH)) {
+            return path.substring(1);
+        }
+        return path;
     }
 
     private UnstructuredAccount findAccount(final String userKey) {
@@ -218,9 +218,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         return null;
     }
 
-    private String ensurePolicy(final String bucket, final String path, final boolean read) {
-        final String type = read ? "Read" : "Write";
-        final String policyName = this.policyBuilder.buildName(type + "-", bucket, path);
+    private String ensureWritePolicy(final String bucket, final String path) {
+        final String policyName = this.policyBuilder.buildName("Write-", bucket, path);
 
         final GetPolicyRequest getPolicyRequest = new GetPolicyRequest();
         getPolicyRequest.setPolicyType("Custom");
@@ -240,10 +239,10 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         // 创建授权方针
         final CreatePolicyRequest createPolicyRequest = new CreatePolicyRequest();
         createPolicyRequest.setPolicyName(policyName);
-        final String policyDocument = read ? this.policyBuilder.buildReadDocument(bucket, path)
-                : this.policyBuilder.buildWriteDocument(bucket, path);
+        final String policyDocument = this.policyBuilder.buildWriteDocument(bucket, path);
         createPolicyRequest.setPolicyDocument(policyDocument);
-        createPolicyRequest.setDescription(type + " for " + bucket + ":" + path);
+        createPolicyRequest
+                .setDescription("Write for " + bucket + Strings.COLON + path + Strings.ASTERISK);
         try {
             getAcsClient().doAction(createPolicyRequest);
             return policyName;
@@ -272,16 +271,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
             path = path.substring(1);
         }
         getOss().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
-    }
-
-    @Override
-    public void authorizeOnlyRead(final String userKey, final String bucket, final String path) {
-
-    }
-
-    @Override
-    public void unauthorize(final String userKey, final String bucket, final String path) {
-
     }
 
     @Override

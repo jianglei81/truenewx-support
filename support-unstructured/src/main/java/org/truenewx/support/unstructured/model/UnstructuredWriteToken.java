@@ -34,9 +34,14 @@ public class UnstructuredWriteToken {
     private String bucket;
 
     /**
-     * 文件路径
+     * 资源相对路径
      */
     private String path;
+
+    /**
+     * 资源完整URL
+     */
+    private String url;
 
     /**
      * 是否公开可读
@@ -104,7 +109,7 @@ public class UnstructuredWriteToken {
     }
 
     /**
-     * @return
+     * @return 储存桶
      */
     public String getBucket() {
         return this.bucket;
@@ -112,13 +117,14 @@ public class UnstructuredWriteToken {
 
     /**
      * @param bucket
+     *            储存桶
      */
     public void setBucket(final String bucket) {
         this.bucket = bucket;
     }
 
     /**
-     * @return
+     * @return 资源相对路径
      */
     public String getPath() {
         return this.path;
@@ -126,9 +132,25 @@ public class UnstructuredWriteToken {
 
     /**
      * @param path
+     *            资源相对路径
      */
     public void setPath(final String path) {
         this.path = path;
+    }
+
+    /**
+     * @return 资源完整URL
+     */
+    public String getUrl() {
+        return this.url;
+    }
+
+    /**
+     * @param url
+     *            资源完整URL
+     */
+    public void setUrl(final String url) {
+        this.url = url;
     }
 
     /**
