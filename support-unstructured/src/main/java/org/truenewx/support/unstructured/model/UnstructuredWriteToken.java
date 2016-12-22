@@ -14,9 +14,14 @@ public class UnstructuredWriteToken {
     private UnstructuredProvider provider;
 
     /**
-     * 授权账号
+     * 授权账号id
      */
-    private UnstructuredAccount account;
+    private String accountId;
+
+    /**
+     * 授权账号密钥
+     */
+    private String accountSecret;
 
     /**
      * 存储主机路径
@@ -34,6 +39,11 @@ public class UnstructuredWriteToken {
     private String path;
 
     /**
+     * 是否公开可读
+     */
+    private boolean publicReadable;
+
+    /**
      * @return 服务商
      */
     public UnstructuredProvider getProvider() {
@@ -49,18 +59,33 @@ public class UnstructuredWriteToken {
     }
 
     /**
-     * @return 授权账号
+     * @return 授权账号id
      */
-    public UnstructuredAccount getAccount() {
-        return this.account;
+    public String getAccountId() {
+        return this.accountId;
     }
 
     /**
-     * @param account
-     *            授权账号
+     * @param accountId
+     *            授权账号id
      */
-    public void setAccount(final UnstructuredAccount account) {
-        this.account = account;
+    public void setAccountId(final String accountId) {
+        this.accountId = accountId;
+    }
+
+    /**
+     * @return 授权账号密钥
+     */
+    public String getAccountSecret() {
+        return this.accountSecret;
+    }
+
+    /**
+     * @param accountSecret
+     *            授权账号密钥
+     */
+    public void setAccountSecret(final String accountSecret) {
+        this.accountSecret = accountSecret;
     }
 
     /**
@@ -104,6 +129,21 @@ public class UnstructuredWriteToken {
      */
     public void setPath(final String path) {
         this.path = path;
+    }
+
+    /**
+     * @return 是否公开可读
+     */
+    public boolean isPublicReadable() {
+        return this.publicReadable;
+    }
+
+    /**
+     * @param publicReadable
+     *            是否公开可读
+     */
+    public void setPublicReadable(final boolean publicReadable) {
+        this.publicReadable = publicReadable;
     }
 
 }

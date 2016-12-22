@@ -41,14 +41,28 @@ public class UnstructuredAuthorizeFactoryImpl<T extends Enum<T>, K extends Seria
         if (policy != null) {
             final String userKey = policy.getUserKey(userId);
             final String bucket = policy.getBucket(userId);
-            String path = policy.getPath(userId);
+            String path = policy.getPath(userId, null);
             // 确保授权路径以斜杠开头
             if (!path.startsWith(Strings.SLASH)) {
                 path = Strings.SLASH + path;
             }
-            return this.authorizer.authorize(userKey, bucket, path);
+            final UnstructuredWriteToken token = this.authorizer.authorize(userKey, bucket, path);
+            if (token != null) {
+                token.setPublicReadable(policy.isPublicReadable(userId));
+            }
+            return token;
         }
         return null;
+    }
+
+    @Override
+    public void authorizePublicRead(final T authorizeType, final K userId, final String filename) {
+        final UnstructuredAuthorizePolicy<T, K> policy = this.policies.get(authorizeType);
+        if (policy != null) {
+            final String bucket = policy.getBucket(userId);
+            final String path = policy.getPath(userId, filename);
+            this.authorizer.authorizePublicRead(bucket, path);
+        }
     }
 
 }

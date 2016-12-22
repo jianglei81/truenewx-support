@@ -16,6 +16,8 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, K extends Serial
 
     String getBucket(K userId);
 
-    String getPath(K userId);
+    String getPath(K userId, String filename);
+
+    boolean isPublicReadable(K userId);
 
 }

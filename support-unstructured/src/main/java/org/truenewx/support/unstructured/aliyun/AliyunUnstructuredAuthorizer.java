@@ -4,11 +4,15 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.truenewx.core.Strings;
 import org.truenewx.support.unstructured.UnstructuredAuthorizer;
 import org.truenewx.support.unstructured.model.UnstructuredAccount;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
 import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
 
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
@@ -34,10 +38,11 @@ import com.aliyuncs.ram.model.v20150501.ListAccessKeysResponse;
  */
 public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
+    private OSS oss;
     private String ossEndpoint;
     private String ramRegion = "cn-hangzhou";
-    private String ramAdminAccessKeyId;
-    private String ramAdminAccessKeySecret;
+    private String adminAccessKeyId;
+    private String adminAccessKeySecret;
     private IAcsClient acsClient;
     private AliyunPolicyBuilder policyBuilder;
     private Map<String, String> accessKeys = new Hashtable<>();
@@ -67,25 +72,33 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     /**
-     * @param ramAdminAccessKeyId
-     *            RAM管理账号访问id
+     * @param adminAccessKeyId
+     *            管理账号访问id
      */
-    public void setRamAdminAccessKeyId(final String ramAdminAccessKeyId) {
-        this.ramAdminAccessKeyId = ramAdminAccessKeyId;
+    public void setAdminAccessKeyId(final String adminAccessKeyId) {
+        this.adminAccessKeyId = adminAccessKeyId;
     }
 
     /**
-     * @param ramAdminAccessKeySecret
-     *            RAM管理员账号访问私钥
+     * @param adminAccessKeySecret
+     *            管理员账号访问私钥
      */
-    public void setRamAdminAccessKeySecret(final String ramAdminAccessKeySecret) {
-        this.ramAdminAccessKeySecret = ramAdminAccessKeySecret;
+    public void setAdminAccessKeySecret(final String adminAccessKeySecret) {
+        this.adminAccessKeySecret = adminAccessKeySecret;
+    }
+
+    private OSS getOss() {
+        if (this.oss == null) {
+            this.oss = new OSSClient(this.ossEndpoint, this.adminAccessKeyId,
+                    this.adminAccessKeySecret);
+        }
+        return this.oss;
     }
 
     private IAcsClient getAcsClient() {
         if (this.acsClient == null) {
             final IClientProfile profile = DefaultProfile.getProfile(this.ramRegion,
-                    this.ramAdminAccessKeyId, this.ramAdminAccessKeySecret);
+                    this.adminAccessKeyId, this.adminAccessKeySecret);
             this.acsClient = new DefaultAcsClient(profile);
         }
         return this.acsClient;
@@ -93,7 +106,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
     @Override
     public UnstructuredWriteToken authorize(final String userKey, final String bucket,
-            final String path) {
+            String path) {
         UnstructuredAccount account = findAccount(userKey);
         if (account == null) {
             account = createAccount(userKey);
@@ -109,10 +122,14 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
                 final UnstructuredWriteToken token = new UnstructuredWriteToken();
                 token.setProvider(UnstructuredProvider.ALIYUN);
+                token.setAccountId(account.getId());
+                token.setAccountSecret(account.getSecret());
                 token.setHost(this.ossEndpoint);
                 token.setBucket(bucket);
+                if (path.endsWith(Strings.SLASH)) { // 阿里云限定路径不能以斜杠开头，返回给授权申请者的路径应遵循
+                    path = path.substring(1);
+                }
                 token.setPath(path);
-                token.setAccount(account);
                 return token;
             }
         }
@@ -249,6 +266,15 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
+    public void authorizePublicRead(final String bucket, String path) {
+        // 路径不能以斜杠开头
+        if (path.startsWith(Strings.SLASH)) {
+            path = path.substring(1);
+        }
+        getOss().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
+    }
+
+    @Override
     public void authorizeOnlyRead(final String userKey, final String bucket, final String path) {
 
     }
@@ -256,6 +282,13 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     @Override
     public void unauthorize(final String userKey, final String bucket, final String path) {
 
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (this.oss != null) {
+            this.oss.shutdown();
+        }
     }
 
 }
