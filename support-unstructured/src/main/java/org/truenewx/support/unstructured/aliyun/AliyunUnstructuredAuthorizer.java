@@ -98,17 +98,23 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         if (account == null) {
             account = createAccount(userKey);
         }
-        final String policyName = ensureWritePolicy(bucket, path);
-        if (policyName != null) {
-            attachPolicy(policyName, userKey);
 
-            final UnstructuredWriteToken token = new UnstructuredWriteToken();
-            token.setProvider(UnstructuredProvider.ALIYUN);
-            token.setHost(this.ossEndpoint);
-            token.setBucket(bucket);
-            token.setPath(path);
-            token.setAccount(account);
-            return token;
+        final String readPolicyName = ensurePolicy(bucket, path, true);
+        if (readPolicyName != null) {
+            attachPolicy(readPolicyName, userKey);
+
+            final String writePolicyName = ensurePolicy(bucket, path, false);
+            if (writePolicyName != null) {
+                attachPolicy(writePolicyName, userKey);
+
+                final UnstructuredWriteToken token = new UnstructuredWriteToken();
+                token.setProvider(UnstructuredProvider.ALIYUN);
+                token.setHost(this.ossEndpoint);
+                token.setBucket(bucket);
+                token.setPath(path);
+                token.setAccount(account);
+                return token;
+            }
         }
         return null;
     }
@@ -195,8 +201,10 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         return null;
     }
 
-    private String ensureWritePolicy(final String bucket, final String path) {
-        final String policyName = this.policyBuilder.buildName("RW-", bucket, path);
+    private String ensurePolicy(final String bucket, final String path, final boolean read) {
+        final String type = read ? "Read" : "Write";
+        final String policyName = this.policyBuilder.buildName(type + "-", bucket, path);
+
         final GetPolicyRequest getPolicyRequest = new GetPolicyRequest();
         getPolicyRequest.setPolicyType("Custom");
         getPolicyRequest.setPolicyName(policyName);
@@ -215,9 +223,10 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         // 创建授权方针
         final CreatePolicyRequest createPolicyRequest = new CreatePolicyRequest();
         createPolicyRequest.setPolicyName(policyName);
-        final String policyDocument = this.policyBuilder.buildReadWriteDocument(bucket, path);
+        final String policyDocument = read ? this.policyBuilder.buildReadDocument(bucket, path)
+                : this.policyBuilder.buildWriteDocument(bucket, path);
         createPolicyRequest.setPolicyDocument(policyDocument);
-        createPolicyRequest.setDescription("Read and write for " + bucket + ":" + path);
+        createPolicyRequest.setDescription(type + " for " + bucket + ":" + path);
         try {
             getAcsClient().doAction(createPolicyRequest);
             return policyName;

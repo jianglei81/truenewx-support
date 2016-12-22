@@ -17,8 +17,10 @@ import org.truenewx.core.util.JsonUtil;
  */
 public class AliyunPolicyBuilder {
 
-    private static String[] READ_WRITE_OBJECT_ACTION_NAMES = { "GetObject", "PutObject",
-            "DeleteObject", "AbortMultipartUpload", "ListParts" };
+    private static String[] READ_OBJECT_ACTION_NAMES = { "GetObject", "ListParts" };
+
+    private static String[] WRITE_OBJECT_ACTION_NAMES = { "PutObject", "DeleteObject",
+            "AbortMultipartUpload" };
 
     private String accountId;
 
@@ -30,8 +32,12 @@ public class AliyunPolicyBuilder {
         return prefix + bucket + Strings.MINUS + Md5Encrypter.encrypt32(path); // 加密路径以确保无特殊字符
     }
 
-    public String buildReadWriteDocument(final String bucket, final String path) {
-        return buildDocument(bucket, path, READ_WRITE_OBJECT_ACTION_NAMES);
+    public String buildReadDocument(final String bucket, final String path) {
+        return buildDocument(bucket, path, READ_OBJECT_ACTION_NAMES);
+    }
+
+    public String buildWriteDocument(final String bucket, final String path) {
+        return buildDocument(bucket, path, WRITE_OBJECT_ACTION_NAMES);
     }
 
     public String buildDocument(final String bucket, final String path,
