@@ -8,9 +8,9 @@ import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
  * @author jianglei
  *
  */
-public interface UnstructuredAuthorizeController<T extends Enum<T>> {
+public interface UnstructuredControllerTemplate<T extends Enum<T>> {
 
-    UnstructuredWriteToken authorizeWrite(final T authorizeType);
+    UnstructuredWriteToken authorizePrivateWrite(final T authorizeType);
 
     void authorizePublicRead(final T authorizeType, final String filename);
 

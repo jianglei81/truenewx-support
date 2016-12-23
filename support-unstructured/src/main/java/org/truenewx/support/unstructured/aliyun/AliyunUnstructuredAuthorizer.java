@@ -1,14 +1,16 @@
 package org.truenewx.support.unstructured.aliyun;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
 import org.truenewx.support.unstructured.UnstructuredAuthorizer;
-import org.truenewx.support.unstructured.model.UnstructuredAccount;
+import org.truenewx.support.unstructured.UnstructuredUrlBuilder;
+import org.truenewx.support.unstructured.model.UnstructuredAccess;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
-import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
@@ -29,6 +31,7 @@ import com.aliyuncs.ram.model.v20150501.GetPolicyRequest;
 import com.aliyuncs.ram.model.v20150501.GetPolicyResponse;
 import com.aliyuncs.ram.model.v20150501.ListAccessKeysRequest;
 import com.aliyuncs.ram.model.v20150501.ListAccessKeysResponse;
+import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 
 /**
  * 阿里云的非结构化存储授权器
@@ -36,7 +39,8 @@ import com.aliyuncs.ram.model.v20150501.ListAccessKeysResponse;
  * @author jianglei
  *
  */
-public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
+public class AliyunUnstructuredAuthorizer
+        implements UnstructuredAuthorizer, UnstructuredUrlBuilder {
 
     private OSS oss;
     private String ossEndpoint;
@@ -45,15 +49,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     private String adminAccessKeySecret;
     private IAcsClient acsClient;
     private AliyunPolicyBuilder policyBuilder;
+    private AliyunStsRoleAssumer stsRoleAssumer;
     private Map<String, String> accessKeys = new Hashtable<>();
-
-    /**
-     * @param accountId
-     *            云账号id
-     */
-    public AliyunUnstructuredAuthorizer(final String accountId) {
-        this.policyBuilder = new AliyunPolicyBuilder(accountId);
-    }
 
     /**
      * @param ossEndpoint
@@ -87,6 +84,29 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         this.adminAccessKeySecret = adminAccessKeySecret;
     }
 
+    /**
+     * @param policyBuilder
+     *            授权方针构建器
+     */
+    public void setPolicyBuilder(final AliyunPolicyBuilder policyBuilder) {
+        this.policyBuilder = policyBuilder;
+    }
+
+    /**
+     * @param stsRoleAssumer
+     *            STS临时角色假扮器
+     */
+    public void setStsRoleAssumer(final AliyunStsRoleAssumer stsRoleAssumer) {
+        this.stsRoleAssumer = stsRoleAssumer;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (this.oss != null) {
+            this.oss.shutdown();
+        }
+    }
+
     private OSS getOss() {
         if (this.oss == null) {
             this.oss = new OSSClient(this.ossEndpoint, this.adminAccessKeyId,
@@ -105,38 +125,44 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public UnstructuredWriteToken authorizeWrite(final String userKey, final String bucket,
-            String path) {
-        UnstructuredAccount account = findAccount(userKey);
-        if (account == null) {
-            account = createAccount(userKey);
-        }
-
-        path = standardizePath(path);
-        final String policyName = ensureWritePolicy(bucket, path);
-        if (policyName != null) {
-            attachPolicy(policyName, userKey);
-
-            final UnstructuredWriteToken token = new UnstructuredWriteToken();
-            token.setProvider(UnstructuredProvider.ALIYUN);
-            token.setAccountId(account.getId());
-            token.setAccountSecret(account.getSecret());
-            token.setHost(this.ossEndpoint);
-            token.setBucket(bucket);
-            token.setPath(path);
-            return token;
-        }
-        return null;
+    public UnstructuredProvider getProvider() {
+        return UnstructuredProvider.ALIYUN;
     }
 
-    private String standardizePath(final String path) {
-        if (path.startsWith(Strings.SLASH)) {
+    @Override
+    public String getHost() {
+        return this.ossEndpoint;
+    }
+
+    @Override
+    public String standardizePath(final String path) {
+        if (path.startsWith(Strings.SLASH)) { // 不能以斜杠开头
             return path.substring(1);
         }
         return path;
     }
 
-    private UnstructuredAccount findAccount(final String userKey) {
+    @Override
+    public UnstructuredAccess authorizePrivateWrite(final String userKey, final String bucket,
+            final String path) {
+        final UnstructuredAccess access = ensureAccess(userKey);
+        final String policyName = ensureWritePolicy(bucket, path);
+        if (policyName != null) {
+            attachPolicy(policyName, userKey);
+            return access;
+        }
+        return null;
+    }
+
+    private UnstructuredAccess ensureAccess(final String userKey) {
+        UnstructuredAccess access = findAccess(userKey);
+        if (access == null) {
+            access = createAccess(userKey);
+        }
+        return access;
+    }
+
+    private UnstructuredAccess findAccess(final String userKey) {
         final ListAccessKeysRequest request = new ListAccessKeysRequest();
         request.setUserName(userKey);
         try {
@@ -164,9 +190,9 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                 id = accessKey.getAccessKeyId();
                 secret = accessKey.getAccessKeySecret();
             }
-            final UnstructuredAccount account = new UnstructuredAccount();
-            account.setId(id);
-            account.setSecret(secret);
+            final UnstructuredAccess account = new UnstructuredAccess();
+            account.setAccessId(id);
+            account.setAccessSecret(secret);
             return account;
         } catch (final ClientException e) {
             if (!"EntityNotExist.User".equals(e.getErrCode())) {
@@ -199,7 +225,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         return accessKey;
     }
 
-    private UnstructuredAccount createAccount(final String userKey) {
+    private UnstructuredAccess createAccess(final String userKey) {
         try {
             // 创建用户
             final CreateUserRequest createUserRequest = new CreateUserRequest();
@@ -207,11 +233,11 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
             getAcsClient().doAction(createUserRequest);
 
             final CreateAccessKeyResponse.AccessKey accessKey = createAccessKey(userKey);
-            final UnstructuredAccount account = new UnstructuredAccount();
-            account.setId(accessKey.getAccessKeyId());
-            account.setSecret(accessKey.getAccessKeySecret());
+            final UnstructuredAccess access = new UnstructuredAccess();
+            access.setAccessId(accessKey.getAccessKeyId());
+            access.setAccessSecret(accessKey.getAccessKeySecret());
 
-            return account;
+            return access;
         } catch (final ClientException e) {
             e.printStackTrace();
         }
@@ -265,19 +291,35 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public void authorizePublicRead(final String bucket, String path) {
-        // 路径不能以斜杠开头
-        if (path.startsWith(Strings.SLASH)) {
-            path = path.substring(1);
-        }
+    public void authorizePublicRead(final String bucket, final String path) {
         getOss().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        if (this.oss != null) {
-            this.oss.shutdown();
+    public Map<String, Object> authorizeTempRead(final String userKey, final String bucket,
+            final String path) {
+        final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
+        final Credentials credentials = this.stsRoleAssumer.assumeRole(getAcsClient(), userKey,
+                policyDocument);
+        final Map<String, Object> params = new HashMap<>();
+        if (credentials != null) {
+            credentials.getExpiration();
         }
+        return params;
+    }
+
+    @Override
+    public String buildUrl(final String protocol, final String bucket, final String path) {
+        final StringBuffer url = new StringBuffer();
+        if (StringUtils.isNotBlank(protocol)) {
+            url.append(protocol.toLowerCase()).append(Strings.COLON);
+        }
+        url.append("//").append(bucket).append(Strings.DOT).append(this.ossEndpoint);
+        if (!path.startsWith(Strings.SLASH)) {
+            url.append(Strings.SLASH);
+        }
+        url.append(path);
+        return url.toString();
     }
 
 }

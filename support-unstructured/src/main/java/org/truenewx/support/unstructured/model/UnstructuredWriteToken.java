@@ -6,22 +6,12 @@ package org.truenewx.support.unstructured.model;
  * @author jianglei
  *
  */
-public class UnstructuredWriteToken {
+public class UnstructuredWriteToken extends UnstructuredAccess {
 
     /**
      * 服务商
      */
     private UnstructuredProvider provider;
-
-    /**
-     * 授权账号id
-     */
-    private String accountId;
-
-    /**
-     * 授权账号密钥
-     */
-    private String accountSecret;
 
     /**
      * 存储主机路径
@@ -61,36 +51,6 @@ public class UnstructuredWriteToken {
      */
     public void setProvider(final UnstructuredProvider provider) {
         this.provider = provider;
-    }
-
-    /**
-     * @return 授权账号id
-     */
-    public String getAccountId() {
-        return this.accountId;
-    }
-
-    /**
-     * @param accountId
-     *            授权账号id
-     */
-    public void setAccountId(final String accountId) {
-        this.accountId = accountId;
-    }
-
-    /**
-     * @return 授权账号密钥
-     */
-    public String getAccountSecret() {
-        return this.accountSecret;
-    }
-
-    /**
-     * @param accountSecret
-     *            授权账号密钥
-     */
-    public void setAccountSecret(final String accountSecret) {
-        this.accountSecret = accountSecret;
     }
 
     /**

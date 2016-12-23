@@ -1,6 +1,9 @@
 package org.truenewx.support.unstructured;
 
-import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
+import java.util.Map;
+
+import org.truenewx.support.unstructured.model.UnstructuredAccess;
+import org.truenewx.support.unstructured.model.UnstructuredProvider;
 
 /**
  * 非结构化存储授权器
@@ -11,7 +14,28 @@ import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
 public interface UnstructuredAuthorizer {
 
     /**
-     * 指定用户获取指定资源的写权限
+     * 获取当前授权器的服务商
+     *
+     * @return 服务商
+     */
+    UnstructuredProvider getProvider();
+
+    /**
+     * @return 服务主机地址
+     */
+    String getHost();
+
+    /**
+     * 标准化资源路径，使其符合服务商的规则
+     *
+     * @param path
+     *            资源路径
+     * @return 标准化后的资源路径
+     */
+    String standardizePath(final String path);
+
+    /**
+     * 授权指定用户获取指定资源的私有写权限
      *
      * @param userKey
      *            用户唯一标识
@@ -19,12 +43,12 @@ public interface UnstructuredAuthorizer {
      *            存储桶名称
      * @param path
      *            资源路径
-     * @return 授权后令牌，授权失败将返回null
+     * @return 写访问参数，授权失败将返回null
      */
-    UnstructuredWriteToken authorizeWrite(String userKey, String bucket, String path);
+    UnstructuredAccess authorizePrivateWrite(String userKey, String bucket, String path);
 
     /**
-     * 公开指定资源可匿名读取
+     * 授权指定资源为公开可读
      *
      * @param bucket
      *            存储桶名称
@@ -32,5 +56,17 @@ public interface UnstructuredAuthorizer {
      *            资源路径
      */
     void authorizePublicRead(String bucket, String path);
+
+    /**
+     * 获取指定资源临时可读权限
+     * @param userKey TODO
+     * @param bucket
+     *            存储桶名称
+     * @param path
+     *            资源路径
+     *
+     * @return 临时可读权限信息
+     */
+    Map<String, Object> authorizeTempRead(String userKey, String bucket, String path);
 
 }
