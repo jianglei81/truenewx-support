@@ -1,20 +1,22 @@
 package org.truenewx.support.unstructured.aliyun;
 
-import java.util.HashMap;
+import java.net.URL;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
+import org.truenewx.core.util.DateUtil;
 import org.truenewx.support.unstructured.UnstructuredAuthorizer;
-import org.truenewx.support.unstructured.UnstructuredUrlBuilder;
 import org.truenewx.support.unstructured.model.UnstructuredAccess;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.CannedAccessControlList;
+import com.aliyun.oss.model.ObjectAcl;
+import com.aliyun.oss.model.ObjectPermission;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
@@ -39,14 +41,14 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
  * @author jianglei
  *
  */
-public class AliyunUnstructuredAuthorizer
-        implements UnstructuredAuthorizer, UnstructuredUrlBuilder {
+public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
     private OSS oss;
     private String ossEndpoint;
     private String ramRegion = "cn-hangzhou";
     private String adminAccessKeyId;
     private String adminAccessKeySecret;
+    private int tempReadExpiredSeconds = 10;
     private IAcsClient acsClient;
     private AliyunPolicyBuilder policyBuilder;
     private AliyunStsRoleAssumer stsRoleAssumer;
@@ -82,6 +84,14 @@ public class AliyunUnstructuredAuthorizer
      */
     public void setAdminAccessKeySecret(final String adminAccessKeySecret) {
         this.adminAccessKeySecret = adminAccessKeySecret;
+    }
+
+    /**
+     * @param tempReadExpiredSeconds
+     *            临时读取权限过期秒数
+     */
+    public void setTempReadExpiredSeconds(final int tempReadExpiredSeconds) {
+        this.tempReadExpiredSeconds = tempReadExpiredSeconds;
     }
 
     /**
@@ -295,31 +305,34 @@ public class AliyunUnstructuredAuthorizer
         getOss().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
     }
 
-    @Override
-    public Map<String, Object> authorizeTempRead(final String userKey, final String bucket,
-            final String path) {
-        final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
-        final Credentials credentials = this.stsRoleAssumer.assumeRole(getAcsClient(), userKey,
-                policyDocument);
-        final Map<String, Object> params = new HashMap<>();
-        if (credentials != null) {
-            credentials.getExpiration();
-        }
-        return params;
+    private boolean isPublicRead(final String bucket, final String path) {
+        final ObjectAcl acl = getOss().getObjectAcl(bucket, path);
+        final ObjectPermission permission = acl.getPermission();
+        return permission == ObjectPermission.PublicRead
+                || permission == ObjectPermission.PublicReadWrite;
     }
 
     @Override
-    public String buildUrl(final String protocol, final String bucket, final String path) {
-        final StringBuffer url = new StringBuffer();
-        if (StringUtils.isNotBlank(protocol)) {
-            url.append(protocol.toLowerCase()).append(Strings.COLON);
+    public String getReadHttpUrl(final String userKey, final String bucket, final String path) {
+        if (isPublicRead(bucket, path)) {
+            final StringBuffer url = new StringBuffer("http://").append(bucket).append(Strings.DOT)
+                    .append(this.ossEndpoint).append(Strings.SLASH).append(path);
+            return url.toString();
+        } else {
+            final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
+            final Credentials credentials = this.stsRoleAssumer.assumeRole(getAcsClient(), userKey,
+                    policyDocument);
+            if (credentials != null) {
+                final OSS oss = new OSSClient(this.ossEndpoint, credentials.getAccessKeyId(),
+                        credentials.getAccessKeySecret(), credentials.getSecurityToken());
+                final Date expiration = DateUtil.addSeconds(new Date(),
+                        this.tempReadExpiredSeconds);
+                final URL url = oss.generatePresignedUrl(bucket, path, expiration);
+                return url.toString();
+            }
+            return null;
         }
-        url.append("//").append(bucket).append(Strings.DOT).append(this.ossEndpoint);
-        if (!path.startsWith(Strings.SLASH)) {
-            url.append(Strings.SLASH);
-        }
-        url.append(path);
-        return url.toString();
+
     }
 
 }

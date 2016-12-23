@@ -1,7 +1,5 @@
 package org.truenewx.support.unstructured;
 
-import java.util.Map;
-
 import org.truenewx.support.unstructured.model.UnstructuredAccess;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
 
@@ -58,15 +56,17 @@ public interface UnstructuredAuthorizer {
     void authorizePublicRead(String bucket, String path);
 
     /**
-     * 获取指定资源临时可读权限
-     * @param userKey TODO
+     * 获取指定资源读取HTTP URL
+     *
+     * @param userKey
+     *            用户唯一标识
      * @param bucket
      *            存储桶名称
      * @param path
      *            资源路径
      *
-     * @return 临时可读权限信息
+     * @return 资源读取URL，以http://开头
      */
-    Map<String, Object> authorizeTempRead(String userKey, String bucket, String path);
+    String getReadHttpUrl(String userKey, String bucket, String path);
 
 }

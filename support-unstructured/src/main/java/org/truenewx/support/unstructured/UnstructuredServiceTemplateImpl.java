@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.Strings;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
-import org.truenewx.core.util.NetUtil;
 import org.truenewx.support.unstructured.model.UnstructuredAccess;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
 import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
@@ -23,7 +23,6 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, K extends Serial
 
     private Map<T, UnstructuredAuthorizePolicy<T, K>> policies = new HashMap<>();
     private Map<UnstructuredProvider, UnstructuredAuthorizer> authorizers = new HashMap<>();
-    private Map<UnstructuredProvider, UnstructuredUrlBuilder> urlBuilders = new HashMap<>();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
@@ -38,12 +37,6 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, K extends Serial
                 .getBeansOfType(UnstructuredAuthorizer.class);
         for (final UnstructuredAuthorizer authorizer : authorizers.values()) {
             this.authorizers.put(authorizer.getProvider(), authorizer);
-        }
-
-        final Map<String, UnstructuredUrlBuilder> urlBuilders = context
-                .getBeansOfType(UnstructuredUrlBuilder.class);
-        for (final UnstructuredUrlBuilder urlBuilder : urlBuilders.values()) {
-            this.urlBuilders.put(urlBuilder.getProvider(), urlBuilder);
         }
     }
 
@@ -112,24 +105,23 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, K extends Serial
             final int index2 = innerUrl.indexOf(Strings.SLASH, index1);
             if (index2 > 0) {
                 final String bucket = innerUrl.substring(index1, index2);
-                final String path = innerUrl.substring(index2);
+                String path = innerUrl.substring(index2);
 
                 final UnstructuredProvider provider = UnstructuredProvider
                         .valueOf(innerProtocol.toUpperCase());
-                final UnstructuredUrlBuilder urlBuilder = this.urlBuilders.get(provider);
-                final String url = urlBuilder.buildUrl(protocol, bucket, path);
 
                 final UnstructuredAuthorizePolicy<T, K> policy = this.policies.get(authorizeType);
-                if (policy.isPublicReadable(userId)) {
-                    return url;
-                }
-
-                // 非公开可读的，则获取临时读取授权
                 final String userKey = policy.getUserKey(userId);
                 final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
-                final Map<String, Object> params = authorizer.authorizeTempRead(userKey, bucket,
-                        path);
-                return NetUtil.mergeParams(url, params, null);
+                path = authorizer.standardizePath(path);
+                final String url = authorizer.getReadHttpUrl(userKey, bucket, path);
+                if (StringUtils.isBlank(protocol)) {
+                    return url.replace("http://", "//");
+                } else if ("https".equalsIgnoreCase(protocol)) {
+                    return url.replace("http://", "https://");
+                } else {
+                    return url;
+                }
             }
         }
         return innerUrl; // 默认返回原始URL
