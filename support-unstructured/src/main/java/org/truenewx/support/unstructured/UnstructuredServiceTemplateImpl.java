@@ -61,8 +61,9 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, K extends Serial
                 token.setHost(authorizer.getHost());
                 token.setBucket(bucket);
                 token.setPath(path);
-                token.setUrl(getInnerUrl(provider, bucket, path));
+                token.setInnerUrl(getInnerUrl(provider, bucket, path));
                 token.setPublicReadable(policy.isPublicReadable(userId));
+                token.setRegion(authorizer.getRegion());
                 return token;
             }
         }

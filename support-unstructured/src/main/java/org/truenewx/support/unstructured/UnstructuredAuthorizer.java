@@ -12,6 +12,15 @@ import org.truenewx.support.unstructured.model.UnstructuredProvider;
 public interface UnstructuredAuthorizer {
 
     /**
+     * 获取oss地区
+     *
+     * @author liaozhan
+     *
+     * @return
+     */
+    String getRegion();
+
+    /**
      * 获取当前授权器的服务商
      *
      * @return 服务商

@@ -17,10 +17,10 @@ import org.truenewx.core.util.JsonUtil;
  */
 public class AliyunPolicyBuilder {
 
-    private static String[] READ_OBJECT_ACTION_NAMES = { "GetObject", "ListParts" };
+    private static String[] READ_OBJECT_ACTION_NAMES = { "GetObject", "GetObjectAcl", "ListParts" };
 
-    private static String[] WRITE_OBJECT_ACTION_NAMES = { "PutObject", "DeleteObject",
-            "AbortMultipartUpload" };
+    private static String[] WRITE_OBJECT_ACTION_NAMES = { "PutObject", "PutObjectAcl",
+            "DeleteObject", "AbortMultipartUpload" };
 
     private String accountId;
 

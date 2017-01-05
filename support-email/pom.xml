@@ -22,7 +22,6 @@
         <dependency>
             <groupId>org.truenewx</groupId>
             <artifactId>truenewx-core</artifactId>
-            <version>${truenewx.version}</version>
         </dependency>
         <dependency>
             <groupId>org.truenewx.support.batch</groupId>
