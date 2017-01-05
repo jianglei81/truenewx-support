@@ -1,4 +1,4 @@
-package org.truenewx.support.sms.alidayu;
+package org.truenewx.support.sms.aliyun;
 
 import java.util.Locale;
 import java.util.Map;
@@ -7,16 +7,16 @@ import org.truenewx.core.util.JsonUtil;
 import org.truenewx.support.sms.SmsContentProvider;
 
 /**
- * 阿里大鱼短信内容提供者
+ * 阿里云短信内容提供者
  *
  * @author jianglei
  *
  */
-public class AlidayuSmsContentProvider implements SmsContentProvider {
+public class AliyunSmsContentProvider implements SmsContentProvider {
 
     private String type;
 
-    public AlidayuSmsContentProvider(final String type) {
+    public AliyunSmsContentProvider(final String type) {
         this.type = type;
     }
 

@@ -3,9 +3,9 @@ package org.truenewx.support.unstructured.aliyun;
 import java.net.URL;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.DateUtil;
 import org.truenewx.support.unstructured.UnstructuredAuthorizer;
@@ -20,6 +20,7 @@ import com.aliyun.oss.model.ObjectPermission;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.exceptions.ServerException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.aliyuncs.ram.model.v20150501.AttachPolicyToUserRequest;
@@ -44,6 +45,7 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
     private OSS oss;
+    private String ossRegion;
     private String ossEndpoint;
     private String ramRegion = "cn-hangzhou";
     private String adminAccessKeyId;
@@ -52,14 +54,22 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     private IAcsClient acsClient;
     private AliyunPolicyBuilder policyBuilder;
     private AliyunStsRoleAssumer stsRoleAssumer;
-    private Map<String, String> accessKeys = new Hashtable<>();
+    private Map<String, UnstructuredAccess> accesses = new Hashtable<>();
 
     /**
-     * @param ossEndpoint
-     *            OSS服务端点
+     *
+     * @author liaozhan
+     *
+     * @param ossRegion
+     *            OSS地区
      */
-    public void setOssEndpoint(final String ossEndpoint) {
-        this.ossEndpoint = ossEndpoint;
+    public void setOssRegion(final String ossRegion) {
+        this.ossRegion = ossRegion;
+        if (StringUtils.isNotBlank(this.ossRegion)) {
+            this.ossEndpoint = this.ossRegion + ".aliyuncs.com";
+        } else {
+            this.ossEndpoint = null;
+        }
     }
 
     /**
@@ -165,93 +175,73 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     private UnstructuredAccess ensureAccess(final String userKey) {
-        UnstructuredAccess access = findAccess(userKey);
-        if (access == null) {
-            access = createAccess(userKey);
+        final UnstructuredAccess access = this.accesses.get(userKey);
+        if (access != null) {
+            return access;
         }
-        return access;
-    }
-
-    private UnstructuredAccess findAccess(final String userKey) {
-        final ListAccessKeysRequest request = new ListAccessKeysRequest();
-        request.setUserName(userKey);
+        // 未缓存该用户的密钥，则创建新的密钥
         try {
-            final ListAccessKeysResponse response = getAcsClient().getAcsResponse(request);
-            final List<ListAccessKeysResponse.AccessKey> accessKeys = response.getAccessKeys();
-            String id = null;
-            String secret = null;
-            for (final ListAccessKeysResponse.AccessKey accessKey : accessKeys) {
-                final String accessKeyId = accessKey.getAccessKeyId();
-                if ("Active".equals(accessKey.getStatus())) {
-                    final String accessKeySecret = this.accessKeys.get(accessKeyId);
-                    if (accessKeySecret != null) {
-                        id = accessKeyId;
-                        secret = accessKeySecret;
-                        break;
-                    } else { // 删除本地未缓存的密钥，因为该密钥已经无法动态获取并使用
-                        deleteAccessKey(userKey, accessKeyId);
-                    }
-                } else { // 禁用的也删除
-                    deleteAccessKey(userKey, accessKeyId);
-                }
-            }
-            if (secret == null) { // 未找到有缓存的密钥，则创建新的密钥
-                final AccessKey accessKey = createAccessKey(userKey);
-                id = accessKey.getAccessKeyId();
-                secret = accessKey.getAccessKeySecret();
-            }
-            final UnstructuredAccess account = new UnstructuredAccess();
-            account.setAccessId(id);
-            account.setAccessSecret(secret);
-            return account;
+            // 先删除该用户的所有已有密钥，避免数量超过阿里云限制
+            deleteAllAccessKeys(userKey);
         } catch (final ClientException e) {
-            if (!"EntityNotExist.User".equals(e.getErrCode())) {
+            if ("EntityNotExist.User".equals(e.getErrCode())) { // 用户不存在，则创建用户
+                if (!createUser(userKey)) { // 用户创建失败，则直接返回null
+                    return null;
+                }
+            } else { // 不是用户不存在的错误，则返回null
                 e.printStackTrace();
+                return null;
             }
         }
-        return null;
-    }
-
-    private void deleteAccessKey(final String userKey, final String accessKeyId) {
-        final DeleteAccessKeyRequest request = new DeleteAccessKeyRequest();
-        request.setUserName(userKey);
-        request.setUserAccessKeyId(accessKeyId);
-        try {
-            getAcsClient().doAction(request);
-        } catch (final ClientException e) { // 删除失败并不影响整体逻辑
-            e.printStackTrace();
-        }
-    }
-
-    private CreateAccessKeyResponse.AccessKey createAccessKey(final String userKey)
-            throws ClientException {
-        // 创建访问密钥
-        final CreateAccessKeyRequest createAccessKeyRequest = new CreateAccessKeyRequest();
-        createAccessKeyRequest.setUserName(userKey);
-        final CreateAccessKeyResponse response = getAcsClient()
-                .getAcsResponse(createAccessKeyRequest);
-        final AccessKey accessKey = response.getAccessKey();
-        this.accessKeys.put(accessKey.getAccessKeyId(), accessKey.getAccessKeySecret());
-        return accessKey;
+        // 此处可确保用户存在但没有密钥，此时创建密钥
+        return createAccess(userKey);
     }
 
     private UnstructuredAccess createAccess(final String userKey) {
+        final CreateAccessKeyRequest request = new CreateAccessKeyRequest();
+        request.setUserName(userKey);
         try {
-            // 创建用户
-            final CreateUserRequest createUserRequest = new CreateUserRequest();
-            createUserRequest.setUserName(userKey);
-            getAcsClient().doAction(createUserRequest);
-
-            final CreateAccessKeyResponse.AccessKey accessKey = createAccessKey(userKey);
+            final CreateAccessKeyResponse response = getAcsClient().getAcsResponse(request);
+            final AccessKey accessKey = response.getAccessKey();
             final UnstructuredAccess access = new UnstructuredAccess();
             access.setAccessId(accessKey.getAccessKeyId());
             access.setAccessSecret(accessKey.getAccessKeySecret());
-
+            // 缓存密钥
+            this.accesses.put(userKey, access);
             return access;
         } catch (final ClientException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void deleteAllAccessKeys(final String userKey) throws ServerException, ClientException {
+        final ListAccessKeysRequest listAccessKeysRequest = new ListAccessKeysRequest();
+        listAccessKeysRequest.setUserName(userKey);
+        final ListAccessKeysResponse response = getAcsClient()
+                .getAcsResponse(listAccessKeysRequest);
+        for (final ListAccessKeysResponse.AccessKey accessKey : response.getAccessKeys()) {
+            final DeleteAccessKeyRequest request = new DeleteAccessKeyRequest();
+            request.setUserName(userKey);
+            request.setUserAccessKeyId(accessKey.getAccessKeyId());
+            try {
+                getAcsClient().doAction(request);
+            } catch (final ClientException e) { // 删除失败并不影响整体逻辑
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private boolean createUser(final String userKey) {
+        final CreateUserRequest request = new CreateUserRequest();
+        request.setUserName(userKey);
+        try {
+            getAcsClient().doAction(request);
+            return true;
+        } catch (final ClientException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private String ensureWritePolicy(final String bucket, final String path) {
@@ -333,6 +323,11 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
             return null;
         }
 
+    }
+
+    @Override
+    public String getRegion() {
+        return this.ossRegion;
     }
 
 }

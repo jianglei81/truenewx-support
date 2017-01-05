@@ -1,5 +1,7 @@
 package org.truenewx.support.unstructured.model;
 
+import org.truenewx.core.annotation.Caption;
+
 /**
  * 非结构化存储写权限令牌
  *
@@ -8,35 +10,26 @@ package org.truenewx.support.unstructured.model;
  */
 public class UnstructuredWriteToken extends UnstructuredAccess {
 
-    /**
-     * 服务商
-     */
+    @Caption("服务商")
     private UnstructuredProvider provider;
 
-    /**
-     * 存储主机路径
-     */
+    @Caption("存储主机路径")
     private String host;
 
-    /**
-     * 存储桶名称
-     */
+    @Caption("存储桶名称")
     private String bucket;
 
-    /**
-     * 资源相对路径
-     */
+    @Caption("资源相对路径")
     private String path;
 
-    /**
-     * 资源完整URL
-     */
-    private String url;
+    @Caption("资源内部URL")
+    private String innerUrl;
 
-    /**
-     * 是否公开可读
-     */
+    @Caption("是否公开可读")
     private boolean publicReadable;
+
+    @Caption("地区")
+    private String region;
 
     /**
      * @return 服务商
@@ -99,18 +92,18 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
     }
 
     /**
-     * @return 资源完整URL
+     * @return 资源内部URL
      */
-    public String getUrl() {
-        return this.url;
+    public String getInnerUrl() {
+        return this.innerUrl;
     }
 
     /**
-     * @param url
-     *            资源完整URL
+     * @param innerUrl
+     *            资源内部URL
      */
-    public void setUrl(final String url) {
-        this.url = url;
+    public void setInnerUrl(final String innerUrl) {
+        this.innerUrl = innerUrl;
     }
 
     /**
@@ -128,4 +121,24 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
         this.publicReadable = publicReadable;
     }
 
+    /**
+     *
+     * @author liaozhan
+     *
+     * @return 地区
+     */
+    public String getRegion() {
+        return this.region;
+    }
+
+    /**
+     *
+     * @author liaozhan
+     *
+     * @param region
+     *            地区
+     */
+    public void setRegion(final String region) {
+        this.region = region;
+    }
 }

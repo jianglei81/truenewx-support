@@ -14,4 +14,5 @@ public interface UnstructuredControllerTemplate<T extends Enum<T>> {
 
     void authorizePublicRead(final T authorizeType, final String filename);
 
+    String getOuterUrl(final T authorizeType, String innerUrl, String protocol);
 }
