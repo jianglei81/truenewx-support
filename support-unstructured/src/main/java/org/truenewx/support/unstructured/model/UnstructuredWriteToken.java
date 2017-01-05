@@ -1,6 +1,7 @@
 package org.truenewx.support.unstructured.model;
 
 import org.truenewx.core.annotation.Caption;
+import org.truenewx.core.util.StringUtil;
 
 /**
  * 非结构化存储写权限令牌
@@ -9,6 +10,9 @@ import org.truenewx.core.annotation.Caption;
  *
  */
 public class UnstructuredWriteToken extends UnstructuredAccess {
+
+    @Caption("唯一标识一个令牌的32位UUID")
+    private String uuid;
 
     @Caption("服务商")
     private UnstructuredProvider provider;
@@ -30,6 +34,17 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
 
     @Caption("地区")
     private String region;
+
+    public UnstructuredWriteToken() {
+        this.uuid = StringUtil.uuid32();
+    }
+
+    /**
+     * @return 32位UUID
+     */
+    public String getUuid() {
+        return this.uuid;
+    }
 
     /**
      * @return 服务商

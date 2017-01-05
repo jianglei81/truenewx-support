@@ -25,59 +25,59 @@ public class JobConsoleController {
     @Autowired(required = false)
     private JobConsole jobConsole;
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public Collection<String> getJobNames() {
         return this.jobConsole.getJobNames();
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public Long start(final String jobName, final Properties params, final Serializable starter) {
         return this.jobConsole.start(jobName, params, starter);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public boolean stop(final long id) {
         return this.jobConsole.stop(id);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public void abandon(final long id) {
         this.jobConsole.abandon(id);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public Long restart(final long id) {
         return this.jobConsole.restart(id);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public DeviatedNumber<Integer> getTotal(final long id, final long timeout) {
         return this.jobConsole.getTotal(id, timeout);
     }
 
-    @RpcMethod(result = @RpcResult(filter = @RpcResultFilter(type = JobSummary.class,
-            excludes = { "uniqueStepProgress", "total", "successCount", "failureCount" })))
+    @RpcMethod(logined = false, result = @RpcResult(filter = @RpcResultFilter(type = JobSummary.class, excludes = {
+            "uniqueStepProgress", "total", "successCount", "failureCount" })))
     public JobSummary getSummary(final long id) {
         return this.jobConsole.getSummary(id);
     }
 
-    @RpcMethod(result = @RpcResult(filter = @RpcResultFilter(type = JobSummary.class,
-            includes = { "status", "total", "successCount", "failureCount" })))
+    @RpcMethod(logined = false, result = @RpcResult(filter = @RpcResultFilter(type = JobSummary.class, includes = {
+            "status", "total", "successCount", "failureCount" })))
     public JobSummary getCount(final long id) {
         return getSummary(id);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public Boolean isEnd(final long id) {
         return this.jobConsole.isEnd(id);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public int countRunning(final Serializable starter) {
         return this.jobConsole.countRunning(starter);
     }
 
-    @RpcMethod
+    @RpcMethod(logined = false)
     public List<JobSummary> findRunning(final Serializable starter) {
         return this.jobConsole.findRunning(starter);
     }
