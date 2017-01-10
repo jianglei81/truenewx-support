@@ -10,18 +10,20 @@ import org.truenewx.support.unstructured.model.UnstructuredProvider;
  * @author jianglei
  *
  */
-public interface UnstructuredAuthorizePolicy<T extends Enum<T>, K extends Serializable> {
+public interface UnstructuredAuthorizePolicy<AT extends Enum<AT>, UT extends Enum<UT>, UK extends Serializable> {
 
-    T getType();
+    AT getType();
 
     UnstructuredProvider getProvider();
 
-    String getUserKey(K userId);
+    String getUserKey(UK userId);
 
-    String getBucket(K userId);
+    String getBucket(UK userId);
 
-    String getPath(K userId, String filename);
+    String getPath(UK userId, String filename);
 
-    boolean isPublicReadable(K userId);
+    boolean isPublicReadable();
+
+    boolean isReadable(UT userType, UK userId, String path);
 
 }

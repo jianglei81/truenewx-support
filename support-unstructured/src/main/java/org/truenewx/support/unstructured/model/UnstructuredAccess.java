@@ -17,6 +17,14 @@ public class UnstructuredAccess {
      */
     private String accessSecret;
 
+    public UnstructuredAccess() {
+    }
+
+    public UnstructuredAccess(final String accessId, final String accessSecret) {
+        this.accessId = accessId;
+        this.accessSecret = accessSecret;
+    }
+
     /**
      * @return 授权访问id
      */

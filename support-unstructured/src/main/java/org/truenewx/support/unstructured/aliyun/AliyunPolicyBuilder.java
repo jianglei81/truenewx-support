@@ -22,10 +22,10 @@ public class AliyunPolicyBuilder {
     private static String[] WRITE_OBJECT_ACTION_NAMES = { "PutObject", "PutObjectAcl",
             "DeleteObject", "AbortMultipartUpload" };
 
-    private String accountId;
+    private AliyunAccount account;
 
-    public AliyunPolicyBuilder(final String accountId) {
-        this.accountId = accountId;
+    public AliyunPolicyBuilder(final AliyunAccount account) {
+        this.account = account;
     }
 
     public String buildName(final String prefix, final String bucket, final String path) {
@@ -78,8 +78,8 @@ public class AliyunPolicyBuilder {
     }
 
     private String buildResource(final String bucket, final String path) {
-        String resource = "acs:oss:*:" + this.accountId + Strings.COLON + bucket + Strings.SLASH
-                + path;
+        String resource = "acs:oss:*:" + this.account.getAccountId() + Strings.COLON + bucket
+                + Strings.SLASH + path;
         if (resource.endsWith(Strings.SLASH)) { // 为目录授权则追加*
             resource += Strings.ASTERISK;
         }
