@@ -1,7 +1,7 @@
 package org.truenewx.support.audit.data.model;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.truenewx.data.annotation.Redundant;
 import org.truenewx.data.model.unity.AbstractUnity;
@@ -25,7 +25,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
 
     private T type;
     private AuditStatus status;
-    @NotContainsSpecialChars
+    @NotContainsSpecialChars 
     private String reason;
     @NotContainsAngleBracket
     @NotContainsSqlChars
@@ -35,7 +35,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
     private Date applyTime;
     @Redundant
     private long lastAuditTime;
-    private List<? extends AuditLogUnity<T, A>> logs;
+    private Collection<? extends AuditLogUnity<T, A>> logs;
 
     public T getType() {
         return this.type;
@@ -102,11 +102,11 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
     }
 
     @SuppressWarnings("unchecked")
-    public <L extends AuditLogUnity<T, A>> List<L> getLogs() {
-        return (List<L>) this.logs;
+    public <L extends AuditLogUnity<T, A>> Collection<L> getLogs() {
+        return (Collection<L>) this.logs;
     }
 
-    protected <L extends AuditLogUnity<T, A>> void setLogs(final List<L> logs) {
+    protected <L extends AuditLogUnity<T, A>> void setLogs(final Collection<L> logs) {
         this.logs = logs;
     }
 

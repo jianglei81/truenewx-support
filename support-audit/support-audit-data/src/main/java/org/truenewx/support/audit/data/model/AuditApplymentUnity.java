@@ -1,6 +1,6 @@
 package org.truenewx.support.audit.data.model;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +13,7 @@ import org.truenewx.data.model.unity.OwnedUnity;
  * @author jianglei
  * @since JDK 1.8
  * @param <T>
- *            申请类型的枚举类型
+ *            申请类型的枚举类型 
  * @param <A>
  *            审核者类型
  */
@@ -33,7 +33,7 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
     @SuppressWarnings("unchecked")
     public <L extends AuditLogUnity<T, A>> L getLastLog() {
         AuditLogUnity<T, A> last = null;
-        final List<AuditLogUnity<T, A>> logs = getLogs();
+        final Collection<AuditLogUnity<T, A>> logs = getLogs();
         if (logs != null) {
             for (final AuditLogUnity<T, A> log : getLogs()) {
                 if (last == null || log.getCreateTime().after(last.getCreateTime())) {
