@@ -119,17 +119,19 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
                     final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
                     path = authorizer.standardizePath(path);
                     final String url = authorizer.getReadHttpUrl(userKey, bucket, path);
-                    if (StringUtils.isBlank(protocol)) {
-                        return url.replace("http://", "//");
-                    } else if ("https".equalsIgnoreCase(protocol)) {
-                        return url.replace("http://", "https://");
-                    } else {
-                        return url;
+                    if (url != null) {
+                        if (StringUtils.isBlank(protocol)) {
+                            return url.replace("http://", "//");
+                        } else if ("https".equalsIgnoreCase(protocol)) {
+                            return url.replace("http://", "https://");
+                        } else {
+                            return url;
+                        }
                     }
                 }
             }
         }
-        return innerUrl; // 默认返回原始URL
+        return null;
     }
 
 }

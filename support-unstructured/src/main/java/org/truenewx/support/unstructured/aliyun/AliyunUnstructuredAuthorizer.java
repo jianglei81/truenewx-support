@@ -178,25 +178,30 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
             paramString = path.substring(index);
             path = path.substring(0, index);
         }
-        if (isPublicRead(bucket, path)) {
-            final StringBuffer url = new StringBuffer("http://").append(bucket).append(Strings.DOT)
-                    .append(this.account.getOssEndpoint()).append(Strings.SLASH).append(path);
-            return url.toString() + paramString;
-        } else { // 非公开可读的，授予临时读取权限
-            final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
-            final Credentials credentials = this.stsRoleAssumer.assumeRole(userKey, policyDocument);
-            if (credentials != null) {
-                final OSS oss = new OSSClient(this.account.getOssEndpoint(),
-                        credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
-                        credentials.getSecurityToken());
-                final Date expiration = DateUtil.addSeconds(new Date(),
-                        this.tempReadExpiredSeconds);
-                final URL url = oss.generatePresignedUrl(bucket, path, expiration);
+        try {
+            if (isPublicRead(bucket, path)) {
+                final StringBuffer url = new StringBuffer("http://").append(bucket)
+                        .append(Strings.DOT).append(this.account.getOssEndpoint())
+                        .append(Strings.SLASH).append(path);
                 return url.toString() + paramString;
+            } else { // 非公开可读的，授予临时读取权限
+                final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
+                final Credentials credentials = this.stsRoleAssumer.assumeRole(userKey,
+                        policyDocument);
+                if (credentials != null) {
+                    final OSS oss = new OSSClient(this.account.getOssEndpoint(),
+                            credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
+                            credentials.getSecurityToken());
+                    final Date expiration = DateUtil.addSeconds(new Date(),
+                            this.tempReadExpiredSeconds);
+                    final URL url = oss.generatePresignedUrl(bucket, path, expiration);
+                    return url.toString() + paramString;
+                }
             }
-            return null;
+        } catch (final com.aliyun.oss.ClientException e) {
+            e.printStackTrace();
         }
-
+        return null;
     }
 
 }
