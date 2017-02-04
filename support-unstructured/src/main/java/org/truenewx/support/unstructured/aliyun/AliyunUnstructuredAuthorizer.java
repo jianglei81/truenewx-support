@@ -198,7 +198,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                     return url.toString() + paramString;
                 }
             }
-        } catch (final com.aliyun.oss.ClientException e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         return null;
