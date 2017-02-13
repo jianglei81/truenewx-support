@@ -14,7 +14,7 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 public class AliyunStsRoleAssumer {
 
     private String roleArn;
-    private long durationSeconds = 60 * 15l;
+    private long durationSeconds = 60 * 30l;
     private AliyunAccount account;
 
     /**

@@ -14,11 +14,6 @@ import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.ObjectAcl;
 import com.aliyun.oss.model.ObjectPermission;
-import com.aliyuncs.exceptions.ClientException;
-import com.aliyuncs.ram.model.v20150501.AttachPolicyToUserRequest;
-import com.aliyuncs.ram.model.v20150501.CreatePolicyRequest;
-import com.aliyuncs.ram.model.v20150501.GetPolicyRequest;
-import com.aliyuncs.ram.model.v20150501.GetPolicyResponse;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
 
 /**
@@ -29,11 +24,10 @@ import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
  */
 public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
-    private int tempReadExpiredSeconds = 30;
+    private int tempReadExpiredSeconds = 30; // 默认30秒钟
     private AliyunAccount account;
     private AliyunPolicyBuilder policyBuilder;
     private AliyunStsRoleAssumer stsRoleAssumer;
-    private AliyunUnstructuredAccessProvider accessProvider;
 
     /**
      * @param tempReadExpiredSeconds
@@ -67,14 +61,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         this.stsRoleAssumer = stsRoleAssumer;
     }
 
-    /**
-     * @param accessProvider
-     *            访问参数提供者
-     */
-    public void setAccessProvider(final AliyunUnstructuredAccessProvider accessProvider) {
-        this.accessProvider = accessProvider;
-    }
-
     @Override
     public UnstructuredProvider getProvider() {
         return UnstructuredProvider.ALIYUN;
@@ -101,61 +87,13 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     @Override
     public UnstructuredAccess authorizePrivateWrite(final String userKey, final String bucket,
             final String path) {
-        final UnstructuredAccess access = this.accessProvider.getUnstructuredAccess(userKey);
-        if (access != null) { // 出现底层错误时会为null
-            final String policyName = ensureWritePolicy(bucket, path);
-            if (policyName != null) {
-                attachPolicy(policyName, userKey);
-                return access;
-            }
-        }
-        return null;
-    }
-
-    private String ensureWritePolicy(final String bucket, final String path) {
-        final String policyName = this.policyBuilder.buildName("Write-", bucket, path);
-
-        final GetPolicyRequest getPolicyRequest = new GetPolicyRequest();
-        getPolicyRequest.setPolicyType("Custom");
-        getPolicyRequest.setPolicyName(policyName);
-        try {
-            final GetPolicyResponse getPolicyResponse = this.account.getAcsClient()
-                    .getAcsResponse(getPolicyRequest);
-            if (getPolicyResponse.getPolicy() != null) {
-                return policyName; // 已存在该授权方针，则直接返回
-            }
-        } catch (final ClientException e) {
-            if (!"EntityNotExist.Policy".equals(e.getErrCode())) {
-                e.printStackTrace();
-            }
-        }
-
-        // 创建授权方针
-        final CreatePolicyRequest createPolicyRequest = new CreatePolicyRequest();
-        createPolicyRequest.setPolicyName(policyName);
         final String policyDocument = this.policyBuilder.buildWriteDocument(bucket, path);
-        createPolicyRequest.setPolicyDocument(policyDocument);
-        createPolicyRequest
-                .setDescription("Write for " + bucket + Strings.COLON + path + Strings.ASTERISK);
-        try {
-            this.account.getAcsClient().doAction(createPolicyRequest);
-            return policyName;
-        } catch (final ClientException e) {
-            e.printStackTrace();
+        final Credentials credentials = this.stsRoleAssumer.assumeRole(userKey, policyDocument);
+        if (credentials != null) {
+            return new UnstructuredAccess(credentials.getAccessKeyId(),
+                    credentials.getAccessKeySecret());
         }
         return null;
-    }
-
-    private void attachPolicy(final String policyName, final String userKey) {
-        final AttachPolicyToUserRequest request = new AttachPolicyToUserRequest();
-        request.setPolicyType("Custom");
-        request.setPolicyName(policyName);
-        request.setUserName(userKey);
-        try {
-            this.account.getAcsClient().doAction(request);
-        } catch (final ClientException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
