@@ -57,6 +57,7 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
                 final UnstructuredWriteToken token = new UnstructuredWriteToken();
                 token.setAccessId(access.getAccessId());
                 token.setAccessSecret(access.getAccessSecret());
+                token.setTempToken(access.getTempToken());
                 token.setProvider(provider);
                 token.setHost(authorizer.getHost());
                 token.setBucket(bucket);

@@ -16,6 +16,10 @@ public class UnstructuredAccess {
      * 授权访问密钥
      */
     private String accessSecret;
+    /**
+     * 临时授权令牌
+     */
+    private String tempToken;
 
     public UnstructuredAccess() {
     }
@@ -53,6 +57,21 @@ public class UnstructuredAccess {
      */
     public void setAccessSecret(final String accessSecret) {
         this.accessSecret = accessSecret;
+    }
+
+    /**
+     * @return 临时授权令牌
+     */
+    public String getTempToken() {
+        return this.tempToken;
+    }
+
+    /**
+     * @param tempToken
+     *            临时授权令牌
+     */
+    public void setTempToken(final String tempToken) {
+        this.tempToken = tempToken;
     }
 
 }

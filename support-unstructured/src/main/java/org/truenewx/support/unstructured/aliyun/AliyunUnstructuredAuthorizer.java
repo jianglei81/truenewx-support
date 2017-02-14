@@ -27,7 +27,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     private int tempReadExpiredSeconds = 30; // 默认30秒钟
     private AliyunAccount account;
     private AliyunPolicyBuilder policyBuilder;
-    private AliyunStsRoleAssumer stsRoleAssumer;
+    private AliyunStsRoleAssumer readStsRoleAssumer;
+    private AliyunStsRoleAssumer writeStsRoleAssumer;
 
     /**
      * @param tempReadExpiredSeconds
@@ -54,11 +55,19 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     /**
-     * @param stsRoleAssumer
-     *            STS临时角色假扮器
+     * @param readStsRoleAssumer
+     *            读权限的STS临时角色假扮器
      */
-    public void setStsRoleAssumer(final AliyunStsRoleAssumer stsRoleAssumer) {
-        this.stsRoleAssumer = stsRoleAssumer;
+    public void setReadStsRoleAssumer(final AliyunStsRoleAssumer readStsRoleAssumer) {
+        this.readStsRoleAssumer = readStsRoleAssumer;
+    }
+
+    /**
+     * @param writeStsRoleAssumer
+     *            写权限的STS临时角色假扮器
+     */
+    public void setWriteStsRoleAssumer(final AliyunStsRoleAssumer writeStsRoleAssumer) {
+        this.writeStsRoleAssumer = writeStsRoleAssumer;
     }
 
     @Override
@@ -88,10 +97,13 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     public UnstructuredAccess authorizePrivateWrite(final String userKey, final String bucket,
             final String path) {
         final String policyDocument = this.policyBuilder.buildWriteDocument(bucket, path);
-        final Credentials credentials = this.stsRoleAssumer.assumeRole(userKey, policyDocument);
+        final Credentials credentials = this.writeStsRoleAssumer.assumeRole(userKey,
+                policyDocument);
         if (credentials != null) {
-            return new UnstructuredAccess(credentials.getAccessKeyId(),
+            final UnstructuredAccess access = new UnstructuredAccess(credentials.getAccessKeyId(),
                     credentials.getAccessKeySecret());
+            access.setTempToken(credentials.getSecurityToken());
+            return access;
         }
         return null;
     }
@@ -124,7 +136,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                 return url.toString() + paramString;
             } else { // 非公开可读的，授予临时读取权限
                 final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
-                final Credentials credentials = this.stsRoleAssumer.assumeRole(userKey,
+                final Credentials credentials = this.readStsRoleAssumer.assumeRole(userKey,
                         policyDocument);
                 if (credentials != null) {
                     final OSS oss = new OSSClient(this.account.getOssEndpoint(),
