@@ -1,5 +1,9 @@
 package org.truenewx.support.unstructured.model;
 
+import java.util.Date;
+
+import org.truenewx.core.annotation.Caption;
+
 /**
  * 非结构化存储访问参数
  *
@@ -8,18 +12,17 @@ package org.truenewx.support.unstructured.model;
  */
 public class UnstructuredAccess {
 
-    /**
-     * 授权访问id
-     */
+    @Caption("授权访问id")
     private String accessId;
-    /**
-     * 授权访问密钥
-     */
+
+    @Caption("授权访问密钥")
     private String accessSecret;
-    /**
-     * 临时授权令牌
-     */
+
+    @Caption("临时授权令牌")
     private String tempToken;
+
+    @Caption("临时授权过期时间")
+    private Date expiredTime;
 
     public UnstructuredAccess() {
     }
@@ -72,6 +75,21 @@ public class UnstructuredAccess {
      */
     public void setTempToken(final String tempToken) {
         this.tempToken = tempToken;
+    }
+
+    /**
+     * @return 临时授权过期时间
+     */
+    public Date getExpiredTime() {
+        return this.expiredTime;
+    }
+
+    /**
+     * @param expiredTime
+     *            临时授权过期时间
+     */
+    public void setExpiredTime(final Date expiredTime) {
+        this.expiredTime = expiredTime;
     }
 
 }

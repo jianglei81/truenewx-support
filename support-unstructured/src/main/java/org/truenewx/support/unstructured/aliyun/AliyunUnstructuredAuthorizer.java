@@ -103,9 +103,17 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
             final UnstructuredAccess access = new UnstructuredAccess(credentials.getAccessKeyId(),
                     credentials.getAccessKeySecret());
             access.setTempToken(credentials.getSecurityToken());
+            access.setExpiredTime(parseExpiredTime(credentials.getExpiration()));
             return access;
         }
         return null;
+    }
+
+    private Date parseExpiredTime(String expiration) {
+        expiration = expiration.replace("T", Strings.SPACE).replace("Z", Strings.EMPTY);
+        Date expiredTime = DateUtil.parseLong(expiration);
+        expiredTime = DateUtil.addHours(expiredTime, 8); // 必须添加8小时时区差
+        return expiredTime;
     }
 
     @Override

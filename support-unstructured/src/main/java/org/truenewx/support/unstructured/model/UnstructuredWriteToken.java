@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.model;
 
+import org.truenewx.core.Strings;
 import org.truenewx.core.annotation.Caption;
 import org.truenewx.core.util.StringUtil;
 
@@ -17,6 +18,9 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
     @Caption("服务商")
     private UnstructuredProvider provider;
 
+    @Caption("地区")
+    private String region;
+
     @Caption("存储主机路径")
     private String host;
 
@@ -26,14 +30,8 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
     @Caption("资源相对路径")
     private String path;
 
-    @Caption("资源内部URL")
-    private String innerUrl;
-
     @Caption("是否公开可读")
     private boolean publicReadable;
-
-    @Caption("地区")
-    private String region;
 
     public UnstructuredWriteToken() {
         this.uuid = StringUtil.uuid32();
@@ -59,6 +57,27 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
      */
     public void setProvider(final UnstructuredProvider provider) {
         this.provider = provider;
+    }
+
+    /**
+     *
+     * @author liaozhan
+     *
+     * @return 地区
+     */
+    public String getRegion() {
+        return this.region;
+    }
+
+    /**
+     *
+     * @author liaozhan
+     *
+     * @param region
+     *            地区
+     */
+    public void setRegion(final String region) {
+        this.region = region;
     }
 
     /**
@@ -107,21 +126,6 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
     }
 
     /**
-     * @return 资源内部URL
-     */
-    public String getInnerUrl() {
-        return this.innerUrl;
-    }
-
-    /**
-     * @param innerUrl
-     *            资源内部URL
-     */
-    public void setInnerUrl(final String innerUrl) {
-        this.innerUrl = innerUrl;
-    }
-
-    /**
      * @return 是否公开可读
      */
     public boolean isPublicReadable() {
@@ -136,24 +140,17 @@ public class UnstructuredWriteToken extends UnstructuredAccess {
         this.publicReadable = publicReadable;
     }
 
-    /**
-     *
-     * @author liaozhan
-     *
-     * @return 地区
-     */
-    public String getRegion() {
-        return this.region;
-    }
-
-    /**
-     *
-     * @author liaozhan
-     *
-     * @param region
-     *            地区
-     */
-    public void setRegion(final String region) {
-        this.region = region;
+    public String getInnerUrl() {
+        if (this.provider == null || this.bucket == null || this.path == null) { // 三者均不能为null
+            return null;
+        }
+        // 形如：${proivder}://${bucket}/${path}
+        final StringBuffer url = new StringBuffer(this.provider.name().toLowerCase()).append("://")
+                .append(this.bucket);
+        if (!this.path.startsWith(Strings.SLASH)) {
+            url.append(Strings.SLASH);
+        }
+        url.append(this.path);
+        return url.toString();
     }
 }

@@ -1,7 +1,6 @@
 package org.truenewx.support.unstructured;
 
-import java.io.Serializable;
-
+import org.truenewx.core.model.UserIdentity;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
 
 /**
@@ -10,20 +9,18 @@ import org.truenewx.support.unstructured.model.UnstructuredProvider;
  * @author jianglei
  *
  */
-public interface UnstructuredAuthorizePolicy<AT extends Enum<AT>, UT extends Enum<UT>, UK extends Serializable> {
+public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U extends UserIdentity> {
 
-    AT getType();
+    T getType();
 
     UnstructuredProvider getProvider();
 
-    String getUserKey(UK userId);
+    String getBucket(U user);
 
-    String getBucket(UK userId);
-
-    String getPath(UK userId, String filename);
+    String getPath(U user, String filename);
 
     boolean isPublicReadable();
 
-    boolean isReadable(UT userType, UK userId, String path);
+    boolean isReadable(U user, String path);
 
 }

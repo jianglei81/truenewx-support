@@ -1,12 +1,12 @@
 package org.truenewx.support.unstructured;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.Strings;
+import org.truenewx.core.model.UserIdentity;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.unstructured.model.UnstructuredAccess;
 import org.truenewx.support.unstructured.model.UnstructuredProvider;
@@ -18,10 +18,10 @@ import org.truenewx.support.unstructured.model.UnstructuredWriteToken;
  * @author jianglei
  *
  */
-public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enum<UT>, UK extends Serializable>
-        implements UnstructuredServiceTemplate<AT, UT, UK>, ContextInitializedBean {
+public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserIdentity>
+        implements UnstructuredServiceTemplate<T, U>, ContextInitializedBean {
 
-    private Map<AT, UnstructuredAuthorizePolicy<AT, UT, UK>> policies = new HashMap<>();
+    private Map<T, UnstructuredAuthorizePolicy<T, U>> policies = new HashMap<>();
     private Map<UnstructuredProvider, UnstructuredAuthorizer> authorizers = new HashMap<>();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -29,7 +29,7 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
     public void afterInitialized(final ApplicationContext context) throws Exception {
         final Map<String, UnstructuredAuthorizePolicy> policies = context
                 .getBeansOfType(UnstructuredAuthorizePolicy.class);
-        for (final UnstructuredAuthorizePolicy<AT, UT, UK> policy : policies.values()) {
+        for (final UnstructuredAuthorizePolicy<T, U> policy : policies.values()) {
             this.policies.put(policy.getType(), policy);
         }
 
@@ -41,15 +41,15 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
     }
 
     @Override
-    public UnstructuredWriteToken authorizePrivateWrite(final AT authorizeType, final UK userId) {
-        final UnstructuredAuthorizePolicy<AT, UT, UK> policy = this.policies.get(authorizeType);
+    public UnstructuredWriteToken authorizePrivateWrite(final T authorizeType, final U user) {
+        final UnstructuredAuthorizePolicy<T, U> policy = this.policies.get(authorizeType);
         if (policy != null) {
             final UnstructuredProvider provider = policy.getProvider();
             final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
 
-            final String userKey = policy.getUserKey(userId);
-            final String bucket = policy.getBucket(userId);
-            String path = policy.getPath(userId, null);
+            final String userKey = user.toString();
+            final String bucket = policy.getBucket(user);
+            String path = policy.getPath(user, null);
             path = authorizer.standardizePath(path);
             final UnstructuredAccess access = authorizer.authorizePrivateWrite(userKey, bucket,
                     path);
@@ -58,11 +58,11 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
                 token.setAccessId(access.getAccessId());
                 token.setAccessSecret(access.getAccessSecret());
                 token.setTempToken(access.getTempToken());
+                token.setExpiredTime(access.getExpiredTime());
                 token.setProvider(provider);
                 token.setHost(authorizer.getHost());
                 token.setBucket(bucket);
                 token.setPath(path);
-                token.setInnerUrl(getInnerUrl(provider, bucket, path));
                 token.setPublicReadable(policy.isPublicReadable());
                 token.setRegion(authorizer.getRegion());
                 return token;
@@ -72,9 +72,8 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
     }
 
     @Override
-    public void authorizePublicRead(final AT authorizeType, final UK userId,
-            final String filename) {
-        final UnstructuredAuthorizePolicy<AT, UT, UK> policy = this.policies.get(authorizeType);
+    public void authorizePublicRead(final T authorizeType, final U userId, final String filename) {
+        final UnstructuredAuthorizePolicy<T, U> policy = this.policies.get(authorizeType);
         if (policy != null) {
             final UnstructuredProvider provider = policy.getProvider();
             final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
@@ -86,21 +85,9 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
         }
     }
 
-    private String getInnerUrl(final UnstructuredProvider provider, final String bucket,
-            final String path) {
-        // 形如：${proivder}://${bucket}/${path}
-        final StringBuffer url = new StringBuffer(provider.name().toLowerCase()).append("://")
-                .append(bucket);
-        if (!path.startsWith(Strings.SLASH)) {
-            url.append(Strings.SLASH);
-        }
-        url.append(path);
-        return url.toString();
-    }
-
     @Override
-    public String getOuterUrl(final AT authorizeType, final UT userType, final UK userId,
-            final String innerUrl, final String protocol) {
+    public String getOuterUrl(final T authorizeType, final U user, final String innerUrl,
+            final String protocol) {
         int index1 = innerUrl.indexOf("://");
         if (index1 > 0) {
             final String innerProtocol = innerUrl.substring(0, index1);
@@ -113,10 +100,9 @@ public class UnstructuredServiceTemplateImpl<AT extends Enum<AT>, UT extends Enu
                 final UnstructuredProvider provider = UnstructuredProvider
                         .valueOf(innerProtocol.toUpperCase());
 
-                final UnstructuredAuthorizePolicy<AT, UT, UK> policy = this.policies
-                        .get(authorizeType);
-                if (policy.isReadable(userType, userId, path)) { // 指定用户必须可去读该授权类型下的资源
-                    final String userKey = policy.getUserKey(userId);
+                final UnstructuredAuthorizePolicy<T, U> policy = this.policies.get(authorizeType);
+                if (policy.isReadable(user, path)) { // 指定用户必须可去读该授权类型下的资源
+                    final String userKey = user.toString();
                     final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
                     path = authorizer.standardizePath(path);
                     final String url = authorizer.getReadHttpUrl(userKey, bucket, path);
