@@ -16,7 +16,6 @@ import org.truenewx.data.orm.dao.support.OqlUtil;
 import org.truenewx.data.orm.dao.support.hibernate.HibernateOwnedUnityDaoSupport;
 import org.truenewx.data.query.Comparison;
 import org.truenewx.data.query.QueryResult;
-import org.truenewx.data.query.QueryResultImpl;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.Auditor;
@@ -63,7 +62,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     public QueryResult<U> findByTypeStatusesMap(final Map<T, Set<AuditStatus>> typeStatusesMap,
             final int pageSize, final int pageNo) {
         if (typeStatusesMap.isEmpty()) { // 映射集不能为空，否则返回空结果
-            return new QueryResultImpl<>(new ArrayList<U>(), pageSize, pageNo, 0);
+            return new QueryResult<>(new ArrayList<U>(), pageSize, pageNo, 0);
         }
 
         final StringBuffer hql = new StringBuffer("from ").append(getEntityName())
@@ -80,7 +79,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
             hql.append(" order by applyTime");
             list = getHibernateTemplate().list(hql.toString(), params, pageSize, pageNo);
         }
-        return new QueryResultImpl<>(list, pageSize, pageNo, total);
+        return new QueryResult<>(list, pageSize, pageNo, total);
     }
 
     private void appendTypeStatusesMapCondition(final StringBuffer hql,
