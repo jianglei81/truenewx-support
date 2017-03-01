@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -11,8 +12,8 @@ import java.io.OutputStream;
  */
 public interface UnstructuredAccessor {
 
-    void write(String bucket, String path, InputStream in);
+    void write(String bucket, String path, InputStream in) throws IOException;
 
-    void read(String bucket, String path, OutputStream out);
+    void read(String bucket, String path, OutputStream out) throws IOException;
 
 }

@@ -1,10 +1,18 @@
 package org.truenewx.support.unstructured.core.local;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Executor;
 
-import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
+import org.truenewx.core.Strings;
+import org.truenewx.core.io.CompositeOutputStream;
+import org.truenewx.core.util.IOUtil;
+import org.truenewx.core.util.StringUtil;
 import org.truenewx.support.unstructured.core.UnstructuredAccessor;
 
 /**
@@ -15,16 +23,20 @@ import org.truenewx.support.unstructured.core.UnstructuredAccessor;
  */
 public class LocalUnstructuredAccessor implements UnstructuredAccessor {
 
-    private Resource root;
+    private File root;
     private UnstructuredAccessor remoteAccessor;
     private Executor executor;
 
-    /**
-     * @param root
-     *            存放文件的根目录
-     */
-    public void setRoot(final Resource root) {
-        this.root = root;
+    public LocalUnstructuredAccessor(final String root) {
+        final File file = new File(root);
+        if (!file.exists()) { // 目录不存在则创建
+            file.mkdirs();
+        } else { // 必须是个目录
+            Assert.isTrue(file.isDirectory());
+        }
+        Assert.isTrue(file.canRead() && file.canWrite());
+
+        this.root = file;
     }
 
     /**
@@ -44,15 +56,87 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
     }
 
     @Override
-    public void write(final String bucket, final String path, final InputStream in) {
-        // TODO Auto-generated method stub
+    public void write(final String bucket, final String path, final InputStream in)
+            throws IOException {
+        // 先上传内容到一个新建的临时文件中
+        final File tempFile = createTempFile(bucket, path);
+        final FileOutputStream out = new FileOutputStream(tempFile);
+        IOUtil.writeAll(in, out);
+        out.close();
 
+        // 然后删除原文件，修改临时文件名为原文件名
+        final File file = getStoreFile(bucket, path);
+        if (file.exists()) {
+            file.delete();
+        }
+        tempFile.renameTo(file);
+
+        // 写至远程服务器
+        writeToRemote(bucket, path, file);
+    }
+
+    private File getStoreFile(final String bucket, final String path) {
+        final String relativePath = standardize(bucket) + standardize(path);
+        final File file = new File(this.root, relativePath);
+        file.mkdirs(); // 确保目录存在
+        return file;
+    }
+
+    private File createTempFile(final String bucket, final String path) throws IOException {
+        // 形如：${正式文件名}_${32位UUID}.temp;
+        final String relativePath = standardize(bucket) + standardize(path) + Strings.UNDERLINE
+                + StringUtil.uuid32() + Strings.DOT + "temp";
+        final File file = new File(this.root, relativePath);
+        file.mkdirs(); // 确保目录存在
+        file.createNewFile(); // 创建新文件以写入内容
+        file.setWritable(true);
+        return file;
+    }
+
+    private String standardize(String path) {
+        // 必须以斜杠开头，不能以斜杠结尾
+        if (!path.startsWith(Strings.SLASH)) {
+            path = Strings.SLASH + path;
+        }
+        if (path.endsWith(Strings.SLASH)) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
+    private void writeToRemote(final String bucket, final String path, final File file) {
+        if (this.executor != null && this.remoteAccessor != null) {
+            this.executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final InputStream in = new FileInputStream(file);
+                        LocalUnstructuredAccessor.this.remoteAccessor.write(bucket, path, in);
+                        in.close();
+                    } catch (final IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 
     @Override
-    public void read(final String bucket, final String path, final OutputStream out) {
-        // TODO Auto-generated method stub
-
+    public void read(final String bucket, final String path, final OutputStream out)
+            throws IOException {
+        final File file = getStoreFile(bucket, path);
+        if (!file.exists()) { // 如果文件不存在，则需要从远程服务器读取内容，并缓存到本地文件
+            if (this.remoteAccessor != null) {
+                file.createNewFile();
+                final OutputStream fileOut = new FileOutputStream(file);
+                this.remoteAccessor.read(bucket, path, new CompositeOutputStream(out, fileOut));
+                fileOut.close();
+            }
+        } else {
+            final InputStream in = new FileInputStream(file);
+            IOUtil.writeAll(in, out);
+            in.close();
+        }
     }
 
 }

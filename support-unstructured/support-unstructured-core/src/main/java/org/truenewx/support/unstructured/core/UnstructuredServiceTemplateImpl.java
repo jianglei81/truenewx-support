@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.UserIdentity;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
+import org.truenewx.core.spring.util.SpringUtil;
 import org.truenewx.support.unstructured.core.model.UnstructuredAccessToken;
 import org.truenewx.support.unstructured.core.model.UnstructuredInnerUrl;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
@@ -28,10 +30,6 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
     private Map<UnstructuredProvider, UnstructuredAuthorizer> authorizers = new HashMap<>();
     private UnstructuredAccessor accessor;
 
-    public void setAccessor(final UnstructuredAccessor accessor) {
-        this.accessor = accessor;
-    }
-
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void afterInitialized(final ApplicationContext context) throws Exception {
@@ -46,6 +44,8 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
         for (final UnstructuredAuthorizer authorizer : authorizers.values()) {
             this.authorizers.put(authorizer.getProvider(), authorizer);
         }
+
+        this.accessor = SpringUtil.getFirstBeanByClass(context, UnstructuredAccessor.class);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
 
     @Override
     public String write(final T authorizeType, final U user, final String filename,
-            final InputStream in) throws BusinessException {
+            final InputStream in) throws BusinessException, IOException {
         final UnstructuredAuthorizePolicy<T, U> policy = this.policies.get(authorizeType);
         final UnstructuredProvider provider = policy.getProvider();
         if (provider == UnstructuredProvider.OWN) { // 自有的提供商才可调用本方法进行写操作
@@ -147,7 +147,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
 
     @Override
     public void read(final U user, final String bucket, final String path, final OutputStream out)
-            throws BusinessException {
+            throws BusinessException, IOException {
         // 遍历方针，找到匹配的方针
         for (final UnstructuredAuthorizePolicy<T, U> policy : this.policies.values()) {
             if (policy.getProvider() == UnstructuredProvider.OWN

@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -70,8 +71,11 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U extends UserId
      * @return 写好的文件的内部访问URL
      * @throws BusinessException
      *             如果没有写权限
+     * @throws IOException
+     *             如果写的过程中出现错误
      */
-    String write(T authorizeType, U user, String filename, InputStream in) throws BusinessException;
+    String write(T authorizeType, U user, String filename, InputStream in)
+            throws BusinessException, IOException;
 
     /**
      * 指定用户读取指定路径的文件内容到指定输出流中
@@ -86,7 +90,10 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U extends UserId
      *            输出流
      * @throws BusinessException
      *             如果没有读权限
+     * @throws IOException
+     *             如果读的过程中出现错误
      */
-    void read(U user, String bucket, String path, OutputStream out) throws BusinessException;
+    void read(U user, String bucket, String path, OutputStream out)
+            throws BusinessException, IOException;
 
 }

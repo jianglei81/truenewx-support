@@ -54,7 +54,7 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
         if (path.endsWith(Strings.SLASH)) {
             path = path.substring(0, path.length() - 1);
         }
-        return null;
+        return path;
     }
 
     @Override
