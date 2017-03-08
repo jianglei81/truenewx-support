@@ -1,6 +1,10 @@
 package org.truenewx.support.unstructured.core.aliyun;
 
 import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.truenewx.core.Strings;
@@ -100,8 +104,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         final Credentials credentials = this.writeStsRoleAssumer.assumeRole(userKey,
                 policyDocument);
         if (credentials != null) {
-            final UnstructuredAccessToken token = new UnstructuredAccessToken(credentials.getAccessKeyId(),
-                    credentials.getAccessKeySecret());
+            final UnstructuredAccessToken token = new UnstructuredAccessToken(
+                    credentials.getAccessKeyId(), credentials.getAccessKeySecret());
             token.setTempToken(credentials.getSecurityToken());
             token.setExpiredTime(parseExpiredTime(credentials.getExpiration()));
             return token;
@@ -110,10 +114,10 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     private Date parseExpiredTime(String expiration) {
-        expiration = expiration.replace("T", Strings.SPACE).replace("Z", Strings.EMPTY);
-        Date expiredTime = DateUtil.parseLong(expiration);
-        expiredTime = DateUtil.addHours(expiredTime, 8); // 必须添加8小时时区差
-        return expiredTime;
+        final Instant instant = Instant.parse(expiration);
+        final LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        expiration = dateTime.format(DateTimeFormatter.ofPattern(DateUtil.LONG_DATE_PATTERN));
+        return DateUtil.parseLong(expiration);
     }
 
     @Override
