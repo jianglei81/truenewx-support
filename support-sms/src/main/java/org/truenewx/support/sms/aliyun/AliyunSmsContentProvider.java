@@ -32,7 +32,7 @@ public class AliyunSmsContentProvider implements SmsContentProvider {
 
     @Override
     public String getContent(final Map<String, Object> params, final Locale locale) {
-        return JsonUtil.map2Json(params);
+        return JsonUtil.toJson(params);
     }
 
 }

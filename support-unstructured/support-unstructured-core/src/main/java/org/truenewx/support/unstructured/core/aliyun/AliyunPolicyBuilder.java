@@ -43,7 +43,7 @@ public class AliyunPolicyBuilder {
     public String buildDocument(final String bucket, final String path,
             final String[] actionNames) {
         final Map<String, Object> policy = buildPolicyMap(bucket, path, actionNames);
-        final String document = JsonUtil.map2Json(policy);
+        final String document = JsonUtil.toJson(policy);
         return document;
     }
 
