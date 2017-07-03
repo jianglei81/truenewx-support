@@ -203,7 +203,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     private String buildContentParamValue(final String fieldName, final Object fieldParam) {
         // 形如： ,"name":value,，必须确保content以,开头和结尾，以便于查询
         final StringBuffer paramValue = new StringBuffer("%,\"").append(fieldName).append("\":")
-                .append(JsonUtil.bean2Json(fieldParam)).append(",%");
+                .append(JsonUtil.toJson(fieldParam)).append(",%");
         return paramValue.toString();
     }
 

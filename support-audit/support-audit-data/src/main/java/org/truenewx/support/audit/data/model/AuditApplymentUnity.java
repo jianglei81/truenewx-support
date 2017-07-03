@@ -13,7 +13,7 @@ import org.truenewx.data.model.unity.OwnedUnity;
  * @author jianglei
  * @since JDK 1.8
  * @param <T>
- *            申请类型的枚举类型 
+ *            申请类型的枚举类型
  * @param <A>
  *            审核者类型
  */
@@ -68,7 +68,7 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
         if (content == null || content.isEmpty()) {
             setContentString(null);
         } else {
-            final StringBuffer contentString = new StringBuffer(JsonUtil.bean2Json(content));
+            final StringBuffer contentString = new StringBuffer(JsonUtil.toJson(content));
             // 将json格式的内容去掉花括弧，以,开头和结尾
             if (contentString.charAt(0) == '{') {
                 contentString.setCharAt(0, ',');
