@@ -99,7 +99,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
             throws HandleableException {
         loadPolicy(type); // 加载方针以确保type有效
 
-        final U unity = ensureNonnull(null);
+        final U unity = ensureNotNull(null);
         unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED); // 立即提交则为待审核状态，否则为未提交状态
         transform(model, unity);
         // 转换完成后再设置重要属性，以避免转换方法中错误设置

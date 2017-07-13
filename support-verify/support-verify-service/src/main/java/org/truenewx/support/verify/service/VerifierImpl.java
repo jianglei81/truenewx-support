@@ -46,7 +46,7 @@ public class VerifierImpl<U extends VerifyUnity<T>, T extends Enum<T>> extends A
         policy.validate(content);
         final String code = policy.generateCode(content);
         if (code != null) {
-            final U entity = ensureNonnull(null);
+            final U entity = ensureNotNull(null);
             entity.setType(type);
             entity.setContent(content);
             entity.setCode(code);
