@@ -47,7 +47,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    protected String getNonexistentErorrCode(final Integer owner) {
+    protected String getNonexistentErorrCode() {
         return AuditExceptionCodes.NONEXISTENT_APPLYMENT;
     }
 
