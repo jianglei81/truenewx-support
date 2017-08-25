@@ -1,24 +1,27 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.truenewx</groupId>
-    <artifactId>support</artifactId>
-    <version>1.0.0</version>
-  </parent>
-  <groupId>org.truenewx.support</groupId>
-  <artifactId>support-sms</artifactId>
-  <dependencies>
-      <dependency>
-          <groupId>org.truenewx</groupId>
-          <artifactId>truenewx-core</artifactId>
-      </dependency>
-      <dependency>
-			<groupId>com.aliyun</groupId>
-			<artifactId>aliyun-java-sdk-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.aliyun</groupId>
-			<artifactId>aliyun-java-sdk-sms</artifactId>
-		</dependency>
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.truenewx</groupId>
+        <artifactId>support</artifactId>
+        <version>1.1.0</version>
+    </parent>
+    <groupId>org.truenewx.support</groupId>
+    <artifactId>support-sms</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.truenewx</groupId>
+            <artifactId>truenewx-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-core</artifactId>
+            <version>3.0.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun</groupId>
+            <artifactId>aliyun-java-sdk-sms</artifactId>
+            <version>3.0.0-rc1</version>
+        </dependency>
+    </dependencies>
 </project>

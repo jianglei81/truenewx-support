@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.truenewx.support</groupId>
     <artifactId>support-audit</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
   </parent>
   <groupId>org.truenewx.support.audit</groupId>
   <artifactId>support-audit-service</artifactId>
@@ -11,12 +11,11 @@
       <dependency>
           <groupId>org.truenewx.support.audit</groupId>
           <artifactId>support-audit-data</artifactId>
-          <version>${project.parent.version}</version>
+          <version>${project.version}</version>
       </dependency>
       <dependency>
           <groupId>org.truenewx</groupId>
           <artifactId>truenewx-service</artifactId>
-          <version>${truenewx.version}</version>
       </dependency>
   </dependencies>
 </project>

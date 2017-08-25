@@ -146,7 +146,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
         appendCondition(parameter, hql, params);
         parameter.setOrder("lastAuditTime", Boolean.TRUE);
         parameter.setOrder("applyTime", Boolean.TRUE);
-        return pagingQuery(entityName, hql, params, parameter);
+        return query(entityName, hql, params, parameter);
     }
 
     protected void appendCondition(final AuditApplymentUnityQueryParameter parameter,

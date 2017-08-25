@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.truenewx.support</groupId>
     <artifactId>support-verify</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
   </parent>
   <groupId>org.truenewx.support.verify</groupId>
   <artifactId>support-verify-service</artifactId>
@@ -11,22 +11,21 @@
       <dependency>
           <groupId>org.truenewx.support.verify</groupId>
           <artifactId>support-verify-data</artifactId>
-          <version>${project.parent.version}</version>
+          <version>${project.version}</version>
       </dependency>
       <dependency>
           <groupId>org.truenewx</groupId>
           <artifactId>truenewx-service</artifactId>
-          <version>${truenewx.version}</version>
       </dependency>
       <dependency>
           <groupId>org.truenewx.support</groupId>
           <artifactId>support-email</artifactId>
-          <version>1.0.0</version>
+          <version>${project.version}</version>
       </dependency>
       <dependency>
           <groupId>org.truenewx.support</groupId>
           <artifactId>support-sms</artifactId>
-          <version>1.0.0</version>
+          <version>${project.version}</version>
       </dependency>
   </dependencies>
 </project>

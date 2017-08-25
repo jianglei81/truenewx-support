@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.truenewx.support</groupId>
         <artifactId>support-audit</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
     <groupId>org.truenewx.support.audit</groupId>
     <artifactId>support-audit-web</artifactId>
@@ -12,18 +12,15 @@
         <dependency>
             <groupId>org.truenewx.support.audit</groupId>
             <artifactId>support-audit-service</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.truenewx</groupId>
             <artifactId>truenewx-web</artifactId>
-            <version>${truenewx.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
