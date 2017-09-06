@@ -42,6 +42,11 @@ public class UrlAction extends Action {
     }
 
     @Override
+    public String getType() {
+        return "URL";
+    }
+
+    @Override
     public int hashCode() {
         final Object[] array = { this.url, this.method, this.params };
         return FuncHashCode.INSTANCE.apply(array);

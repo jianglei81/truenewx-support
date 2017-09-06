@@ -19,4 +19,15 @@ public abstract class Action implements ValueModel {
     public void setCaption(final String caption) {
         this.caption = caption;
     }
+
+    public String getType() {
+        String type = getClass().getSimpleName();
+        final String actionSimpleClassName = Action.class.getSimpleName();
+        if (type.endsWith(actionSimpleClassName)) {
+            type = type.substring(0, type.length() - actionSimpleClassName.length());
+            type = type.toUpperCase();
+        }
+        return type;
+    }
+
 }

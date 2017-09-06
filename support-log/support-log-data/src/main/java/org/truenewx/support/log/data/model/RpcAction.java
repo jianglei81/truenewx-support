@@ -42,6 +42,11 @@ public class RpcAction extends Action {
     }
 
     @Override
+    public String getType() {
+        return "RPC";
+    }
+
+    @Override
     public int hashCode() {
         final Object[] array = { this.beanId, this.methodName, this.args };
         return FuncHashCode.INSTANCE.apply(array);

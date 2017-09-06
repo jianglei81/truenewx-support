@@ -113,8 +113,9 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
     @Override
     public void postHandle(final HttpServletRequest request, final HttpServletResponse response,
             final Object handler, final ModelAndView modelAndView) throws Exception {
-        // 请求为include请求则忽略当前拦截器
-        if (WebUtils.isIncludeRequest(request)) {
+        // 请求失败或为include请求则忽略当前拦截器
+        if (response.getStatus() != HttpServletResponse.SC_OK
+                || WebUtils.isIncludeRequest(request)) {
             return;
         }
         final K userId = getUserId();
@@ -182,7 +183,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
 
     @Override
     public void afterInvoke(final String beanId, final Method method, final Object[] args,
-            final Object result) throws Exception {
+            final Object result) {
         final K userId = getUserId();
         if (userId != null) { // 已登录的才需要记录日志
             final String methodName = method.getName();
