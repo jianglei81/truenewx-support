@@ -52,7 +52,7 @@ public class EmailSendCommand implements Runnable {
      * @param interval
      *            每次发送之间的间隔，单位：毫秒
      * @param progress
-     *            TODO
+     *            邮件发送进度
      */
     public EmailSendCommand(final JavaMailSender sender, final EmailSource source,
             final Iterable<EmailMessage> messages, final long interval,
@@ -78,14 +78,14 @@ public class EmailSendCommand implements Runnable {
                     this.sender.send(new SimpleMimeMessagePreparator(this.source, message));
                     this.progress.addSuccess(message);
                 } catch (final Exception e) {
-                    e.printStackTrace();
+                    this.logger.error(e.getMessage(), e);
                     this.progress.addFailure(message, e);
                 }
                 if (this.interval > 0) {
                     try {
                         Thread.sleep(this.interval);
                     } catch (final InterruptedException e) {
-                        e.printStackTrace();
+                        this.logger.error(e.getMessage(), e);
                     }
                 }
             }
@@ -95,8 +95,8 @@ public class EmailSendCommand implements Runnable {
                     this.logger.info("======= Begin send email to {} =======",
                             StringUtils.join(message.getAddresses(), Strings.COMMA));
                     this.sender.send(new SimpleMimeMessagePreparator(this.source, message));
-                } catch (final MailException e) {
-                    e.printStackTrace(); // 尽量尝试发送所有邮件
+                } catch (final MailException e) { // 尽量尝试发送所有邮件
+                    this.logger.error(e.getMessage(), e);
                 }
             }
         }

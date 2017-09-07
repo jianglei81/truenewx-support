@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.DateUtil;
 import org.truenewx.support.unstructured.core.UnstructuredAuthorizer;
@@ -161,7 +162,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                 }
             }
         } catch (final Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
         return null;
     }

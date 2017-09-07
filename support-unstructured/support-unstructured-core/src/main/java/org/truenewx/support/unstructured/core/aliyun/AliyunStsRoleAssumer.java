@@ -1,5 +1,7 @@
 package org.truenewx.support.unstructured.core.aliyun;
 
+import org.slf4j.LoggerFactory;
+
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleRequest;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse;
@@ -43,7 +45,7 @@ public class AliyunStsRoleAssumer {
             final AssumeRoleResponse response = this.account.getAcsClient().getAcsResponse(request);
             return response.getCredentials();
         } catch (final ClientException e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
         return null;
     }

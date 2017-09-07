@@ -1,5 +1,6 @@
 package org.truenewx.support.batch.core.launch.support;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.support.batch.core.JobSummary;
 import org.truenewx.support.batch.core.launch.JobConsole;
@@ -34,7 +35,7 @@ public class JobConsoleHelper {
             try {
                 Thread.sleep(millis);
             } catch (final InterruptedException e) {
-                e.printStackTrace();
+                LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
             }
         }
         return this.jobConsole.getSummary(id);
@@ -59,7 +60,7 @@ public class JobConsoleHelper {
                 try {
                     Thread.sleep(interval);
                 } catch (final InterruptedException e) {
-                    e.printStackTrace();
+                    LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
                 }
             }
             end = this.jobConsole.isEnd(id);

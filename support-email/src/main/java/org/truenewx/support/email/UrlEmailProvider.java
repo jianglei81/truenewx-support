@@ -41,7 +41,7 @@ public class UrlEmailProvider extends AbstractEmailProvider {
             try {
                 return this.parser.parse(this.title, params, locale);
             } catch (final Exception e) {
-                e.printStackTrace();
+                this.logger.error(e.getMessage(), e);
                 return Strings.EMPTY;
             }
         } else {
@@ -54,7 +54,7 @@ public class UrlEmailProvider extends AbstractEmailProvider {
         try {
             return NetUtil.requestByPost(this.url, params, null);
         } catch (final Exception e) {
-            e.printStackTrace();
+            this.logger.error(e.getMessage(), e);
         }
         return null;
     }

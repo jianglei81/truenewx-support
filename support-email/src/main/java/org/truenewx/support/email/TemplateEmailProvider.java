@@ -44,7 +44,7 @@ public class TemplateEmailProvider extends AbstractEmailProvider {
         try {
             return this.parser.parse(this.title, params, locale);
         } catch (final Exception e) {
-            e.printStackTrace();
+            this.logger.error(e.getMessage(), e);
             return Strings.EMPTY;
         }
     }

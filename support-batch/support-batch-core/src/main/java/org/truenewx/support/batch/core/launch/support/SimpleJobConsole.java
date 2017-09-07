@@ -109,7 +109,7 @@ public class SimpleJobConsole implements JobConsole, InitializingBean {
         try {
             return this.jobOperator.stop(id);
         } catch (final Exception e) {
-            e.printStackTrace();
+            this.logger.error(e.getMessage(), e);
         }
         return false;
     }
@@ -119,7 +119,7 @@ public class SimpleJobConsole implements JobConsole, InitializingBean {
         try {
             this.jobOperator.abandon(id);
         } catch (final Exception e) {
-            e.printStackTrace();
+            this.logger.error(e.getMessage(), e);
         }
     }
 
@@ -128,7 +128,7 @@ public class SimpleJobConsole implements JobConsole, InitializingBean {
         try {
             return this.jobOperator.restart(id);
         } catch (final Exception e) {
-            e.printStackTrace();
+            this.logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -145,7 +145,7 @@ public class SimpleJobConsole implements JobConsole, InitializingBean {
                     try {
                         Thread.sleep(interval);
                     } catch (final InterruptedException e) {
-                        e.printStackTrace();
+                        this.logger.error(e.getMessage(), e);
                     }
                     // 等待总时间超过指定超时时间，则不再等待
                     if (System.currentTimeMillis() - time > timeout) {

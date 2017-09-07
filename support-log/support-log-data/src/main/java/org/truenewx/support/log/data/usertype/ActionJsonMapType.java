@@ -48,7 +48,7 @@ public class ActionJsonMapType extends ObjectJsonMapType {
                     return JsonUtil.json2Bean(value, type);
                 }
             } catch (final Exception e) {
-                e.printStackTrace();
+                this.logger.error(e.getMessage(), e);
             }
         }
         return null;

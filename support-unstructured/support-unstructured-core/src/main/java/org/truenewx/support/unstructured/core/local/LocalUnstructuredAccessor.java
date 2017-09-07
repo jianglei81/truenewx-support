@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Executor;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.truenewx.core.Strings;
 import org.truenewx.core.io.CompositeOutputStream;
@@ -114,7 +115,7 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
                         LocalUnstructuredAccessor.this.remoteAccessor.write(bucket, path, in);
                         in.close();
                     } catch (final IOException e) {
-                        e.printStackTrace();
+                        LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
                     }
                 }
             });

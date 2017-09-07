@@ -1,6 +1,7 @@
 package org.truenewx.support.batch.core.configuration.support;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
@@ -125,7 +126,7 @@ public class JobRegistryBeanPostProcessor
                 job.setJobRepository(this.jobRepository);
                 return job;
             } catch (final Exception e) {
-                e.printStackTrace();
+                LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
             }
         }
         return null;

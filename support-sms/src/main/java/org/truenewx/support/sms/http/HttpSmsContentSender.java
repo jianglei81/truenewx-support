@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.LoggerFactory;
 import org.truenewx.core.tuple.Binate;
 import org.truenewx.core.util.ClientRequestSupport;
 import org.truenewx.support.sms.SmsModel;
@@ -59,7 +60,7 @@ public class HttpSmsContentSender extends AbstractSmsContentSender {
                 }
             }
         } catch (final Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
             result.addFailures(mobilePhones);
         }
         return result;

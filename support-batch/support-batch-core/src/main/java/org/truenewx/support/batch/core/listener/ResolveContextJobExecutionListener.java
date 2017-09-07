@@ -1,5 +1,6 @@
 package org.truenewx.support.batch.core.listener;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionException;
@@ -57,14 +58,14 @@ public class ResolveContextJobExecutionListener implements JobExecutionListener,
                                 this.jobContextHelper.setStepProgress(jobExecution, stepName,
                                         progress);
                             } catch (final Exception e) {
-                                e.printStackTrace();
+                                LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
                             }
                         }
                     }
                 }
             }
         } catch (final JobExecutionException e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
         this.jobContextHelper.setTotalled(jobExecution); // 标记作业的总数计算已完成
     }

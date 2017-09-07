@@ -1,5 +1,8 @@
 package org.truenewx.support.email;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 邮件提供者抽象实现
  *
@@ -15,6 +18,8 @@ public abstract class AbstractEmailProvider implements EmailProvider {
      * 邮件标题
      */
     protected String title;
+
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public final String getType() {
