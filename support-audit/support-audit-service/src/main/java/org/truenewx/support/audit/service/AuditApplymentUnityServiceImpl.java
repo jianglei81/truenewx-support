@@ -73,7 +73,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     @Override
     public AuditPolicy<U, T, A> loadPolicy(final T type) {
         final AuditPolicy<U, T, A> policy = this.policies.get(type);
-        Assert.notNull(policy);
+        Assert.notNull(policy, "policy must be not null");
         return policy;
     }
 

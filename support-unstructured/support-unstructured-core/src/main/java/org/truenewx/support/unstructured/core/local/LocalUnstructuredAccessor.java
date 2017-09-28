@@ -33,9 +33,9 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         if (!file.exists()) { // 目录不存在则创建
             file.mkdirs();
         } else { // 必须是个目录
-            Assert.isTrue(file.isDirectory());
+            Assert.isTrue(file.isDirectory(), "root must be a directory");
         }
-        Assert.isTrue(file.canRead() && file.canWrite());
+        Assert.isTrue(file.canRead() && file.canWrite(), "root can not read or write");
 
         this.root = file;
     }
