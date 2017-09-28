@@ -43,7 +43,8 @@ public class JobConsoleProxy implements JobConsole {
      */
     public void addTarget(final JobConsole target) {
         final int newOffset = getOffset(this.targets.size() + 1);
-        Assert.isTrue(this.offset == newOffset); // 新增的代理目标不能使偏移位增加
+        // 新增的代理目标不能使偏移位增加
+        Assert.isTrue(this.offset == newOffset, "The new proxy target can not increase the offset");
         this.targets.add(target);
     }
 

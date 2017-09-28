@@ -16,7 +16,7 @@ import org.springframework.dao.DataAccessResourceFailureException;
  */
 public class ConcurrentHibernateSessionJobExecutionListener implements JobExecutionListener {
 
-    private static final ThreadLocal<Session> THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Session> SESSION_CACHE = new ThreadLocal<>();
 
     private SessionFactory sessionFactory;
 
@@ -26,10 +26,10 @@ public class ConcurrentHibernateSessionJobExecutionListener implements JobExecut
 
     @Override
     public void beforeJob(final JobExecution jobExecution) {
-        Session session = THREAD_LOCAL.get();
+        Session session = SESSION_CACHE.get();
         if (session == null) {
             session = openSession();
-            THREAD_LOCAL.set(session);
+            SESSION_CACHE.set(session);
         }
     }
 
@@ -37,11 +37,11 @@ public class ConcurrentHibernateSessionJobExecutionListener implements JobExecut
         if (this.sessionFactory != null) {
             try {
                 final Session session = this.sessionFactory.openSession();
-                session.setFlushMode(FlushMode.MANUAL);
+                session.setHibernateFlushMode(FlushMode.MANUAL);
                 return session;
             } catch (final HibernateException ex) {
                 throw new DataAccessResourceFailureException("Could not open Hibernate Session",
-                                ex);
+                        ex);
             }
         }
         return null;
@@ -49,9 +49,9 @@ public class ConcurrentHibernateSessionJobExecutionListener implements JobExecut
 
     @Override
     public void afterJob(final JobExecution jobExecution) {
-        final Session session = THREAD_LOCAL.get();
+        final Session session = SESSION_CACHE.get();
         if (session != null) {
-            THREAD_LOCAL.set(null);
+            SESSION_CACHE.remove();
             session.close();
         }
     }
