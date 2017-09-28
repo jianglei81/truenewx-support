@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.truenewx.support</groupId>
     <artifactId>support-audit</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
   </parent>
   <groupId>org.truenewx.support.audit</groupId>
   <artifactId>support-audit-data</artifactId>
