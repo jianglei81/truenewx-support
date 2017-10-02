@@ -27,7 +27,7 @@ import org.truenewx.support.log.service.ActionLogWriter;
 import org.truenewx.support.log.web.annotation.LogExcluded;
 import org.truenewx.web.http.HttpLink;
 import org.truenewx.web.menu.model.Menu;
-import org.truenewx.web.menu.model.MenuAction;
+import org.truenewx.web.menu.model.MenuItem;
 import org.truenewx.web.rpc.RpcPort;
 import org.truenewx.web.rpc.server.RpcInvokeInterceptor;
 import org.truenewx.web.util.WebUtil;
@@ -102,7 +102,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
         }
         if (this.excludedUrlPatterns != null) {
             for (final HttpLink pattern : this.excludedUrlPatterns) {
-                if (pattern.isMatched(url, method)) {
+                if (pattern.matches(url, method)) {
                     return false;
                 }
             }
@@ -161,8 +161,8 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
     private String getUrlActionCaption(final Menu menu, final String url, final HttpMethod method) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
-            final List<Binate<Integer, MenuAction>> indexes = menu.indexesOf(url, method);
-            for (final Binate<Integer, MenuAction> binate : indexes) {
+            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOf(url, method);
+            for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
             }
             return caption.length() == 0 ? null : caption.toString().trim();
@@ -216,7 +216,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
             final Integer argCount) {
         if (this.excludedRpcPatterns != null) {
             for (final RpcPort pattern : this.excludedRpcPatterns) {
-                if (pattern.isMatched(beanId, methodName, argCount)) {
+                if (pattern.matches(beanId, methodName, argCount)) {
                     return false;
                 }
             }
@@ -228,9 +228,9 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
             final String methodName, final int argCount) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
-            final List<Binate<Integer, MenuAction>> indexes = menu.indexesOf(beanId, methodName,
+            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOf(beanId, methodName,
                     argCount);
-            for (final Binate<Integer, MenuAction> binate : indexes) {
+            for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
             }
             return caption.length() == 0 ? null : caption.toString().trim();
