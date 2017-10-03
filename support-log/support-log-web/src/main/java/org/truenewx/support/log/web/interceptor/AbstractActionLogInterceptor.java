@@ -194,20 +194,23 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                     return;
                 }
                 final Menu menu = getMenu(); // 在创建线程提交执行之前获取菜单，以免线程执行环境无法获取当前菜单
-                this.executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        final RpcAction action = new RpcAction();
-                        action.setBeanId(beanId);
-                        action.setMethodName(methodName);
-                        final List<Object> argList = Arrays.asList(args);
-                        if (!argList.isEmpty()) {
-                            action.setArgs(argList);
+                final String caption = getRpcActionCaption(menu, beanId, methodName, argCount);
+                if (caption != null) { // 找得到对应显示名称的才记录日志
+                    this.executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            final RpcAction action = new RpcAction();
+                            action.setBeanId(beanId);
+                            action.setMethodName(methodName);
+                            final List<Object> argList = Arrays.asList(args);
+                            if (!argList.isEmpty()) {
+                                action.setArgs(argList);
+                            }
+                            action.setCaption(caption);
+                            AbstractActionLogInterceptor.this.writer.add(userId, action);
                         }
-                        action.setCaption(getRpcActionCaption(menu, beanId, methodName, argCount));
-                        AbstractActionLogInterceptor.this.writer.add(userId, action);
-                    }
-                });
+                    });
+                }
             }
         }
     }
