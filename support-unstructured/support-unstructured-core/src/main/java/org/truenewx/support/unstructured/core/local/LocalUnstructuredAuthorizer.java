@@ -60,11 +60,13 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
     @Override
     public UnstructuredAccessToken authorizePrivateWrite(final String userKey, final String bucket,
             final String path) {
+        // 本地资源本身没有权限限制，权限由Policy进行限制和判断，无需访问令牌
         return new UnstructuredAccessToken();
     }
 
     @Override
     public void authorizePublicRead(final String bucket, final String path) {
+        // 本地资源本身没有权限限制，权限由Policy进行限制和判断
     }
 
     @Override

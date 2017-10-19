@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.UserIdentity;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
-import org.truenewx.core.spring.util.SpringUtil;
 import org.truenewx.support.unstructured.core.model.UnstructuredAccessToken;
 import org.truenewx.support.unstructured.core.model.UnstructuredInnerUrl;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
@@ -30,6 +30,11 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
     private Map<UnstructuredProvider, UnstructuredAuthorizer> authorizers = new HashMap<>();
     private UnstructuredAccessor accessor;
 
+    @Autowired
+    public void setAccessor(final UnstructuredAccessor accessor) {
+        this.accessor = accessor;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void afterInitialized(final ApplicationContext context) throws Exception {
@@ -44,8 +49,6 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U extends UserId
         for (final UnstructuredAuthorizer authorizer : authorizers.values()) {
             this.authorizers.put(authorizer.getProvider(), authorizer);
         }
-
-        this.accessor = SpringUtil.getFirstBeanByClass(context, UnstructuredAccessor.class);
     }
 
     @Override
