@@ -1,6 +1,5 @@
 package org.truenewx.support.unstructured.core;
 
-import org.truenewx.support.unstructured.core.model.UnstructuredAccessToken;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 
 /**
@@ -19,14 +18,14 @@ public interface UnstructuredAuthorizer {
     UnstructuredProvider getProvider();
 
     /**
-     * @return 所属地区
-     */
-    String getRegion();
-
-    /**
      * @return 服务主机地址
      */
     String getHost();
+
+    /**
+     * @return 所属地区
+     */
+    String getRegion();
 
     /**
      * 标准化资源路径，使其符合服务商的规则
@@ -36,19 +35,6 @@ public interface UnstructuredAuthorizer {
      * @return 标准化后的资源路径
      */
     String standardizePath(final String path);
-
-    /**
-     * 授权指定用户获取指定资源的私有写权限
-     *
-     * @param userKey
-     *            用户唯一标识
-     * @param bucket
-     *            存储桶名称
-     * @param path
-     *            资源路径
-     * @return 写访问参数，授权失败将返回null
-     */
-    UnstructuredAccessToken authorizePrivateWrite(String userKey, String bucket, String path);
 
     /**
      * 授权指定资源为公开可读
@@ -61,7 +47,7 @@ public interface UnstructuredAuthorizer {
     void authorizePublicRead(String bucket, String path);
 
     /**
-     * 获取指定资源读取HTTP URL
+     * 获取指定资源读取URL
      *
      * @param userKey
      *            用户唯一标识
@@ -70,8 +56,8 @@ public interface UnstructuredAuthorizer {
      * @param path
      *            资源路径
      *
-     * @return 资源读取URL，以http://开头
+     * @return 资源读取URL
      */
-    String getReadHttpUrl(String userKey, String bucket, String path);
+    String getReadUrl(String userKey, String bucket, String path);
 
 }

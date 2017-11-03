@@ -28,6 +28,16 @@ public class AliyunUnstructuredAccessor implements UnstructuredAccessor {
     }
 
     @Override
+    public long getLastModifiedTime(final String bucket, final String path) {
+        try {
+            return this.account.getOssClient().getObjectMetadata(bucket, path).getLastModified()
+                    .getTime();
+        } catch (final Exception e) {
+            return 0;
+        }
+    }
+
+    @Override
     public void read(final String bucket, final String path, final OutputStream out)
             throws IOException {
         final InputStream in = this.account.getOssClient().getObject(bucket, path)

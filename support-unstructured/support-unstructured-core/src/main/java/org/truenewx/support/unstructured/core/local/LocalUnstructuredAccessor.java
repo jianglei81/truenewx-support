@@ -123,6 +123,21 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
     }
 
     @Override
+    public long getLastModifiedTime(final String bucket, final String path) {
+        try {
+            final File file = getStoreFile(bucket, path);
+            if (file.exists()) {
+                return file.lastModified();
+            } else if (this.remoteAccessor != null) {
+                return this.remoteAccessor.getLastModifiedTime(bucket, path);
+            }
+        } catch (final Exception e) {
+            // 忽略所有异常
+        }
+        return 0;
+    }
+
+    @Override
     public void read(final String bucket, final String path, final OutputStream out)
             throws IOException {
         final File file = getStoreFile(bucket, path);

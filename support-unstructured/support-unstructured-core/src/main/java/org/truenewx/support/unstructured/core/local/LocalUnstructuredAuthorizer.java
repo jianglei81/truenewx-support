@@ -1,8 +1,6 @@
 package org.truenewx.support.unstructured.core.local;
 
 import org.truenewx.core.Strings;
-import org.truenewx.support.unstructured.core.UnstructuredAuthorizer;
-import org.truenewx.support.unstructured.core.model.UnstructuredAccessToken;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 
 /**
@@ -11,17 +9,15 @@ import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
  * @author jianglei
  *
  */
-public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
+public class LocalUnstructuredAuthorizer {
 
     private String host;
     private String region;
 
-    @Override
     public UnstructuredProvider getProvider() {
         return UnstructuredProvider.OWN;
     }
 
-    @Override
     public String getHost() {
         return this.host;
     }
@@ -30,7 +26,6 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
         this.host = host;
     }
 
-    @Override
     public String getRegion() {
         return this.region;
     }
@@ -45,7 +40,6 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
         this.region = region;
     }
 
-    @Override
     public String standardizePath(String path) {
         // 必须以斜杠开头，不能以斜杠结尾
         if (!path.startsWith(Strings.SLASH)) {
@@ -57,21 +51,12 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
         return path;
     }
 
-    @Override
-    public UnstructuredAccessToken authorizePrivateWrite(final String userKey, final String bucket,
-            final String path) {
-        // 本地资源本身没有权限限制，权限由Policy进行限制和判断，无需访问令牌
-        return new UnstructuredAccessToken();
-    }
-
-    @Override
     public void authorizePublicRead(final String bucket, final String path) {
         // 本地资源本身没有权限限制，权限由Policy进行限制和判断
     }
 
-    @Override
-    public String getReadHttpUrl(final String userKey, final String bucket, final String path) {
-        // 形如：http://${host}/${region}/${bucket}/${path}
+    public String getReadUrl(final String userKey, final String bucket, final String path) {
+        // 形如：${host}/${region}/${bucket}/${path}
         final StringBuffer url = new StringBuffer("http://").append(getHost()).append(Strings.SLASH)
                 .append(getRegion()).append(Strings.SLASH).append(bucket).append(Strings.SLASH)
                 .append(path);

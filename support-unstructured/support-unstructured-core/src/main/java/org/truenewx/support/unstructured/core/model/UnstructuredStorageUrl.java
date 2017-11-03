@@ -3,34 +3,34 @@ package org.truenewx.support.unstructured.core.model;
 import org.truenewx.core.Strings;
 
 /**
- * 非结构化存储内部URL，包含了内部URL的转换逻辑
+ * 非结构化内部存储URL，包含了内部存储URL的转换逻辑
  *
  * @author jianglei
  *
  */
-public class UnstructuredInnerUrl {
+public class UnstructuredStorageUrl {
     private UnstructuredProvider provider;
     private String bucket;
     private String path;
 
-    public UnstructuredInnerUrl(final UnstructuredProvider provider, final String bucket,
+    public UnstructuredStorageUrl(final UnstructuredProvider provider, final String bucket,
             final String path) {
         this.provider = provider;
         this.bucket = bucket;
         this.path = path;
     }
 
-    public UnstructuredInnerUrl(final String innerUrl) {
-        int index1 = innerUrl.indexOf("://");
+    public UnstructuredStorageUrl(final String storageUrl) {
+        int index1 = storageUrl.indexOf("://");
         if (index1 > 0) {
-            final String protocol = innerUrl.substring(0, index1);
+            final String protocol = storageUrl.substring(0, index1);
             this.provider = UnstructuredProvider.valueOf(protocol.toUpperCase());
 
             index1 += 3;
-            final int index2 = innerUrl.indexOf(Strings.SLASH, index1);
+            final int index2 = storageUrl.indexOf(Strings.SLASH, index1);
             if (index2 > 0) {
-                this.bucket = innerUrl.substring(index1, index2);
-                this.path = innerUrl.substring(index2);
+                this.bucket = storageUrl.substring(index1, index2);
+                this.path = storageUrl.substring(index2);
             }
         }
     }

@@ -1,17 +1,12 @@
 package org.truenewx.support.unstructured.core.aliyun;
 
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.DateUtil;
 import org.truenewx.support.unstructured.core.UnstructuredAuthorizer;
-import org.truenewx.support.unstructured.core.model.UnstructuredAccessToken;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 
 import com.aliyun.oss.OSS;
@@ -33,7 +28,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     private AliyunAccount account;
     private AliyunPolicyBuilder policyBuilder;
     private AliyunStsRoleAssumer readStsRoleAssumer;
-    private AliyunStsRoleAssumer writeStsRoleAssumer;
 
     /**
      * @param tempReadExpiredSeconds
@@ -67,14 +61,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         this.readStsRoleAssumer = readStsRoleAssumer;
     }
 
-    /**
-     * @param writeStsRoleAssumer
-     *            写权限的STS临时角色假扮器
-     */
-    public void setWriteStsRoleAssumer(final AliyunStsRoleAssumer writeStsRoleAssumer) {
-        this.writeStsRoleAssumer = writeStsRoleAssumer;
-    }
-
     @Override
     public UnstructuredProvider getProvider() {
         return UnstructuredProvider.ALIYUN;
@@ -99,30 +85,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public UnstructuredAccessToken authorizePrivateWrite(final String userKey, final String bucket,
-            final String path) {
-        final String policyDocument = this.policyBuilder.buildWriteDocument(bucket, path);
-        final Credentials credentials = this.writeStsRoleAssumer.assumeRole(userKey,
-                policyDocument);
-        if (credentials != null) {
-            final UnstructuredAccessToken token = new UnstructuredAccessToken(
-                    credentials.getAccessKeyId(), credentials.getAccessKeySecret());
-            token.setTempToken(credentials.getSecurityToken());
-            token.setExpiredTime(parseExpiredTime(credentials.getExpiration()));
-            return token;
-        }
-        return null;
-    }
-
-    private Date parseExpiredTime(String expiration) {
-        final Instant instant = Instant.parse(expiration);
-        final LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        expiration = dateTime.format(DateTimeFormatter.ofPattern(DateUtil.LONG_DATE_PATTERN));
-        return DateUtil.parseLong(expiration);
-    }
-
-    @Override
     public void authorizePublicRead(final String bucket, final String path) {
+        // TODO 避免同样的路径反复多次申请公开读
         this.account.getOssClient().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
     }
 
@@ -134,7 +98,7 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public String getReadHttpUrl(final String userKey, final String bucket, String path) {
+    public String getReadUrl(final String userKey, final String bucket, String path) {
         final int index = path.indexOf("?");
         String paramString = Strings.EMPTY;
         if (index > 0) {
@@ -143,9 +107,8 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         }
         try {
             if (isPublicRead(bucket, path)) {
-                final StringBuffer url = new StringBuffer("http://").append(bucket)
-                        .append(Strings.DOT).append(this.account.getOssEndpoint())
-                        .append(Strings.SLASH).append(path);
+                final StringBuffer url = new StringBuffer(bucket).append(Strings.DOT)
+                        .append(this.account.getOssEndpoint()).append(Strings.SLASH).append(path);
                 return url.toString() + paramString;
             } else { // 非公开可读的，授予临时读取权限
                 final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
