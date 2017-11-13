@@ -2,8 +2,8 @@ package org.truenewx.support.unstructured.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +20,7 @@ import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.support.unstructured.core.UnstructuredServiceTemplate;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
+import org.truenewx.support.unstructured.web.model.UploadResult;
 import org.truenewx.web.exception.annotation.HandleableExceptionMessage;
 import org.truenewx.web.rpc.server.annotation.RpcController;
 import org.truenewx.web.rpc.server.annotation.RpcMethod;
@@ -48,26 +49,39 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
         return this.service.getUploadLimit(authorizeType, getUser());
     }
 
-    @RequestMapping(value = "/{authorizeType}", method = RequestMethod.POST)
+    // 跨域上传支持
+    @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.OPTIONS)
+    public String upload(final T authorizeType, final HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
+        response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
+        response.setHeader("Access-Control-Max-Age", "30");
+        return null;
+    }
+
+    @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.POST)
     @HandleableExceptionMessage
     @ResponseBody
     public String upload(final T authorizeType, final MultipartHttpServletRequest request,
             final HttpServletResponse response) throws BusinessException, IOException {
-        final MultipartFile mf = request.getFileMap().values().stream().findFirst().orElse(null);
-        if (mf != null) {
-            final Map<String, Object> result = new HashMap<>();
+        final List<UploadResult> results = new ArrayList<>();
+        for (final MultipartFile mf : request.getFileMap().values()) {
             final String filename = mf.getOriginalFilename();
             final InputStream in = mf.getInputStream();
             final U user = getUser();
             final String storageUrl = this.service.write(authorizeType, user, filename, in);
             in.close();
             final String readUrl = this.service.getReadUrl(user, storageUrl);
-            result.put("storageUrl", storageUrl);
-            result.put("readUrl", readUrl);
-            response.addHeader("Content-Type", "text/plain;charset=utf-8"); // 解决跨域访问时无法获得返回结果的问题
-            return JsonUtil.toJson(result);
+            final UploadResult result = new UploadResult(filename, storageUrl, readUrl);
+            results.add(result);
         }
-        return Strings.EMPTY;
+        // 跨域上传支持
+        response.setHeader("Access-Control-Allow-Credentials", "false");
+        response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
+        response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
+        response.setHeader("Content-Type", "text/plain;charset=utf-8");
+        return JsonUtil.toJson(results);
     }
 
     /**
