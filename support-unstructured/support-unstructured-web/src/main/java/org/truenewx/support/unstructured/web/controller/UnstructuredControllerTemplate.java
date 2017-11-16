@@ -9,12 +9,16 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.truenewx.core.Strings;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.util.JsonUtil;
@@ -51,7 +55,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
 
     // 跨域上传支持
     @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.OPTIONS)
-    public String upload(final T authorizeType, final HttpServletResponse response) {
+    public String upload(@PathVariable("authorizeType") final T authorizeType,
+            final HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
         response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
@@ -60,20 +65,27 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
     }
 
     @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.POST)
-    @HandleableExceptionMessage
+    @HandleableExceptionMessage(respondErrorStatus = false)
     @ResponseBody
-    public String upload(final T authorizeType, final MultipartHttpServletRequest request,
-            final HttpServletResponse response) throws BusinessException, IOException {
+    public String upload(@PathVariable("authorizeType") final T authorizeType,
+            final HttpServletRequest request, final HttpServletResponse response)
+            throws BusinessException, IOException, FileUploadException {
         final List<UploadResult> results = new ArrayList<>();
-        for (final MultipartFile mf : request.getFileMap().values()) {
-            final String filename = mf.getOriginalFilename();
-            final InputStream in = mf.getInputStream();
-            final U user = getUser();
-            final String storageUrl = this.service.write(authorizeType, user, filename, in);
-            in.close();
-            final String readUrl = this.service.getReadUrl(user, storageUrl);
-            final UploadResult result = new UploadResult(filename, storageUrl, readUrl);
-            results.add(result);
+        final FileItemFactory fileItemFactory = new DiskFileItemFactory();
+        final ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
+        servletFileUpload.setHeaderEncoding(Strings.DEFAULT_ENCODING);
+        final List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+        for (final FileItem fileItem : fileItems) {
+            if (!fileItem.isFormField()) {
+                final String filename = fileItem.getName();
+                final InputStream in = fileItem.getInputStream();
+                final U user = getUser();
+                final String storageUrl = this.service.write(authorizeType, user, filename, in);
+                in.close();
+                final String readUrl = this.service.getReadUrl(user, storageUrl);
+                final UploadResult result = new UploadResult(filename, storageUrl, readUrl);
+                results.add(result);
+            }
         }
         // 跨域上传支持
         response.setHeader("Access-Control-Allow-Credentials", "false");
@@ -101,7 +113,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
 
     @RequestMapping(value = "/{bucket}/{path}", method = RequestMethod.GET)
     @HandleableExceptionMessage
-    public String download(final String bucket, final String path, final HttpServletRequest request,
+    public String download(@PathVariable("bucket") final String bucket,
+            @PathVariable("path") final String path, final HttpServletRequest request,
             final HttpServletResponse response) throws BusinessException, IOException {
         final long modifiedSince = request.getDateHeader("If-Modified-Since");
         final U user = getUser();

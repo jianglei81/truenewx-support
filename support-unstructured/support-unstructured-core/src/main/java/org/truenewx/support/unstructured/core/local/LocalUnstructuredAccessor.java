@@ -45,7 +45,9 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
      *            远程访问器
      */
     public void setRemoteAccessor(final UnstructuredAccessor remoteAccessor) {
-        this.remoteAccessor = remoteAccessor;
+        if (remoteAccessor != this) { // 避免自己引用自己从而导致无限递归调用
+            this.remoteAccessor = remoteAccessor;
+        }
     }
 
     /**
@@ -59,14 +61,14 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
     @Override
     public void write(final String bucket, final String path, final InputStream in)
             throws IOException {
-        // 先上传内容到一个新建的临时文件中
+        // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
         final File tempFile = createTempFile(bucket, path);
         final FileOutputStream out = new FileOutputStream(tempFile);
         IOUtil.writeAll(in, out);
         out.close();
 
         // 然后删除原文件，修改临时文件名为原文件名
-        final File file = getStoreFile(bucket, path);
+        final File file = getStorageFile(bucket, path);
         if (file.exists()) {
             file.delete();
         }
@@ -76,21 +78,21 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         writeToRemote(bucket, path, file);
     }
 
-    private File getStoreFile(final String bucket, final String path) {
-        final String relativePath = standardize(bucket) + standardize(path);
-        final File file = new File(this.root, relativePath);
-        file.mkdirs(); // 确保目录存在
-        return file;
-    }
-
     private File createTempFile(final String bucket, final String path) throws IOException {
         // 形如：${正式文件名}_${32位UUID}.temp;
         final String relativePath = standardize(bucket) + standardize(path) + Strings.UNDERLINE
                 + StringUtil.uuid32() + Strings.DOT + "temp";
         final File file = new File(this.root, relativePath);
-        file.mkdirs(); // 确保目录存在
+        file.getParentFile().mkdirs(); // 确保目录存在
         file.createNewFile(); // 创建新文件以写入内容
         file.setWritable(true);
+        return file;
+    }
+
+    private File getStorageFile(final String bucket, final String path) {
+        final String relativePath = standardize(bucket) + standardize(path);
+        final File file = new File(this.root, relativePath);
+        file.getParentFile().mkdirs(); // 确保目录存在
         return file;
     }
 
@@ -125,7 +127,7 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
     @Override
     public long getLastModifiedTime(final String bucket, final String path) {
         try {
-            final File file = getStoreFile(bucket, path);
+            final File file = getStorageFile(bucket, path);
             if (file.exists()) {
                 return file.lastModified();
             } else if (this.remoteAccessor != null) {
@@ -140,7 +142,7 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
     @Override
     public void read(final String bucket, final String path, final OutputStream out)
             throws IOException {
-        final File file = getStoreFile(bucket, path);
+        final File file = getStorageFile(bucket, path);
         if (!file.exists()) { // 如果文件不存在，则需要从远程服务器读取内容，并缓存到本地文件
             if (this.remoteAccessor != null) {
                 file.createNewFile();
