@@ -53,7 +53,8 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
     public String getReadUrl(final String userKey, final String bucket, final String path) {
         // 形如：${host}/${region}/${bucket}/${path}
         final StringBuffer url = new StringBuffer(getHost()).append(Strings.SLASH)
-                .append(getRegion()).append(Strings.SLASH).append(bucket).append(path);
+                .append(getRegion()).append(Strings.SLASH).append(bucket).append(Strings.SLASH)
+                .append(path);
         return url.toString();
     }
 
