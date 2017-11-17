@@ -28,15 +28,6 @@ public interface UnstructuredAuthorizer {
     String getRegion();
 
     /**
-     * 标准化资源路径，使其符合服务商的规则
-     *
-     * @param path
-     *            资源路径
-     * @return 标准化后的资源路径
-     */
-    String standardizePath(final String path);
-
-    /**
      * 授权指定资源为公开可读
      *
      * @param bucket

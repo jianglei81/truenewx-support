@@ -28,6 +28,7 @@ import org.truenewx.support.unstructured.web.model.UploadResult;
 import org.truenewx.web.exception.annotation.HandleableExceptionMessage;
 import org.truenewx.web.rpc.server.annotation.RpcController;
 import org.truenewx.web.rpc.server.annotation.RpcMethod;
+import org.truenewx.web.util.WebUtil;
 
 /**
  * 非结构化存储授权控制器模板<br/>
@@ -111,11 +112,16 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
         return this.service.getReadUrl(getUser(), storageUrl);
     }
 
-    @RequestMapping(value = "/{bucket}/{path}", method = RequestMethod.GET)
-    @HandleableExceptionMessage
-    public String download(@PathVariable("bucket") final String bucket,
-            @PathVariable("path") final String path, final HttpServletRequest request,
-            final HttpServletResponse response) throws BusinessException, IOException {
+    @RequestMapping(value = "/dl/**", method = RequestMethod.GET)
+    public String download(final HttpServletRequest request, final HttpServletResponse response)
+            throws BusinessException, IOException {
+        String url = WebUtil.getRelativeRequestUrl(request);
+        int index = url.indexOf("/dl/");
+        url = url.substring(index + 4); // 通配符部分
+        index = url.indexOf(Strings.SLASH);
+        final String bucket = url.substring(0, index);
+        final String path = url.substring(index + 1);
+
         final long modifiedSince = request.getDateHeader("If-Modified-Since");
         final U user = getUser();
         final long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);

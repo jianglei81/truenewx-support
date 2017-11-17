@@ -45,18 +45,6 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public String standardizePath(String path) {
-        // 必须以斜杠开头，不能以斜杠结尾
-        if (!path.startsWith(Strings.SLASH)) {
-            path = Strings.SLASH + path;
-        }
-        if (path.endsWith(Strings.SLASH)) {
-            path = path.substring(0, path.length() - 1);
-        }
-        return path;
-    }
-
-    @Override
     public void authorizePublicRead(final String bucket, final String path) {
         // 本地资源本身没有权限限制，权限由Policy进行限制和判断
     }

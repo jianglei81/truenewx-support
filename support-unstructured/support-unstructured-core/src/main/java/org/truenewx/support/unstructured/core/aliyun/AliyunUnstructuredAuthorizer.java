@@ -77,14 +77,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public String standardizePath(final String path) {
-        if (path.startsWith(Strings.SLASH)) { // 不能以斜杠开头
-            return path.substring(1);
-        }
-        return path;
-    }
-
-    @Override
     public void authorizePublicRead(final String bucket, final String path) {
         // TODO 避免同样的路径反复多次申请公开读
         this.account.getOssClient().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);

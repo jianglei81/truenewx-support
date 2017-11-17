@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.truenewx.core.Strings;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
@@ -49,7 +50,8 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public UnstructuredUploadLimit getUploadLimit(final T authorizeType, final U user) throws BusinessException {
+    public UnstructuredUploadLimit getUploadLimit(final T authorizeType, final U user)
+            throws BusinessException {
         return getPolicy(authorizeType).getUploadLimit(user);
     }
 
@@ -68,8 +70,12 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             final InputStream in) throws BusinessException, IOException {
         final UnstructuredAuthorizePolicy<T, U> policy = getPolicy(authorizeType);
         final UnstructuredProvider provider = policy.getProvider();
-        final String path = policy.getPath(user, filename);
-        if (path == null || !policy.isWritable(user, path)) {
+        String path = policy.getPath(user, filename);
+        if (path == null) {
+            throw new BusinessException(UnstructuredExceptionCodes.NO_WRITE_PERMISSION);
+        }
+        path = standardizePath(path);
+        if (!policy.isWritable(user, path)) {
             throw new BusinessException(UnstructuredExceptionCodes.NO_WRITE_PERMISSION);
         }
 
@@ -87,18 +93,35 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         return new UnstructuredStorageUrl(provider, bucket, path).toString();
     }
 
+    /**
+     * 使路径格式标准化，不以斜杠开头，也不以斜杠结尾<br/>
+     * 所有存储服务提供商均接收该标准的路径，如服务提供商对路径的要求与此不同，则服务提供商的实现类中再做转换
+     *
+     * @param path
+     *            标准化前的路径
+     * @return 标准化后的路径
+     */
+    private String standardizePath(String path) {
+        if (path.startsWith(Strings.SLASH)) { // 不能以斜杠开头
+            return path.substring(1);
+        }
+        if (path.endsWith(Strings.SLASH)) { // 不能以斜杠结尾
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
     @Override
     public String getReadUrl(final U user, final String storageUrl) throws BusinessException {
         final UnstructuredStorageUrl url = new UnstructuredStorageUrl(storageUrl);
         if (url.isValid()) {
             final String bucket = url.getBucket();
-            String path = url.getPath();
+            final String path = standardizePath(url.getPath());
             validateUserRead(user, bucket, path);
             // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
             final UnstructuredProvider provider = url.getProvider();
             final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
             final String userKey = user == null ? null : user.toString();
-            path = authorizer.standardizePath(path);
             return authorizer.getReadUrl(userKey, bucket, path);
         }
         return null;
@@ -118,15 +141,17 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public long getLastModifiedTime(final U user, final String bucket, final String path)
+    public long getLastModifiedTime(final U user, final String bucket, String path)
             throws BusinessException {
+        path = standardizePath(path);
         validateUserRead(user, bucket, path);
         return this.accessor.getLastModifiedTime(bucket, path);
     }
 
     @Override
-    public void read(final U user, final String bucket, final String path, final OutputStream out)
+    public void read(final U user, final String bucket, String path, final OutputStream out)
             throws BusinessException, IOException {
+        path = standardizePath(path);
         validateUserRead(user, bucket, path); // 校验读取权限
         this.accessor.read(bucket, path, out);
     }
