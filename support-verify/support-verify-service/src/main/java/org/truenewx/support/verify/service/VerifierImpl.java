@@ -122,8 +122,6 @@ public class VerifierImpl<U extends VerifyUnity<T>, T extends Enum<T>> extends A
             throw new BusinessException(VerifyExceptionCodes.OVERDUE_CODE);
         }
         final VerifyPolicy<U, T> policy = getPolicy(entity.getType());
-        final Map<String, Object> content = entity.getContent();
-        policy.validate(content);
         if (policy.onVerified(entity, context)) {
             this.dao.delete(entity);
         }
