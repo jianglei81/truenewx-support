@@ -2,6 +2,7 @@ package org.truenewx.support.audit.data.model;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.TreeSet;
 
 import org.truenewx.data.annotation.Redundant;
 import org.truenewx.data.model.unity.AbstractUnity;
@@ -25,7 +26,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
 
     private T type;
     private AuditStatus status;
-    @NotContainsSpecialChars 
+    @NotContainsSpecialChars
     private String reason;
     @NotContainsAngleBracket
     @NotContainsSqlChars
@@ -35,7 +36,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
     private Date applyTime;
     @Redundant
     private long lastAuditTime;
-    private Collection<? extends AuditLogUnity<T, A>> logs;
+    private Collection<? extends AuditLogUnity<T, A>> logs = new TreeSet<>();
 
     public T getType() {
         return this.type;
