@@ -1,6 +1,7 @@
 package org.truenewx.support.sms.aliyun;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,18 +78,19 @@ public class AliyunSmsContentSender implements SmsContentSender {
     }
 
     @Override
-    public SmsSendResult send(final String content, final int maxCount,
+    public SmsSendResult send(final String content, final int maxCount, final Locale locale,
             final String... mobilePhones) {
-        return send(content, mobilePhones);
+        return send(content, locale, mobilePhones);
     }
 
     @Override
-    public void send(final String content, final int maxCount, final String[] mobilePhones,
-            final SmsSendCallback callback) {
-        this.executor.execute(new SendCommand(content, mobilePhones, callback));
+    public void send(final String content, final int maxCount, final Locale locale,
+            final String[] mobilePhones, final SmsSendCallback callback) {
+        this.executor.execute(new SendCommand(content, locale, mobilePhones, callback));
     }
 
-    private SmsSendResult send(final String content, final String... mobilePhones) {
+    private SmsSendResult send(final String content, final Locale locale,
+            final String... mobilePhones) {
         final SmsModel sms = new SmsModel();
         sms.setMobilePhones(mobilePhones);
         sms.setSendTime(new Date());
@@ -113,19 +115,21 @@ public class AliyunSmsContentSender implements SmsContentSender {
 
     private class SendCommand implements Runnable {
         private String content;
+        private Locale locale;
         private String[] mobilePhones;
         private SmsSendCallback callback;
 
-        public SendCommand(final String content, final String[] mobilePhones,
+        public SendCommand(final String content, final Locale locale, final String[] mobilePhones,
                 final SmsSendCallback callback) {
             this.content = content;
+            this.locale = locale;
             this.mobilePhones = mobilePhones;
             this.callback = callback;
         }
 
         @Override
         public void run() {
-            final SmsSendResult result = send(this.content, this.mobilePhones);
+            final SmsSendResult result = send(this.content, this.locale, this.mobilePhones);
             this.callback.onSmsSent(result);
         }
     }

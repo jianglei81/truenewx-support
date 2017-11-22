@@ -1,6 +1,7 @@
 package org.truenewx.support.sms.send;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import org.truenewx.core.util.concurrent.DefaultThreadPoolExecutor;
@@ -34,17 +35,17 @@ public abstract class AbstractSmsContentSender implements SmsContentSender {
     }
 
     @Override
-    public SmsSendResult send(final String content, final int maxCount,
+    public SmsSendResult send(final String content, final int maxCount, final Locale locale,
             final String... mobilePhones) {
         final List<String> contents = this.contentSpliter.split(content, maxCount);
-        return send(contents, mobilePhones);
+        return send(contents, locale, mobilePhones);
     }
 
     @Override
-    public void send(final String content, final int maxCount, final String[] mobilePhones,
-            final SmsSendCallback callback) {
+    public void send(final String content, final int maxCount, final Locale locale,
+            final String[] mobilePhones, final SmsSendCallback callback) {
         final List<String> contents = this.contentSpliter.split(content, maxCount);
-        this.executor.execute(new SendCommand(contents, mobilePhones, callback));
+        this.executor.execute(new SendCommand(contents, locale, mobilePhones, callback));
     }
 
     /**
@@ -52,27 +53,32 @@ public abstract class AbstractSmsContentSender implements SmsContentSender {
      *
      * @param contents
      *            内容清单，每一个内容为一条短信
+     * @param locale
+     *            语言区域
      * @param mobilePhones
      *            手机号码清单
      * @return 发送结果
      */
-    protected abstract SmsSendResult send(List<String> contents, String... mobilePhones);
+    protected abstract SmsSendResult send(List<String> contents, Locale locale,
+            String... mobilePhones);
 
     protected class SendCommand implements Runnable {
         private List<String> contents;
+        private Locale locale;
         private String[] mobilePhones;
         private SmsSendCallback callback;
 
-        public SendCommand(final List<String> contents, final String[] mobilePhones,
-                final SmsSendCallback callback) {
+        public SendCommand(final List<String> contents, final Locale locale,
+                final String[] mobilePhones, final SmsSendCallback callback) {
             this.contents = contents;
+            this.locale = locale;
             this.mobilePhones = mobilePhones;
             this.callback = callback;
         }
 
         @Override
         public void run() {
-            final SmsSendResult result = send(this.contents, this.mobilePhones);
+            final SmsSendResult result = send(this.contents, this.locale, this.mobilePhones);
             this.callback.onSmsSent(result);
         }
 

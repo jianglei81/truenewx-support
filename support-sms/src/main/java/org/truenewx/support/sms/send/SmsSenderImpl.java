@@ -61,7 +61,7 @@ public class SmsSenderImpl implements SmsSender {
             if (content != null) {
                 final SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
-                    return contentSender.send(content, contentProvider.getMaxCount(), mobilePhones);
+                    return contentSender.send(content, contentProvider.getMaxCount(), locale, mobilePhones);
                 }
             }
         }
@@ -77,8 +77,8 @@ public class SmsSenderImpl implements SmsSender {
             if (content != null) {
                 final SmsContentSender contentSender = getContentSender(type);
                 if (contentSender != null) {
-                    contentSender.send(content, contentProvider.getMaxCount(), mobilePhones,
-                            callback);
+                    contentSender.send(content, contentProvider.getMaxCount(), locale,
+                            mobilePhones, callback);
                 }
             }
         }

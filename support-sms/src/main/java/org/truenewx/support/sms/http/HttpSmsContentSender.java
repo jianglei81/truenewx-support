@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +37,7 @@ public class HttpSmsContentSender extends AbstractSmsContentSender {
     }
 
     @Override
-    protected SmsSendResult send(final List<String> contents, String... mobilePhones) {
+    protected SmsSendResult send(final List<String> contents, Locale locale, String... mobilePhones) {
         final SmsModel sms = new SmsModel();
         sms.setContents(contents);
         sms.setMobilePhones(mobilePhones);
