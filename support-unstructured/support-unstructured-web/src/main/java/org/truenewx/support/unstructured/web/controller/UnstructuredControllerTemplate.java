@@ -2,6 +2,8 @@ package org.truenewx.support.unstructured.web.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +31,8 @@ import org.truenewx.web.exception.annotation.HandleableExceptionMessage;
 import org.truenewx.web.rpc.server.annotation.RpcController;
 import org.truenewx.web.rpc.server.annotation.RpcMethod;
 import org.truenewx.web.util.WebUtil;
+
+import com.aliyun.oss.internal.Mimetypes;
 
 /**
  * 非结构化存储授权控制器模板<br/>
@@ -124,6 +128,7 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
         final U user = getUser();
         final long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);
         response.setDateHeader("Last-Modified", modifiedTime);
+        response.setContentType(Mimetypes.getInstance().getMimetype(path));
         if (modifiedSince == modifiedTime) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED); // 如果相等则返回表示未修改的状态码
         } else {
@@ -142,7 +147,12 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
      * @return 存储桶和路径所在的URL片段
      */
     protected String getBucketAndPathFragmentUrl(final HttpServletRequest request) {
-        final String url = WebUtil.getRelativeRequestUrl(request);
+        String url = WebUtil.getRelativeRequestUrl(request);
+        try {
+            url = URLDecoder.decode(url, Strings.ENCODING_UTF8);
+        } catch (final UnsupportedEncodingException e) {
+            // 可以保证字符集不会有错
+        }
         final int index = url.indexOf("/dl/");
         return url.substring(index + 4); // 通配符部分
     }

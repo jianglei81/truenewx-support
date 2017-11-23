@@ -25,10 +25,10 @@ public class UnstructuredUploadLimit {
         this.capacity = capacity;
         this.extensions = extensions;
         this.mimeTypes = new String[extensions.length];
-        final Mimetypes mimeTypes = Mimetypes.getInstance();
+        final Mimetypes mimetypes = Mimetypes.getInstance();
         for (int i = 0; i < extensions.length; i++) {
             final String extension = "temp." + extensions[i];
-            this.mimeTypes[i] = mimeTypes.getMimetype(extension);
+            this.mimeTypes[i] = mimetypes.getMimetype(extension);
         }
     }
 
