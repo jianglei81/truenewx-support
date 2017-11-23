@@ -115,10 +115,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
     @RequestMapping(value = "/dl/**", method = RequestMethod.GET)
     public String download(final HttpServletRequest request, final HttpServletResponse response)
             throws BusinessException, IOException {
-        String url = WebUtil.getRelativeRequestUrl(request);
-        int index = url.indexOf("/dl/");
-        url = url.substring(index + 4); // 通配符部分
-        index = url.indexOf(Strings.SLASH);
+        final String url = getBucketAndPathFragmentUrl(request);
+        final int index = url.indexOf(Strings.SLASH);
         final String bucket = url.substring(0, index);
         final String path = url.substring(index + 1);
 
@@ -134,6 +132,19 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
             out.close();
         }
         return null;
+    }
+
+    /**
+     * 获取存储桶和路径所在的URL片段，子类可覆写实现自定义的路径格式
+     *
+     * @param request
+     *            HTTP请求
+     * @return 存储桶和路径所在的URL片段
+     */
+    protected String getBucketAndPathFragmentUrl(final HttpServletRequest request) {
+        final String url = WebUtil.getRelativeRequestUrl(request);
+        final int index = url.indexOf("/dl/");
+        return url.substring(index + 4); // 通配符部分
     }
 
     protected abstract U getUser();
