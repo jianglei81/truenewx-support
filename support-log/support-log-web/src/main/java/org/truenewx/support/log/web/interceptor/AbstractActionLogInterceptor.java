@@ -161,7 +161,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
     private String getUrlActionCaption(final Menu menu, final String url, final HttpMethod method) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
-            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOf(url, method);
+            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOfItems(url, method);
             for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
             }
@@ -231,7 +231,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
             final String methodName, final int argCount) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
-            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOf(beanId, methodName,
+            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOfItems(beanId, methodName,
                     argCount);
             for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
