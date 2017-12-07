@@ -23,5 +23,10 @@
             <artifactId>aliyun-java-sdk-sms</artifactId>
             <version>3.0.0-rc1</version>
         </dependency>
+        <dependency>
+         <groupId>com.yunpian.sdk</groupId>
+         <artifactId>yunpian-java-sdk</artifactId>
+         <version>1.2.5</version>
+       </dependency>
     </dependencies>
 </project>
