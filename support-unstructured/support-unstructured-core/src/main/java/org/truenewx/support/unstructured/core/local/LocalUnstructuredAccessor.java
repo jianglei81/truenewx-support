@@ -83,6 +83,15 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         final String relativePath = standardize(bucket) + standardize(path) + Strings.UNDERLINE
                 + StringUtil.uuid32() + Strings.DOT + "temp";
         final File file = new File(this.root, relativePath);
+        // 上级目录路径中可能已经存在一个同名文件，导致目录无法创建，此时修改该文件的名称
+        File parent = file.getParentFile();
+        while (parent != null) {
+            if (parent.exists() && !parent.isDirectory()) {
+                parent.renameTo(new File(parent.getAbsolutePath() + ".temp"));
+                break;
+            }
+            parent = parent.getParentFile();
+        }
         file.getParentFile().mkdirs(); // 确保目录存在
         file.createNewFile(); // 创建新文件以写入内容
         file.setWritable(true);

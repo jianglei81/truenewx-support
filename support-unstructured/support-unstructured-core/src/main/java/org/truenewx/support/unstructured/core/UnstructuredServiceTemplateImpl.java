@@ -1,14 +1,17 @@
 package org.truenewx.support.unstructured.core;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.Strings;
+import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
@@ -66,11 +69,24 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public String write(final T authorizeType, final U user, final String filename,
-            final InputStream in) throws BusinessException, IOException {
+    public String write(final T authorizeType, final U user, final String filename, InputStream in)
+            throws BusinessException, IOException {
         final UnstructuredAuthorizePolicy<T, U> policy = getPolicy(authorizeType);
         final UnstructuredProvider provider = policy.getProvider();
-        String path = policy.getPath(user, filename);
+        String path;
+        if (policy.isMd5AsFilename()) {
+            in = new BufferedInputStream(in);
+            in.mark(Integer.MAX_VALUE);
+            final String md5Code = Md5Encrypter.encrypt32(in);
+            in.reset();
+            String extension = FilenameUtils.getExtension(filename);
+            if (extension.length() > 0) {
+                extension = Strings.DOT + extension;
+            }
+            path = policy.getPath(user, md5Code + extension);
+        } else {
+            path = policy.getPath(user, filename);
+        }
         if (path == null) {
             throw new BusinessException(UnstructuredExceptionCodes.NO_WRITE_PERMISSION);
         }

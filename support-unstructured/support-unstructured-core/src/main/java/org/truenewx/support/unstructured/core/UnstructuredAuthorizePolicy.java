@@ -31,9 +31,20 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
      */
     String getBucket();
 
+    /**
+     * 是否将上传文件的MD5码作为文件名
+     *
+     * @return 是否将上传文件的MD5码作为文件名
+     */
+    default boolean isMd5AsFilename() {
+        return false;
+    }
+
     String getPath(U user, String filename);
 
-    boolean isPublicReadable();
+    default boolean isPublicReadable() {
+        return false;
+    }
 
     boolean isReadable(U user, String path);
 
