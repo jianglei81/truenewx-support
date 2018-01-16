@@ -15,6 +15,8 @@ import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
+import org.truenewx.support.unstructured.core.model.UnstructuredReadMetadata;
+import org.truenewx.support.unstructured.core.model.UnstructuredStorageMetadata;
 import org.truenewx.support.unstructured.core.model.UnstructuredStorageUrl;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
 
@@ -96,7 +98,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         }
 
         final String bucket = policy.getBucket();
-        this.accessor.write(bucket, path, in);
+        this.accessor.write(bucket, path, filename, in);
         if (policy.isPublicReadable()) {
             final UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
             authorizer.authorizePublicRead(bucket, path);
@@ -129,7 +131,11 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
 
     @Override
     public String getReadUrl(final U user, final String storageUrl) throws BusinessException {
-        final UnstructuredStorageUrl url = new UnstructuredStorageUrl(storageUrl);
+        return getReadUrl(user, new UnstructuredStorageUrl(storageUrl));
+    }
+
+    private String getReadUrl(final U user, final UnstructuredStorageUrl url)
+            throws BusinessException {
         if (url.isValid()) {
             final String bucket = url.getBucket();
             final String path = standardizePath(url.getPath());
@@ -152,8 +158,22 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
                 .orElse(null);
         if (policy == null) {
             // 如果没有找到匹配的方针，则说明没有读权限
-            throw new BusinessException(UnstructuredExceptionCodes.NO_READ_PERMISSION);
+            final String url = Strings.SLASH + bucket + path;
+            throw new BusinessException(UnstructuredExceptionCodes.NO_READ_PERMISSION, url);
         }
+    }
+
+    @Override
+    public UnstructuredReadMetadata getReadMetadata(final U user, final String storageUrl)
+            throws BusinessException {
+        final UnstructuredStorageUrl url = new UnstructuredStorageUrl(storageUrl);
+        final String readUrl = getReadUrl(user, url);
+        if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
+            final UnstructuredStorageMetadata storageMetadata = this.accessor
+                    .getStorageMetadata(url.getBucket(), url.getPath());
+            return new UnstructuredReadMetadata(readUrl, storageMetadata);
+        }
+        return null;
     }
 
     @Override

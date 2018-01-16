@@ -23,13 +23,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.truenewx.core.Strings;
 import org.truenewx.core.exception.BusinessException;
+import org.truenewx.core.spring.util.PlaceholderResolver;
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.support.unstructured.core.UnstructuredServiceTemplate;
+import org.truenewx.support.unstructured.core.model.UnstructuredReadMetadata;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
 import org.truenewx.support.unstructured.web.model.UploadResult;
+import org.truenewx.support.unstructured.web.resolver.UnstructuredReadUrlResolver;
 import org.truenewx.web.exception.annotation.HandleableExceptionMessage;
 import org.truenewx.web.rpc.server.annotation.RpcController;
 import org.truenewx.web.rpc.server.annotation.RpcMethod;
+import org.truenewx.web.security.annotation.Accessibility;
+import org.truenewx.web.spring.context.SpringWebContext;
 import org.truenewx.web.util.WebUtil;
 
 import com.aliyun.oss.internal.Mimetypes;
@@ -41,14 +46,17 @@ import com.aliyun.oss.internal.Mimetypes;
  * @author jianglei
  *
  */
-public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
+public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
+        implements UnstructuredReadUrlResolver {
 
     @Autowired
     private UnstructuredServiceTemplate<T, U> service;
+    @Autowired
+    private PlaceholderResolver placeholderResolver;
 
     /**
      * 获取在当前方针下，当前用户能上传指定授权类型的文件的最大容量，单位：B<br/>
-     * 注意：子类必须覆写该方法，并用@{@link RpcMethod}注解标注
+     * 注意：因模板方法中无法确定授权枚举类型，故需要子类覆写该方法，由于覆写方法不能继承注解，故同时需要使用{@link RpcMethod}注解进行标注
      *
      * @param authorizeType
      *            授权类型
@@ -101,22 +109,69 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U> {
         return JsonUtil.toJson(results);
     }
 
+    @Override
+    public final String getReadUrl(final String storageUrl) throws BusinessException {
+        final String readUrl = this.service.getReadUrl(getUser(), storageUrl);
+        return getAbsoluteReadUrl(readUrl);
+    }
+
+    private String getAbsoluteReadUrl(final String readUrl) {
+        // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需添加上下文根形成绝对地址
+        if (readUrl.startsWith(Strings.SLASH) && readUrl.length() > 1 && readUrl.charAt(1) != '/') {
+            return getContextUrl() + readUrl;
+        }
+        return readUrl;
+    }
+
+    private String getContextUrl() {
+        final String host = getHost();
+        final String contextPath = SpringWebContext.getRequest().getContextPath();
+        if (host == null) {
+            return contextPath;
+        }
+        if (Strings.SLASH.equals(contextPath)) {
+            return host;
+        }
+        return host + contextPath;
+    }
+
+    protected String getHost() {
+        return this.placeholderResolver.resolvePlaceholder(getHostPlaceholderKey());
+    }
+
+    protected String getHostPlaceholderKey() {
+        return "context.host.unstructured";
+    }
+
     /**
-     * 当前用户获取指定内部存储URL对应的外部读取URL<br/>
-     * 注意：子类必须覆写该方法，并用@{@link RpcMethod}注解标注
+     * 当前用户获取指定内部存储URL集对应的资源读取元信息集<br/>
      *
-     * @param storageUrl
-     *            内部存储URL
-     *
-     * @return 外部读取URL
+     * @param storageUrls
+     *            内部存储URL集
+     * @return 资源读取元信息集
      * @throws BusinessException
-     *             如果指定用户对指定资源没有读取权限
+     *             如果指定用户对某个资源没有读取权限
      */
-    public String getReadUrl(final String storageUrl) throws BusinessException {
-        return this.service.getReadUrl(getUser(), storageUrl);
+    @RpcMethod
+    @Accessibility(anonymous = true) // 默认匿名可获取，用户读取权限控制由各方针决定
+    public UnstructuredReadMetadata[] getReadMetadatas(final String[] storageUrls)
+            throws BusinessException {
+        final UnstructuredReadMetadata[] metadatas = new UnstructuredReadMetadata[storageUrls.length];
+        for (int i = 0; i < storageUrls.length; i++) {
+            metadatas[i] = this.service.getReadMetadata(getUser(), storageUrls[i]);
+            String readUrl = metadatas[i].getReadUrl();
+            readUrl = getAbsoluteReadUrl(readUrl);
+            final String host = getHost();
+            if (host != null && readUrl.startsWith(host)) { // 如果读取路径以主机地址开头，说明是当前站点，可省略主机地址部分
+                readUrl = readUrl.substring(host.length());
+            }
+            metadatas[i].setReadUrl(readUrl);
+        }
+        return metadatas;
     }
 
     @RequestMapping(value = "/dl/**", method = RequestMethod.GET)
+    @Accessibility(anonymous = true) // 默认匿名可下载，用户读取权限控制由各方针决定
     public String download(final HttpServletRequest request, final HttpServletResponse response)
             throws BusinessException, IOException {
         final String url = getBucketAndPathFragmentUrl(request);

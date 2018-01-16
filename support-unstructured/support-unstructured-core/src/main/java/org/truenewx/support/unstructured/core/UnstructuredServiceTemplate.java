@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.truenewx.core.exception.BusinessException;
+import org.truenewx.support.unstructured.core.model.UnstructuredReadMetadata;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
 
 /**
@@ -64,6 +65,19 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U> {
      *             如果指定用户对指定资源没有读取权限
      */
     String getReadUrl(U user, String storageUrl) throws BusinessException;
+
+    /**
+     * 获取指定资源的读取元信息
+     *
+     * @param user
+     *            用户标识
+     * @param storageUrl
+     *            资源的存储路径
+     * @return 指定资源的读取元信息
+     * @throws BusinessException
+     *             如果指定用户对指定资源没有读取权限
+     */
+    UnstructuredReadMetadata getReadMetadata(U user, String storageUrl) throws BusinessException;
 
     /**
      * 获取指定资源的最后修改时间

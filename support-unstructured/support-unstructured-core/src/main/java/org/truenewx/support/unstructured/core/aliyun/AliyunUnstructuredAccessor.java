@@ -6,6 +6,9 @@ import java.io.OutputStream;
 
 import org.truenewx.core.util.IOUtil;
 import org.truenewx.support.unstructured.core.UnstructuredAccessor;
+import org.truenewx.support.unstructured.core.model.UnstructuredStorageMetadata;
+
+import com.aliyun.oss.model.ObjectMetadata;
 
 /**
  * 阿里云的非结构化存储访问器
@@ -22,9 +25,25 @@ public class AliyunUnstructuredAccessor implements UnstructuredAccessor {
     }
 
     @Override
-    public void write(final String bucket, final String path, final InputStream in)
-            throws IOException {
-        this.account.getOssClient().putObject(bucket, path, in);
+    public void write(final String bucket, final String path, final String filename,
+            final InputStream in) throws IOException {
+        final ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.getUserMetadata().put("filename", filename);
+        this.account.getOssClient().putObject(bucket, path, in, objectMetadata);
+    }
+
+    @Override
+    public UnstructuredStorageMetadata getStorageMetadata(final String bucket, final String path) {
+        try {
+            final ObjectMetadata objectMetadata = this.account.getOssClient()
+                    .getObjectMetadata(bucket, path);
+            final String filename = objectMetadata.getUserMetadata().get("filename");
+            return new UnstructuredStorageMetadata(filename, objectMetadata.getContentLength(),
+                    objectMetadata.getLastModified().getTime());
+        } catch (final Exception e) {
+            // 忽略所有异常
+            return null;
+        }
     }
 
     @Override

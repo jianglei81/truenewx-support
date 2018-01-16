@@ -67,16 +67,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public String getRegion() {
-        return this.account.getOssRegion();
-    }
-
-    @Override
-    public String getHost() {
-        return this.account.getOssEndpoint();
-    }
-
-    @Override
     public void authorizePublicRead(final String bucket, final String path) {
         // TODO 避免同样的路径反复多次申请公开读
         this.account.getOssClient().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);

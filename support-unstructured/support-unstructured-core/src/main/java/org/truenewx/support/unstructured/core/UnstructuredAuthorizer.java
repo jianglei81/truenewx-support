@@ -18,16 +18,6 @@ public interface UnstructuredAuthorizer {
     UnstructuredProvider getProvider();
 
     /**
-     * @return 服务主机地址
-     */
-    String getHost();
-
-    /**
-     * @return 所属地区
-     */
-    String getRegion();
-
-    /**
      * 授权指定资源为公开可读
      *
      * @param bucket

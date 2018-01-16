@@ -12,36 +12,20 @@ import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
  */
 public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
-    private String host;
-    private String region;
+    private String downloadPathPrefix = "/unstructured/dl";
+
+    /**
+     *
+     * @param downloadPathPrefix
+     *            资源下载路径前缀
+     */
+    public void setDownloadPathPrefix(final String downloadPathPrefix) {
+        this.downloadPathPrefix = downloadPathPrefix;
+    }
 
     @Override
     public UnstructuredProvider getProvider() {
         return UnstructuredProvider.OWN;
-    }
-
-    @Override
-    public String getHost() {
-        return this.host;
-    }
-
-    public void setHost(final String host) {
-        this.host = host;
-    }
-
-    @Override
-    public String getRegion() {
-        return this.region;
-    }
-
-    /**
-     * 设置访问区域
-     *
-     * @param region
-     *            访问区域，此处为上传和下载Controller的action路径
-     */
-    public void setRegion(final String region) {
-        this.region = region;
     }
 
     @Override
@@ -51,10 +35,9 @@ public class LocalUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
     @Override
     public String getReadUrl(final String userKey, final String bucket, final String path) {
-        // 形如：${host}/${region}/${bucket}/${path}
-        final StringBuffer url = new StringBuffer(getHost()).append(Strings.SLASH)
-                .append(getRegion()).append(Strings.SLASH).append(bucket).append(Strings.SLASH)
-                .append(path);
+        // 形如：/${downloadPathPrefix}/${bucket}/${path}，本地地址交由Controller完成上下文根路径的拼装
+        final StringBuffer url = new StringBuffer(this.downloadPathPrefix).append(Strings.SLASH)
+                .append(bucket).append(Strings.SLASH).append(path);
         return url.toString();
     }
 
