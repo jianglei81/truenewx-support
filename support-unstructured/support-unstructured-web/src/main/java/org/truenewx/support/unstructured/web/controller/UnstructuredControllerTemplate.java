@@ -95,7 +95,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
                 final U user = getUser();
                 final String storageUrl = this.service.write(authorizeType, user, filename, in);
                 in.close();
-                final String readUrl = this.service.getReadUrl(user, storageUrl);
+                String readUrl = this.service.getReadUrl(user, storageUrl);
+                readUrl = getFullReadUrl(readUrl);
                 final UploadResult result = new UploadResult(filename, storageUrl, readUrl);
                 results.add(result);
             }
@@ -112,27 +113,28 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     @Override
     public final String getReadUrl(final String storageUrl) throws BusinessException {
         final String readUrl = this.service.getReadUrl(getUser(), storageUrl);
-        return getAbsoluteReadUrl(readUrl);
+        return getFullReadUrl(readUrl);
     }
 
-    private String getAbsoluteReadUrl(final String readUrl) {
-        // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需添加上下文根形成绝对地址
+    private String getFullReadUrl(String readUrl) {
+        // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需考虑添加主机地址和上下文根
         if (readUrl.startsWith(Strings.SLASH) && readUrl.length() > 1 && readUrl.charAt(1) != '/') {
-            return getContextUrl() + readUrl;
+            // 先加上上下文根路径
+            final String contextPath = SpringWebContext.getRequest().getContextPath();
+            if (!contextPath.equals(Strings.SLASH)) {
+                readUrl = contextPath + readUrl;
+            }
+            // 再加上主机地址
+            final String host = getHost();
+            if (host != null) {
+                final String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
+                // 当前请求地址与非结构化存储的外部读取主机地址不一致，则需要将主机地址加入读取地址中
+                if (!requestUrl.startsWith(host)) {
+                    readUrl = host + readUrl;
+                }
+            }
         }
         return readUrl;
-    }
-
-    private String getContextUrl() {
-        final String host = getHost();
-        final String contextPath = SpringWebContext.getRequest().getContextPath();
-        if (host == null) {
-            return contextPath;
-        }
-        if (Strings.SLASH.equals(contextPath)) {
-            return host;
-        }
-        return host + contextPath;
     }
 
     protected String getHost() {
@@ -160,11 +162,7 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         for (int i = 0; i < storageUrls.length; i++) {
             metadatas[i] = this.service.getReadMetadata(getUser(), storageUrls[i]);
             String readUrl = metadatas[i].getReadUrl();
-            readUrl = getAbsoluteReadUrl(readUrl);
-            final String host = getHost();
-            if (host != null && readUrl.startsWith(host)) { // 如果读取路径以主机地址开头，说明是当前站点，可省略主机地址部分
-                readUrl = readUrl.substring(host.length());
-            }
+            readUrl = getFullReadUrl(readUrl);
             metadatas[i].setReadUrl(readUrl);
         }
         return metadatas;
