@@ -127,7 +127,12 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
             // 再加上主机地址
             final String host = getHost();
             if (host != null) {
-                final String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
+                String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
+                // 如果配置的主机地址以//开头，说明允许各种访问协议，此时需去掉请求地址中的协议部分再进行比较
+                if (host.startsWith("//")) {
+                    final int index = requestUrl.indexOf("://");
+                    requestUrl = requestUrl.substring(index + 1); // 让请求地址也以//开头
+                }
                 // 当前请求地址与非结构化存储的外部读取主机地址不一致，则需要将主机地址加入读取地址中
                 if (!requestUrl.startsWith(host)) {
                     readUrl = host + readUrl;
