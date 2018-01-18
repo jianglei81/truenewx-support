@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.core.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
 
 /**
@@ -21,16 +22,18 @@ public class UnstructuredStorageUrl {
     }
 
     public UnstructuredStorageUrl(final String storageUrl) {
-        int index1 = storageUrl.indexOf("://");
-        if (index1 > 0) {
-            final String protocol = storageUrl.substring(0, index1);
-            this.provider = UnstructuredProvider.valueOf(protocol.toUpperCase());
+        if (StringUtils.isNotBlank(storageUrl)) {
+            int index1 = storageUrl.indexOf("://");
+            if (index1 > 0) {
+                final String protocol = storageUrl.substring(0, index1);
+                this.provider = UnstructuredProvider.valueOf(protocol.toUpperCase());
 
-            index1 += 3;
-            final int index2 = storageUrl.indexOf(Strings.SLASH, index1);
-            if (index2 > 0) {
-                this.bucket = storageUrl.substring(index1, index2);
-                this.path = storageUrl.substring(index2);
+                index1 += 3;
+                final int index2 = storageUrl.indexOf(Strings.SLASH, index1);
+                if (index2 > 0) {
+                    this.bucket = storageUrl.substring(index1, index2);
+                    this.path = storageUrl.substring(index2);
+                }
             }
         }
     }

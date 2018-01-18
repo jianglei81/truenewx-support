@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -113,13 +114,17 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
 
     @Override
     public final String getReadUrl(final String storageUrl) throws BusinessException {
-        final String readUrl = this.service.getReadUrl(getUser(), storageUrl);
-        return getFullReadUrl(readUrl);
+        if (StringUtils.isNotBlank(storageUrl)) {
+            final String readUrl = this.service.getReadUrl(getUser(), storageUrl);
+            return getFullReadUrl(readUrl);
+        }
+        return null;
     }
 
     private String getFullReadUrl(String readUrl) {
         // 读取地址以/开头但不以//开头，则视为相对地址，相对地址需考虑添加主机地址和上下文根
-        if (readUrl.startsWith(Strings.SLASH) && readUrl.length() > 1 && readUrl.charAt(1) != '/') {
+        if (readUrl != null && readUrl.length() > 1 && readUrl.startsWith(Strings.SLASH)
+                && readUrl.charAt(1) != '/') {
             // 先加上上下文根路径
             final String contextPath = SpringWebContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
