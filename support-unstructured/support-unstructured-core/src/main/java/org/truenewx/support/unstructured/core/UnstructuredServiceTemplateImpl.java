@@ -171,7 +171,9 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
             final UnstructuredStorageMetadata storageMetadata = this.accessor
                     .getStorageMetadata(url.getBucket(), url.getPath());
-            return new UnstructuredReadMetadata(readUrl, storageMetadata);
+            if (storageMetadata != null) {
+                return new UnstructuredReadMetadata(readUrl, storageMetadata);
+            }
         }
         return null;
     }

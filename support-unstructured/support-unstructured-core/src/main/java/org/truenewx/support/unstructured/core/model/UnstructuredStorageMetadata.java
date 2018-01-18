@@ -45,6 +45,9 @@ public class UnstructuredStorageMetadata {
     }
 
     public String getMimeType() {
+        if (this.filename == null) {
+            return null;
+        }
         return Mimetypes.getInstance().getMimetype(this.filename);
     }
 

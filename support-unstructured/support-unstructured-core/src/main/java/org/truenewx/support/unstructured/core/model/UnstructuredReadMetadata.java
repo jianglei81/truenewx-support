@@ -30,11 +30,11 @@ public class UnstructuredReadMetadata {
     }
 
     public long getSize() {
-        return this.storageMetadata == null ? null : this.storageMetadata.getSize();
+        return this.storageMetadata == null ? 0 : this.storageMetadata.getSize();
     }
 
     public long getLastModifiedTime() {
-        return this.storageMetadata == null ? null : this.storageMetadata.getLastModifiedTime();
+        return this.storageMetadata == null ? 0 : this.storageMetadata.getLastModifiedTime();
     }
 
     public String getMimeType() {

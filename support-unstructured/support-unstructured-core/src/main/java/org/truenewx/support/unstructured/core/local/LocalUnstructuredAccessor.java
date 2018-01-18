@@ -67,7 +67,7 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
         final File tempFile = createTempFile(bucket, path);
         final OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename);
-        IOUtil.writeAll(in, out); // 最后写入原始文件流
+        IOUtil.writeAll(in, out);
         out.close();
 
         // 然后删除原文件，修改临时文件名为原文件名
@@ -156,9 +156,9 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
             if (file.exists()) {
                 final AttachInputStream in = new AttachInputStream(new FileInputStream(file));
                 final String filename = in.readAttachement();
+                final int size = in.available(); // 读取完附加信息后，输入流剩余的长度即为资源大小
                 in.close();
-                return new UnstructuredStorageMetadata(filename, file.length(),
-                        file.lastModified());
+                return new UnstructuredStorageMetadata(filename, size, file.lastModified());
             } else if (this.remoteAccessor != null) {
                 return this.remoteAccessor.getStorageMetadata(bucket, path);
             }

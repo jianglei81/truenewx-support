@@ -86,12 +86,13 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         final List<UploadResult> results = new ArrayList<>();
         final FileItemFactory fileItemFactory = new DiskFileItemFactory();
         final ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
-        servletFileUpload.setHeaderEncoding(Strings.DEFAULT_ENCODING);
+        servletFileUpload.setHeaderEncoding(Strings.ENCODING_UTF8);
         final List<FileItem> fileItems = servletFileUpload.parseRequest(request);
         for (final FileItem fileItem : fileItems) {
             if (!fileItem.isFormField()) {
                 final String filename = fileItem.getName();
                 final InputStream in = fileItem.getInputStream();
+                // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 final U user = getUser();
                 final String storageUrl = this.service.write(authorizeType, user, filename, in);
                 in.close();
@@ -166,9 +167,11 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         final UnstructuredReadMetadata[] metadatas = new UnstructuredReadMetadata[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
             metadatas[i] = this.service.getReadMetadata(getUser(), storageUrls[i]);
-            String readUrl = metadatas[i].getReadUrl();
-            readUrl = getFullReadUrl(readUrl);
-            metadatas[i].setReadUrl(readUrl);
+            if (metadatas[i] != null) {
+                String readUrl = metadatas[i].getReadUrl();
+                readUrl = getFullReadUrl(readUrl);
+                metadatas[i].setReadUrl(readUrl);
+            }
         }
         return metadatas;
     }
