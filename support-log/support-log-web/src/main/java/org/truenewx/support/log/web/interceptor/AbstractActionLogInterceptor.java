@@ -138,7 +138,10 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                 } else {
                     excludedParameterNames = new String[0];
                 }
-                final Menu menu = getMenu(); // 在创建线程提交执行之前获取菜单，以免线程执行环境无法获取当前菜单
+                // 在创建线程提交执行之前获取菜单和请求参数，以免线程执行环境无法获取
+                final Menu menu = getMenu();
+                final Map<String, Object> params = WebUtil.getRequestParameterMap(request,
+                        excludedParameterNames);
                 this.executor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -146,8 +149,6 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                         action.setUrl(url);
                         action.setMethod(method.name());
                         action.setCaption(getUrlActionCaption(menu, url, method));
-                        final Map<String, Object> params = WebUtil.getRequestParameterMap(request,
-                                excludedParameterNames);
                         if (!params.isEmpty()) {
                             action.setParams(params);
                         }
