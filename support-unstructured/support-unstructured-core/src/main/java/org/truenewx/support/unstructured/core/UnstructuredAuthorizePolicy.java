@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.core;
 
+import org.truenewx.core.exception.BusinessException;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
 
@@ -40,7 +41,7 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
         return false;
     }
 
-    String getPath(U user, String filename);
+    String getPath(U user, String filename) throws BusinessException;
 
     default boolean isPublicReadable() {
         return false;
