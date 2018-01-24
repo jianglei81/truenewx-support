@@ -20,9 +20,20 @@ public class UnstructuredExceptionCodes {
      * 没有写权限
      */
     public static final String NO_WRITE_PERMISSION = "error.unstructured.no_write_permission";
+
     /**
      * 没有读权限
      */
     public static final String NO_READ_PERMISSION = "error.unstructured.no_read_permission";
+
+    /**
+     * 仅支持指定扩展名
+     */
+    public static final String ONLY_SUPPORTED_EXTENSION = "error.unstructured.upload.only_supported_extension";
+
+    /**
+     * 不支持指定扩展名
+     */
+    public static final String UNSUPPORTED_EXTENSION = "error.unstructured.upload.unsupported_extension";
 
 }

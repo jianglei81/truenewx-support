@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.Strings;
@@ -71,9 +73,10 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public String write(final T authorizeType, final U user, final String filename, InputStream in)
-            throws BusinessException, IOException {
+    public String write(final T authorizeType, final U user, final String filename,
+            InputStream in) throws BusinessException, IOException {
         final UnstructuredAuthorizePolicy<T, U> policy = getPolicy(authorizeType);
+        final String extension = validateExtension(policy, user, filename);
         final UnstructuredProvider provider = policy.getProvider();
         String path;
         if (policy.isMd5AsFilename()) {
@@ -81,10 +84,6 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             in.mark(Integer.MAX_VALUE);
             final String md5Code = Md5Encrypter.encrypt32(in);
             in.reset();
-            String extension = FilenameUtils.getExtension(filename);
-            if (extension.length() > 0) {
-                extension = Strings.DOT + extension;
-            }
             path = policy.getPath(user, md5Code + extension);
         } else {
             path = policy.getPath(user, filename);
@@ -104,6 +103,28 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             authorizer.authorizePublicRead(bucket, path);
         }
         return getStorageUrl(provider, bucket, path);
+    }
+
+    private String validateExtension(final UnstructuredAuthorizePolicy<T, U> policy, final U user,
+            final String filename) throws BusinessException {
+        String extension = FilenameUtils.getExtension(filename);
+        final UnstructuredUploadLimit uploadLimit = policy.getUploadLimit(user);
+        final String[] extensions = uploadLimit.getExtensions();
+        if (uploadLimit.isRejectedExtension()) { // 拒绝扩展名模式
+            if (ArrayUtils.contains(extensions, extension)) {
+                throw new BusinessException(UnstructuredExceptionCodes.UNSUPPORTED_EXTENSION,
+                        StringUtils.join(extensions, Strings.COMMA), filename);
+            }
+        } else { // 允许扩展名模式
+            if (!ArrayUtils.contains(extensions, extension)) {
+                throw new BusinessException(UnstructuredExceptionCodes.ONLY_SUPPORTED_EXTENSION,
+                        StringUtils.join(extensions, Strings.COMMA), filename);
+            }
+        }
+        if (extension.length() > 0) {
+            extension = Strings.DOT + extension;
+        }
+        return extension;
     }
 
     protected String getStorageUrl(final UnstructuredProvider provider, final String bucket,
