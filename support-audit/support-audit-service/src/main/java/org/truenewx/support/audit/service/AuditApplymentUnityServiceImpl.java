@@ -84,8 +84,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public void transform(final SubmitModel<U> submitModel, final U unity)
-            throws HandleableException {
+    public void transform(final SubmitModel<U> submitModel, final U unity) {
         if (submitModel instanceof AuditApplymentSubmitModel) {
             final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) submitModel;
             unity.setApplicantId(model.getApplicantId());
