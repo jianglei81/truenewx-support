@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 标注方法在日志体系中排除，不记录日志
+ * 标注在记录操作日志的排除设置
  *
  * @author jianglei
  * @since JDK 1.8
@@ -20,10 +20,16 @@ import java.lang.annotation.Target;
 public @interface LogExcluded {
 
     /**
-     * 为空时标注方法整个排除，非空时仅排除指定参数
-     * 
+     *
+     * @return 是否排除整个方法，默认为true
+     */
+    boolean value() default true;
+
+    /**
+     * 要排除的参数名称集，为空时表示不排除
+     *
      * @return 要排除的参数名称集
      */
-    String[] parameters() default {};
+    String[] excluded() default {};
 
 }

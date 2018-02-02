@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.method.HandlerMethod;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.util.WebUtils;
 import org.truenewx.core.Strings;
+import org.truenewx.core.annotation.Caption;
 import org.truenewx.core.tuple.Binate;
 import org.truenewx.support.log.data.model.RpcAction;
 import org.truenewx.support.log.data.model.UrlAction;
@@ -122,51 +124,56 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
         if (userId != null) { // 已登录的才需要记录日志
             final String url = WebUtil.getRelativeRequestUrl(request);
             final HttpMethod method = EnumUtils.getEnum(HttpMethod.class, request.getMethod());
-            if (matches(url, method)) { // URL匹配才进行校验
-                final String[] excludedParameterNames;
-                if (handler instanceof HandlerMethod) {
-                    final HandlerMethod hm = (HandlerMethod) handler;
-                    final LogExcluded logExcluded = hm.getMethodAnnotation(LogExcluded.class);
-                    if (logExcluded != null) {
-                        excludedParameterNames = logExcluded.parameters();
-                        if (excludedParameterNames.length == 0) { // 存在LogExcluded注解但未指定排除参数集，则整个方法被排除
-                            return;
-                        }
-                    } else {
-                        excludedParameterNames = new String[0];
-                    }
-                } else {
-                    excludedParameterNames = new String[0];
+            if (matches(url, method) && handler instanceof HandlerMethod) { // URL匹配才进行校验
+                final HandlerMethod hm = (HandlerMethod) handler;
+                final LogExcluded logExcluded = hm.getMethodAnnotation(LogExcluded.class);
+                if (logExcluded != null && logExcluded.value()) { // 整个方法都被排除
+                    return;
                 }
                 // 在创建线程提交执行之前获取菜单和请求参数，以免线程执行环境无法获取
                 final Menu menu = getMenu();
-                final Map<String, Object> params = WebUtil.getRequestParameterMap(request,
-                        excludedParameterNames);
-                this.executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        final UrlAction action = new UrlAction();
-                        action.setUrl(url);
-                        action.setMethod(method.name());
-                        action.setCaption(getUrlActionCaption(menu, url, method));
-                        if (!params.isEmpty()) {
-                            action.setParams(params);
-                        }
-                        AbstractActionLogInterceptor.this.writer.add(userId, action);
+                final String caption = getUrlActionCaption(menu, url, method, hm);
+                if (StringUtils.isNotBlank(caption)) {
+                    final Map<String, Object> params;
+                    if (logExcluded != null) {
+                        params = WebUtil.getRequestParameterMap(request, logExcluded.excluded());
+                    } else {
+                        params = WebUtil.getRequestParameterMap(request);
                     }
-                });
+                    this.executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            final UrlAction action = new UrlAction();
+                            action.setUrl(url);
+                            action.setMethod(method.name());
+                            action.setCaption(caption);
+                            if (!params.isEmpty()) {
+                                action.setParams(params);
+                            }
+                            AbstractActionLogInterceptor.this.writer.add(userId, action);
+                        }
+                    });
+                }
             }
         }
     }
 
-    private String getUrlActionCaption(final Menu menu, final String url, final HttpMethod method) {
+    private String getUrlActionCaption(final Menu menu, final String url, final HttpMethod method,
+            final HandlerMethod handlerMethod) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
             final List<Binate<Integer, MenuItem>> indexes = menu.indexesOfItems(url, method);
             for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
             }
-            return caption.length() == 0 ? null : caption.toString().trim();
+            if (StringUtils.isNotBlank(caption)) {
+                return caption.toString().trim();
+            }
+            // 如果无法从菜单中获得显示名称，则尝试从@Caption注解中获取，这意味着使用@Caption注解的方法将被记录操作日志
+            final Caption captionAnnotation = handlerMethod.getMethodAnnotation(Caption.class);
+            if (captionAnnotation != null) {
+                return captionAnnotation.value();
+            }
         }
         return null;
     }
@@ -190,13 +197,14 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
             final String methodName = method.getName();
             final int argCount = args.length;
             if (matches(beanId, methodName, argCount)) {
-                if (method.getAnnotation(LogExcluded.class) != null) {
-                    // RPC方法只要存在LogExcluded注解，则不论有没有指定忽略参数集，均忽略该方法
+                final LogExcluded logExcluded = method.getAnnotation(LogExcluded.class);
+                if (logExcluded != null && logExcluded.value()) { // 整个方法都被排除
                     return;
                 }
-                final Menu menu = getMenu(); // 在创建线程提交执行之前获取菜单，以免线程执行环境无法获取当前菜单
-                final String caption = getRpcActionCaption(menu, beanId, methodName, argCount);
-                if (caption != null) { // 找得到对应显示名称的才记录日志
+                // 在创建线程提交执行之前获取菜单，以免线程执行环境无法获取当前菜单
+                final Menu menu = getMenu();
+                final String caption = getRpcMethodCaption(menu, beanId, method, argCount);
+                if (StringUtils.isNotBlank(caption)) { // 找得到对应显示名称的才记录日志
                     this.executor.execute(new Runnable() {
                         @Override
                         public void run() {
@@ -228,16 +236,23 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
         return true;
     }
 
-    private String getRpcActionCaption(final Menu menu, final String beanId,
-            final String methodName, final int argCount) {
+    private String getRpcMethodCaption(final Menu menu, final String beanId, final Method method,
+            final int argCount) {
         if (menu != null) {
             final StringBuffer caption = new StringBuffer();
-            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOfItems(beanId, methodName,
-                    argCount);
+            final List<Binate<Integer, MenuItem>> indexes = menu.indexesOfItems(beanId,
+                    method.getName(), argCount);
             for (final Binate<Integer, MenuItem> binate : indexes) {
                 caption.append(" / ").append(binate.getRight().getCaption());
             }
-            return caption.length() == 0 ? null : caption.toString().trim();
+            if (StringUtils.isNotBlank(caption)) {
+                return caption.toString().trim();
+            }
+            // 如果无法从菜单中获得显示名称，则尝试从@Caption注解中获取，这意味着使用@Caption注解的方法将被记录操作日志
+            final Caption captionAnnotation = method.getAnnotation(Caption.class);
+            if (captionAnnotation != null) {
+                return captionAnnotation.value();
+            }
         }
         return null;
     }
