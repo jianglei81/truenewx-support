@@ -73,9 +73,11 @@ public class EmailSendCommand implements Runnable {
                     return;
                 }
                 try {
-                    this.logger.info("======= Begin send email to {} =======",
+                    this.logger.info("======= Begin to send email to {} =======",
                             StringUtils.join(message.getAddresses(), Strings.COMMA));
                     this.sender.send(new SimpleMimeMessagePreparator(this.source, message));
+                    this.logger.info("======= Sent email to {} =======",
+                            StringUtils.join(message.getAddresses(), Strings.COMMA));
                     this.progress.addSuccess(message);
                 } catch (final Exception e) {
                     this.logger.error(e.getMessage(), e);
@@ -92,9 +94,11 @@ public class EmailSendCommand implements Runnable {
         } else {
             for (final EmailMessage message : this.messages) {
                 try {
-                    this.logger.info("======= Begin send email to {} =======",
+                    this.logger.info("======= Begin to send email to {} =======",
                             StringUtils.join(message.getAddresses(), Strings.COMMA));
                     this.sender.send(new SimpleMimeMessagePreparator(this.source, message));
+                    this.logger.info("======= Sent email to {} =======",
+                            StringUtils.join(message.getAddresses(), Strings.COMMA));
                 } catch (final MailException e) { // 尽量尝试发送所有邮件
                     this.logger.error(e.getMessage(), e);
                 }

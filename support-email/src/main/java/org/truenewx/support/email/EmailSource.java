@@ -20,7 +20,7 @@ public class EmailSource {
     /**
      * 邮件字符编码
      */
-    private String encoding = Strings.DEFAULT_ENCODING;
+    private String encoding = Strings.ENCODING_UTF8;
 
     /**
      * 用默认的字符编码（{@link Strings#DEFAULT_ENCODING}）构建邮件源
