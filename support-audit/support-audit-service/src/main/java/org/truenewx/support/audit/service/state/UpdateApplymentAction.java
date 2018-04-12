@@ -37,7 +37,7 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public void execute(final Long key, final Object context) throws HandleableException {
+    public U execute(final Long key, final Object context) throws HandleableException {
         @SuppressWarnings("unchecked")
         final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) context;
         final U unity = load(model.getApplicantId(), key);
@@ -45,6 +45,7 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
         unity.setStatus(getNextState(unity.getStatus(), context));
         unity.setApplyTime(getApplyTime());
         this.dao.save(unity);
+        return unity;
     }
 
     protected Date getApplyTime() {

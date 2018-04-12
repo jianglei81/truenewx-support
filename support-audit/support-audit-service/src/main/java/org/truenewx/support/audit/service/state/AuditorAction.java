@@ -36,7 +36,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
     }
 
     @Override
-    public void execute(final Long key, final Object context) throws HandleableException {
+    public U execute(final Long key, final Object context) throws HandleableException {
         @SuppressWarnings("unchecked")
         final AuditOperateContext<T, A> operateContext = (AuditOperateContext<T, A>) context;
         final String attitude = operateContext.getAttitude();
@@ -75,5 +75,6 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         default:
             break;
         }
+        return applyment;
     }
 }

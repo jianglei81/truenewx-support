@@ -62,15 +62,6 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public AuditStatus getState(final Long key) {
-        final U entity = find(key);
-        if (entity != null) {
-            return entity.getStatus();
-        }
-        return null;
-    }
-
-    @Override
     public AuditPolicy<U, T, A> loadPolicy(final T type) {
         final AuditPolicy<U, T, A> policy = this.policies.get(type);
         Assert.notNull(policy, "policy must be not null");

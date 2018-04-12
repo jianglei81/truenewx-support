@@ -7,7 +7,6 @@ import java.util.Map;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.data.model.SubmitModel;
 import org.truenewx.data.query.QueryResult;
-import org.truenewx.service.fsm.StateGetter;
 import org.truenewx.service.unity.OwnedUnityService;
 import org.truenewx.service.unity.UnityService;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
@@ -30,8 +29,7 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  *            审核者类型
  */
 public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends UnityService<U, Long>, OwnedUnityService<U, Long, Integer>,
-        StateGetter<Long, AuditStatus> {
+        extends UnityService<U, Long>, OwnedUnityService<U, Long, Integer> {
 
     /**
      * 获取指定审核类型的审核方针

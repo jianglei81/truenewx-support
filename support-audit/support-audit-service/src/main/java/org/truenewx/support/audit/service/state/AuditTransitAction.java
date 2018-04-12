@@ -16,13 +16,15 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  *
  * @author jianglei
  * @since JDK 1.8
+ * @param <U>
+ *            申请实体类型
  * @param <T>
  *            申请类型的枚举类型
  * @param <A>
  *            审核者类型
  */
 abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends ServiceSupport implements TransitAction<Long, AuditStatus, AuditTransition> {
+        extends ServiceSupport implements TransitAction<U, Long, AuditStatus, AuditTransition> {
 
     protected AuditApplymentUnityDao<U, T, A> dao;
 
