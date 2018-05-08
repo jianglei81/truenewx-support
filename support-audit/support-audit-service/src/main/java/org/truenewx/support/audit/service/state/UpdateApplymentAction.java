@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.HandleableException;
+import org.truenewx.data.user.UserIdentity;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditTransition;
@@ -32,17 +33,17 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditStatus getNextState(final AuditStatus state, final Object context) {
+    public AuditStatus getNextState(final UserIdentity userIdentity, final AuditStatus state) {
         return AuditStatus.UNAPPLIED;
     }
 
     @Override
-    public U execute(final Long key, final Object context) throws HandleableException {
+    public U execute(UserIdentity userIdentity, final Long key, final Object context) throws HandleableException {
         @SuppressWarnings("unchecked")
         final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) context;
         final U unity = load(model.getApplicantId(), key);
         getService().transform(model, unity);
-        unity.setStatus(getNextState(unity.getStatus(), context));
+        unity.setStatus(getNextState(context, unity.getStatus()));
         unity.setApplyTime(getApplyTime());
         this.dao.save(unity);
         return unity;

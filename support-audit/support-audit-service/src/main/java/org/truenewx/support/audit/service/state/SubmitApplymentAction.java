@@ -3,6 +3,7 @@ package org.truenewx.support.audit.service.state;
 import java.util.Date;
 
 import org.springframework.stereotype.Service;
+import org.truenewx.data.user.UserIdentity;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditStatus;
 import org.truenewx.support.audit.data.model.AuditTransition;
@@ -29,7 +30,7 @@ public class SubmitApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditStatus getNextState(final AuditStatus state, final Object context) {
+    public AuditStatus getNextState(final UserIdentity userIdentity, final AuditStatus state) {
         return AuditStatus.PENDING;
     }
 
