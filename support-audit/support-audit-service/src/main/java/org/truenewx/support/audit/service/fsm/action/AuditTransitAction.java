@@ -7,6 +7,7 @@ import org.truenewx.support.audit.data.dao.AuditApplymentUnityDao;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.AuditApplymentUnityService;
 import org.truenewx.support.audit.service.policy.AuditPolicy;
@@ -24,7 +25,8 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  *            审核者类型
  */
 public abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends ServiceSupport implements TransitAction<U, Long, AuditState, AuditTransition> {
+        extends ServiceSupport
+        implements TransitAction<U, Long, AuditState, AuditTransition, AuditUserIdentity> {
 
     protected AuditApplymentUnityDao<U, T, A> dao;
 

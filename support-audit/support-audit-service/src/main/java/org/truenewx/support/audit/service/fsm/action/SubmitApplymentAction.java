@@ -3,10 +3,10 @@ package org.truenewx.support.audit.service.fsm.action;
 import java.util.Date;
 
 import org.springframework.stereotype.Service;
-import org.truenewx.data.user.UserIdentity;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 
 /**
@@ -25,12 +25,8 @@ public class SubmitApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditState[] getStates() {
-        return new AuditState[] { AuditState.CANCELED, AuditState.UNAPPLIED };
-    }
-
-    @Override
-    public AuditState getNextState(final UserIdentity userIdentity, final AuditState state) {
+    public AuditState getNextState(final AuditUserIdentity userIdentity, final AuditState state,
+            final Object context) {
         return AuditState.PENDING;
     }
 

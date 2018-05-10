@@ -12,6 +12,7 @@ import org.truenewx.service.unity.UnityService;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
+import org.truenewx.support.audit.data.model.AuditorIdentity;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
 import org.truenewx.support.audit.service.policy.AuditPolicy;
@@ -59,4 +60,6 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
     List<U> findPassed(T type, int relatedId, Date beforeApplyTime, Date afterApplyTime);
 
     void updateStatus(long id, AuditState status);
+
+    A getAuditor(AuditorIdentity auditorIdentity);
 }

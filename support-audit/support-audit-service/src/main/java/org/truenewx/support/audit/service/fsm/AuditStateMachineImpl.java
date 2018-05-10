@@ -7,7 +7,7 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
-import org.truenewx.service.fsm.AbstractStateMachine;
+import org.truenewx.service.fsm.EventDrivenStateMachine;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
@@ -24,7 +24,8 @@ import org.truenewx.support.audit.service.fsm.action.AuditTransitAction;
  */
 @Service
 public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends AbstractStateMachine<U, Long, AuditState, AuditTransition, AuditUserIdentity>
+        extends
+        EventDrivenStateMachine<U, Long, AuditState, AuditTransition, AuditUserIdentity, AuditEvent>
         implements AuditStateMachine<U, T, A>, ContextInitializedBean {
 
     private AuditApplymentUnityService<U, T, A> service;

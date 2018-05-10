@@ -4,7 +4,6 @@ import org.truenewx.service.fsm.TransitEvent;
 import org.truenewx.support.audit.data.model.ApplicantIdentity;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.AuditUserIdentity;
-import org.truenewx.support.audit.data.model.AuditorIdentity;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
 
 /**
@@ -74,27 +73,6 @@ public class AuditEvent extends TransitEvent<AuditUserIdentity, Long, AuditTrans
     public static AuditEvent newCancelInstance(final ApplicantIdentity applicantIdentity,
             final long applymentId) {
         return new AuditEvent(applicantIdentity, applymentId, AuditTransition.CANCEL);
-    }
-
-    /**
-     * 创建审核事件实例
-     *
-     * @param auditorIdentity
-     *            审核者标识
-     * @param applymentId
-     *            申请实体id
-     * @param passed
-     *            是否审核通过
-     * @param attitude
-     *            审核态度
-     *
-     * @return 审核事件实例
-     */
-    public static AuditEvent newAuditInstance(final AuditorIdentity auditorIdentity,
-            final long applymentId, final boolean passed, final String attitude) {
-        final AuditTransition transition = passed ? AuditTransition.PASS : AuditTransition.REJECT;
-        return new AuditEvent(auditorIdentity, applymentId, transition,
-                new AuditOperateContext(attitude));
     }
 
 }

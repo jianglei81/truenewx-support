@@ -35,7 +35,7 @@ import org.truenewx.support.audit.service.policy.AuditPolicyRegistrar;
  * @param <A>
  *            审核者类型
  */
-public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
+public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends AbstractOwnedUnityService<U, Long, Integer>
         implements AuditApplymentUnityService<U, T, A>, AuditPolicyRegistrar<U, T, A> {
 

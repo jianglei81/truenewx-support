@@ -5,6 +5,7 @@ import org.truenewx.core.exception.HandleableException;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 
 /**
@@ -27,17 +28,14 @@ public class CancelApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditState[] getStates() {
-        return new AuditState[] { AuditState.PENDING, AuditState.REJECTED_1 };
-    }
-
-    @Override
-    public AuditState getNextState(final AuditState state, final Object context) {
+    public AuditState getNextState(final AuditUserIdentity userIdentity, final AuditState state,
+            final Object context) {
         return AuditState.CANCELED;
     }
 
     @Override
-    public U execute(final Long key, final Object context) throws HandleableException {
+    public U execute(final AuditUserIdentity userIdentity, final Long key, final Object context)
+            throws HandleableException {
         final int applicantId = (Integer) context;
         final U entity = load(applicantId, key);
         entity.setState(AuditState.CANCELED);
