@@ -10,7 +10,7 @@ import org.truenewx.data.query.QueryResult;
 import org.truenewx.service.unity.OwnedUnityService;
 import org.truenewx.service.unity.UnityService;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
@@ -40,7 +40,7 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
      */
     AuditPolicy<U, T, A> loadPolicy(T type);
 
-    U findLast(T type, Integer applicantId, Long relatedId, AuditStatus... statuses);
+    U findLast(T type, Integer applicantId, Long relatedId, AuditState... statuses);
 
     void transform(SubmitModel<U> submitModel, U unity);
 
@@ -52,11 +52,11 @@ public interface AuditApplymentUnityService<U extends AuditApplymentUnity<T, A>,
 
     QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter);
 
-    int count(T type, int relatedId, AuditStatus... status);
+    int count(T type, int relatedId, AuditState... status);
 
-    List<U> find(T type, int relatedId, AuditStatus... status);
+    List<U> find(T type, int relatedId, AuditState... status);
 
     List<U> findPassed(T type, int relatedId, Date beforeApplyTime, Date afterApplyTime);
 
-    void updateStatus(long id, AuditStatus status);
+    void updateStatus(long id, AuditState status);
 }

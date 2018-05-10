@@ -1,11 +1,11 @@
-package org.truenewx.support.audit.service.state;
+package org.truenewx.support.audit.service.fsm.action;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.truenewx.service.ServiceSupport;
 import org.truenewx.service.fsm.TransitAction;
 import org.truenewx.support.audit.data.dao.AuditApplymentUnityDao;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.AuditApplymentUnityService;
@@ -23,8 +23,8 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  * @param <A>
  *            审核者类型
  */
-abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends ServiceSupport implements TransitAction<U, Long, AuditStatus, AuditTransition> {
+public abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
+        extends ServiceSupport implements TransitAction<U, Long, AuditState, AuditTransition> {
 
     protected AuditApplymentUnityDao<U, T, A> dao;
 

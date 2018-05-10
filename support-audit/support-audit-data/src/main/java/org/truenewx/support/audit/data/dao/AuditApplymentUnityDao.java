@@ -8,7 +8,7 @@ import java.util.Set;
 import org.truenewx.data.orm.dao.OwnedUnityDao;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 
@@ -26,19 +26,19 @@ import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 public interface AuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends OwnedUnityDao<U, Long, Integer> {
 
-    U findLast(T type, Integer applicantId, Long relatedId, AuditStatus... auditStatuses);
+    U findLast(T type, Integer applicantId, Long relatedId, AuditState... auditStatuses);
 
-    QueryResult<U> findByTypeStatusesMap(Map<T, Set<AuditStatus>> typeStatusesMap, int pageSize,
+    QueryResult<U> findByTypeStatusesMap(Map<T, Set<AuditState>> typeStatusesMap, int pageSize,
             int pageNo);
 
-    Map<T, Integer> countGroupByTypeStatusesMap(Map<T, Set<AuditStatus>> typeStatusesMap);
+    Map<T, Integer> countGroupByTypeStatusesMap(Map<T, Set<AuditState>> typeStatusesMap);
 
     QueryResult<U> find(T type, AuditApplymentUnityQueryParameter parameter);
 
-    int count(final T type, final long relatedId, final AuditStatus... status);
+    int count(final T type, final long relatedId, final AuditState... status);
 
-    List<U> find(final T type, final long relatedId, final AuditStatus... status);
+    List<U> find(final T type, final long relatedId, final AuditState... status);
 
     List<U> find(final T type, final long relatedId, Date beforeApplyTime, Date afterApplyTime,
-            AuditStatus status);
+            AuditState status);
 }

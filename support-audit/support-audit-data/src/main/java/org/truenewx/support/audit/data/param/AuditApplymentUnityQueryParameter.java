@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.truenewx.data.query.QueryParameterImpl;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 
 /**
  * 审核申请单体查询参数
@@ -15,15 +15,15 @@ import org.truenewx.support.audit.data.model.AuditStatus;
  */
 public class AuditApplymentUnityQueryParameter extends QueryParameterImpl {
 
-    private AuditStatus[] statuses;
+    private AuditState[] statuses;
     private Set<Integer> applicantIds;
     private Map<String, Object> contentParams;
 
-    public AuditStatus[] getStatuses() {
+    public AuditState[] getStatuses() {
         return this.statuses;
     }
 
-    public void setStatuses(final AuditStatus... statuses) {
+    public void setStatuses(final AuditState... statuses) {
         this.statuses = statuses;
     }
 

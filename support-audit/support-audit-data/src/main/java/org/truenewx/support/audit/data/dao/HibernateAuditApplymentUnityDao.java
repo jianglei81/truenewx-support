@@ -17,7 +17,7 @@ import org.truenewx.data.orm.dao.support.hibernate.HibernateOwnedUnityDaoSupport
 import org.truenewx.data.query.Comparison;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 
@@ -37,7 +37,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
 
     @Override
     public U findLast(final T type, final Integer applicantId, final Long relatedId,
-            final AuditStatus... auditStatuses) {
+            final AuditState... auditStatuses) {
         final StringBuffer hql = new StringBuffer();
         hql.append("from ").append(getEntityName()).append(" where type=:type");
         final Map<String, Object> params = new HashMap<>();
@@ -59,7 +59,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     }
 
     @Override
-    public QueryResult<U> findByTypeStatusesMap(final Map<T, Set<AuditStatus>> typeStatusesMap,
+    public QueryResult<U> findByTypeStatusesMap(final Map<T, Set<AuditState>> typeStatusesMap,
             final int pageSize, final int pageNo) {
         if (typeStatusesMap.isEmpty()) { // 映射集不能为空，否则返回空结果
             return new QueryResult<>(new ArrayList<U>(), pageSize, pageNo, 0);
@@ -83,10 +83,10 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     }
 
     private void appendTypeStatusesMapCondition(final StringBuffer hql,
-            final Map<String, Object> params, final Map<T, Set<AuditStatus>> typeStatusesMap) {
+            final Map<String, Object> params, final Map<T, Set<AuditState>> typeStatusesMap) {
         int i = 0;
-        for (final Entry<T, Set<AuditStatus>> entry : typeStatusesMap.entrySet()) {
-            final Set<AuditStatus> statues = entry.getValue();
+        for (final Entry<T, Set<AuditState>> entry : typeStatusesMap.entrySet()) {
+            final Set<AuditState> statues = entry.getValue();
             if (!statues.isEmpty()) {
                 final String typeParamName = "type" + (i++);
                 hql.append("(type=:").append(typeParamName).append(" and ");
@@ -96,7 +96,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
                     hql.append(Strings.LEFT_BRACKET);
                 }
                 int j = 0;
-                for (final AuditStatus status : statues) {
+                for (final AuditState status : statues) {
                     final String statusParamName = StringUtils.join("status", String.valueOf(i),
                             Strings.UNDERLINE, String.valueOf(j++));
                     hql.append("status=:").append(statusParamName).append(" or ");
@@ -115,7 +115,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     @Override
     @SuppressWarnings("unchecked")
     public Map<T, Integer> countGroupByTypeStatusesMap(
-            final Map<T, Set<AuditStatus>> typeStatusesMap) {
+            final Map<T, Set<AuditState>> typeStatusesMap) {
         if (typeStatusesMap.isEmpty()) { // 映射集不能为空，否则返回空结果
             return new HashMap<>();
         }
@@ -151,7 +151,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
 
     protected void appendCondition(final AuditApplymentUnityQueryParameter parameter,
             final StringBuffer hql, final Map<String, Object> params) {
-        final AuditStatus[] statuses = parameter.getStatuses();
+        final AuditState[] statuses = parameter.getStatuses();
         if (statuses != null && statuses.length > 0) {
             hql.append(" and ")
                     .append(OqlUtil.buildOrConditionString(params, "status", statuses, null));
@@ -208,7 +208,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     }
 
     @Override
-    public int count(final T type, final long relatedId, final AuditStatus... auditStatuses) {
+    public int count(final T type, final long relatedId, final AuditState... auditStatuses) {
         final StringBuffer hql = new StringBuffer();
         hql.append("select count(*) from ").append(getEntityName())
                 .append(" where type=:type and relatedId=:relatedId");
@@ -223,7 +223,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
     }
 
     @Override
-    public List<U> find(final T type, final long relatedId, final AuditStatus... status) {
+    public List<U> find(final T type, final long relatedId, final AuditState... status) {
         final StringBuffer hql = new StringBuffer();
         hql.append("from ").append(getEntityName())
                 .append(" where type=:type and relatedId=:relatedId");
@@ -239,7 +239,7 @@ public class HibernateAuditApplymentUnityDao<U extends AuditApplymentUnity<T, A>
 
     @Override
     public List<U> find(final T type, final long relatedId, final Date beforeApplyTime,
-            final Date afterApplyTime, final AuditStatus status) {
+            final Date afterApplyTime, final AuditState status) {
         final StringBuffer hql = new StringBuffer();
         hql.append("from ").append(getEntityName()).append(
                 " where status=:status and type=:type and relatedId=:relatedId and applyTime>:beforeApplyTime and applyTime<:afterApplyTime");

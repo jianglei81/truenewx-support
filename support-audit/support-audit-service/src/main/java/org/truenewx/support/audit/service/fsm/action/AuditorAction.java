@@ -1,4 +1,4 @@
-package org.truenewx.support.audit.service.state;
+package org.truenewx.support.audit.service.fsm.action;
 
 import java.util.Date;
 
@@ -8,11 +8,12 @@ import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditLogUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.AuditExceptionCodes;
 import org.truenewx.support.audit.service.AuditLogEntityCreator;
+import org.truenewx.support.audit.service.fsm.AuditOperateContext;
 import org.truenewx.support.audit.service.policy.AuditPolicy;
 
 /**
@@ -47,11 +48,11 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         final U applyment = load(key);
         final T type = applyment.getType();
         final A auditor = operateContext.getAuditor();
-        if (!auditor.isAuditable(type, applyment.getStatus().getLevel())) { // 无审核权限
+        if (!auditor.isAuditable(type, applyment.getState().getLevel())) { // 无审核权限
             throw new BusinessException(AuditExceptionCodes.NO_AUDIT_AUTHORITY);
         }
 
-        final AuditStatus newState = getNextState(applyment.getStatus(), type);
+        final AuditState newState = getNextState(applyment.getState(), type);
         final Date now = new Date();
         final AuditLogUnity<T, A> log = this.logEntityCreator.newLogEntity();
         log.setApplyment(applyment);
@@ -60,7 +61,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         log.setAttitude(attitude);
         log.setNewStatus(newState);
         log.setCreateTime(now);
-        applyment.setStatus(newState);
+        applyment.setState(newState);
         applyment.setLastAuditTime(now.getTime());
         this.dao.save(applyment);
 

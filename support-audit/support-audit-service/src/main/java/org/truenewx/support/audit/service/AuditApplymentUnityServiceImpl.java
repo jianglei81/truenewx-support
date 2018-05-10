@@ -16,7 +16,7 @@ import org.truenewx.data.query.QueryResult;
 import org.truenewx.service.unity.AbstractOwnedUnityService;
 import org.truenewx.support.audit.data.dao.AuditApplymentUnityDao;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.data.param.AuditApplymentUnityQueryParameter;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
@@ -70,7 +70,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
 
     @Override
     public U findLast(final T type, final Integer applicantId, final Long relatedId,
-            final AuditStatus... statuses) {
+            final AuditState... statuses) {
         return this.dao.findLast(type, applicantId, relatedId, statuses);
     }
 
@@ -90,13 +90,13 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
         loadPolicy(type); // 加载方针以确保type有效
 
         final U unity = ensureNotNull(null);
-        unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED); // 立即提交则为待审核状态，否则为未提交状态
+        unity.setState(submitted ? AuditState.PENDING : AuditState.UNAPPLIED); // 立即提交则为待审核状态，否则为未提交状态
         transform(model, unity);
         // 转换完成后再设置重要属性，以避免转换方法中错误设置
         unity.setType(type);
-        unity.setStatus(submitted ? AuditStatus.PENDING : AuditStatus.UNAPPLIED);
+        unity.setState(submitted ? AuditState.PENDING : AuditState.UNAPPLIED);
         unity.setCreateTime(new Date());
-        if (unity.getStatus() == AuditStatus.PENDING) { // 直接待审核的申请，申请时间即为创建时间
+        if (unity.getState() == AuditState.PENDING) { // 直接待审核的申请，申请时间即为创建时间
             unity.setApplyTime(unity.getCreateTime());
         }
         unity.setLastAuditTime(Long.MAX_VALUE); // 添加申请时默认最后审核时间为最未来时间
@@ -107,7 +107,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     @Override
     public QueryResult<U> findAuditing(final T type, final A auditor, final int pageSize,
             final int pageNo) {
-        final Map<T, Set<AuditStatus>> typeStatusesMap = new HashMap<>();
+        final Map<T, Set<AuditState>> typeStatusesMap = new HashMap<>();
         final Map<T, Set<Byte>> levelMap = auditor.getAuditLevels();
         if (type != null) {
             putTypeAuditingStatusesToMap(type, levelMap.get(type), typeStatusesMap);
@@ -120,17 +120,17 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     private void putTypeAuditingStatusesToMap(final T type, final Set<Byte> levels,
-            final Map<T, Set<AuditStatus>> typeStatusesMap) {
+            final Map<T, Set<AuditState>> typeStatusesMap) {
         if (levels != null) {
-            final Set<AuditStatus> statuses = new HashSet<>();
+            final Set<AuditState> statuses = new HashSet<>();
             for (final byte level : levels) {
                 switch (level) {
                 case 1:
-                    statuses.add(AuditStatus.PENDING);
-                    statuses.add(AuditStatus.REJECTED_2);
+                    statuses.add(AuditState.PENDING);
+                    statuses.add(AuditState.REJECTED_2);
                     break;
                 case 2:
-                    statuses.add(AuditStatus.PASSED_1);
+                    statuses.add(AuditState.PASSED_1);
                     break;
                 }
             }
@@ -140,7 +140,7 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
 
     @Override
     public Map<T, Integer> countAuditingGroupByType(final A auditor) {
-        final Map<T, Set<AuditStatus>> typeStatusesMap = new HashMap<>();
+        final Map<T, Set<AuditState>> typeStatusesMap = new HashMap<>();
         final Map<T, Set<Byte>> levelMap = auditor.getAuditLevels();
         for (final Entry<T, Set<Byte>> entry : levelMap.entrySet()) {
             putTypeAuditingStatusesToMap(entry.getKey(), entry.getValue(), typeStatusesMap);
@@ -154,20 +154,20 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     }
 
     @Override
-    public int count(final T type, final int relatedId, final AuditStatus... status) {
+    public int count(final T type, final int relatedId, final AuditState... status) {
         return this.dao.count(type, relatedId, status);
     }
 
     @Override
-    public List<U> find(final T type, final int relatedId, final AuditStatus... status) {
+    public List<U> find(final T type, final int relatedId, final AuditState... status) {
         return this.dao.find(type, relatedId, status);
     }
 
     @Override
-    public void updateStatus(final long id, final AuditStatus status) {
+    public void updateStatus(final long id, final AuditState status) {
         final U u = this.find(id);
         if (u != null) {
-            u.setStatus(status);
+            u.setState(status);
             this.dao.save(u);
         }
     }
@@ -176,6 +176,6 @@ public class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>,
     public List<U> findPassed(final T type, final int relatedId, final Date beforeApplyTime,
             final Date afterApplyTime) {
         return this.dao.find(type, relatedId, beforeApplyTime, afterApplyTime,
-                AuditStatus.PASSED_LAST);
+                AuditState.PASSED_LAST);
     }
 }

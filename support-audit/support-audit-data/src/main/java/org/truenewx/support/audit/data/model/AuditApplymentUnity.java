@@ -49,9 +49,9 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
      * @return 是否可提交审核
      */
     public boolean isSubmittable() {
-        final AuditStatus status = getStatus();
-        return status == AuditStatus.UNAPPLIED || status == AuditStatus.REJECTED_1
-                || status == AuditStatus.CANCELED;
+        final AuditState status = getState();
+        return status == AuditState.UNAPPLIED || status == AuditState.REJECTED_1
+                || status == AuditState.CANCELED;
     }
 
     /**
@@ -59,9 +59,9 @@ public class AuditApplymentUnity<T extends Enum<T>, A extends Auditor<T>>
      * @return 是否已进行过审核操作，为true不表示已审核完成
      */
     public boolean isAudited() {
-        final AuditStatus status = getStatus();
-        return status == AuditStatus.PASSED_1 || status == AuditStatus.PASSED_LAST
-                || status == AuditStatus.REJECTED_1 || status == AuditStatus.REJECTED_2;
+        final AuditState status = getState();
+        return status == AuditState.PASSED_1 || status == AuditState.PASSED_LAST
+                || status == AuditState.REJECTED_1 || status == AuditState.REJECTED_2;
     }
 
     public void setContent(final Map<String, Object> content) {

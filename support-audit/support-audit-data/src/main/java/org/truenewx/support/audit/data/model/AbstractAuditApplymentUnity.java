@@ -25,7 +25,7 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
         extends AbstractUnity<Long> {
 
     private T type;
-    private AuditStatus status;
+    private AuditState state;
     @NotContainsSpecialChars
     private String reason;
     @NotContainsAngleBracket
@@ -46,12 +46,12 @@ public abstract class AbstractAuditApplymentUnity<T extends Enum<T>, A extends A
         this.type = type;
     }
 
-    public AuditStatus getStatus() {
-        return this.status;
+    public AuditState getState() {
+        return this.state;
     }
 
-    public void setStatus(final AuditStatus status) {
-        this.status = status;
+    public void setState(final AuditState state) {
+        this.state = state;
     }
 
     public String getReason() {

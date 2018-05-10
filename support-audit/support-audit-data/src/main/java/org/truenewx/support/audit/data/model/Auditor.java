@@ -3,6 +3,8 @@ package org.truenewx.support.audit.data.model;
 import java.util.Map;
 import java.util.Set;
 
+import org.truenewx.data.user.UserIdentifiable;
+
 /**
  * 审核者
  *
@@ -11,7 +13,7 @@ import java.util.Set;
  * @param <T>
  *            申请类型的枚举类型
  */
-public interface Auditor<T extends Enum<T>> {
+public interface Auditor<T extends Enum<T>> extends UserIdentifiable<AuditUserIdentity> {
 
     /**
      * 获取审核级别映射集，key-审核类型，value-审核级别集合

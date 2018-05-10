@@ -1,4 +1,4 @@
-package org.truenewx.support.audit.service.state;
+package org.truenewx.support.audit.service.fsm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.service.fsm.AbstractStateMachine;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
-import org.truenewx.support.audit.data.model.AuditStatus;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
+import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.AuditApplymentUnityService;
+import org.truenewx.support.audit.service.fsm.action.AuditTransitAction;
 
 /**
  * 审核状态机实现
@@ -22,7 +24,7 @@ import org.truenewx.support.audit.service.AuditApplymentUnityService;
  */
 @Service
 public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends AbstractStateMachine<U, Long, AuditStatus, AuditTransition, AuditEvent>
+        extends AbstractStateMachine<U, Long, AuditState, AuditTransition, AuditUserIdentity>
         implements AuditStateMachine<U, T, A>, ContextInitializedBean {
 
     private AuditApplymentUnityService<U, T, A> service;
@@ -30,7 +32,7 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
     @Override
     @SuppressWarnings("unchecked")
     public void afterInitialized(final ApplicationContext context) throws Exception {
-        setStartState(AuditStatus.UNAPPLIED);
+        setStartState(AuditState.UNAPPLIED);
         this.service = context.getBean(AuditApplymentUnityService.class);
         @SuppressWarnings("rawtypes")
         final Map<String, AuditTransitAction> beans = context
@@ -43,10 +45,10 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    protected AuditStatus getState(final Long key) {
+    protected AuditState getState(final Long key) {
         final U unity = this.service.find(key);
         if (unity != null) {
-            return unity.getStatus();
+            return unity.getState();
         }
         return null;
     }

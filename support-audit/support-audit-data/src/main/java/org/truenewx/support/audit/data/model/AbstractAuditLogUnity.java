@@ -23,7 +23,7 @@ public abstract class AbstractAuditLogUnity<T extends Enum<T>, A extends Auditor
     /**
      * 审核操作后的新状态
      */
-    private AuditStatus newStatus;
+    private AuditState newStatus;
 
     @NotContainsSpecialChars
     private String attitude;
@@ -44,7 +44,7 @@ public abstract class AbstractAuditLogUnity<T extends Enum<T>, A extends Auditor
      *
      * @return 审核操作后的新状态
      */
-    public AuditStatus getNewStatus() {
+    public AuditState getNewStatus() {
         return this.newStatus;
     }
 
@@ -53,7 +53,7 @@ public abstract class AbstractAuditLogUnity<T extends Enum<T>, A extends Auditor
      * @param newStatus
      *            审核操作后的新状态
      */
-    public void setNewStatus(final AuditStatus newStatus) {
+    public void setNewStatus(final AuditState newStatus) {
         this.newStatus = newStatus;
     }
 
