@@ -27,8 +27,7 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditState getNextState(final AuditUserIdentity userIdentity, final AuditState state,
-            final Object context) {
+    public AuditState getEndState(final AuditState beginState, final Object condition) {
         return AuditState.UNAPPLIED;
     }
 
@@ -39,7 +38,7 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
         final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) context;
         final U unity = load(model.getApplicantId(), key);
         getService().transform(model, unity);
-        unity.setState(getNextState(userIdentity, unity.getState(), context));
+        unity.setState(getEndState(unity.getState(), context));
         unity.setApplyTime(getApplyTime());
         this.dao.save(unity);
         return unity;
