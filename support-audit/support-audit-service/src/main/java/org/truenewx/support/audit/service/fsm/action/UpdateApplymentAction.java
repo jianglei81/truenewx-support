@@ -4,10 +4,10 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.HandleableException;
+import org.truenewx.support.audit.data.model.ApplicantIdentity;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
-import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.model.AuditApplymentSubmitModel;
 
@@ -27,21 +27,25 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
+    public AuditState[] getBeginStates() {
+        return new AuditState[] { AuditState.PENDING };
+    }
+
+    @Override
     public AuditState getEndState(final AuditState beginState, final Object condition) {
         return AuditState.UNAPPLIED;
     }
 
     @Override
-    public U execute(final AuditUserIdentity userIdentity, final Long key, final Object context)
-            throws HandleableException {
+    public boolean execute(final ApplicantIdentity userIdentity, final U entity,
+            final Object context) throws HandleableException {
         @SuppressWarnings("unchecked")
         final AuditApplymentSubmitModel<U> model = (AuditApplymentSubmitModel<U>) context;
-        final U unity = load(model.getApplicantId(), key);
-        getService().transform(model, unity);
-        unity.setState(getEndState(unity.getState(), context));
-        unity.setApplyTime(getApplyTime());
-        this.dao.save(unity);
-        return unity;
+        getService().transform(model, entity);
+        entity.setState(AuditState.UNAPPLIED);
+        entity.setApplyTime(getApplyTime());
+        this.dao.save(entity);
+        return true;
     }
 
     protected Date getApplyTime() {

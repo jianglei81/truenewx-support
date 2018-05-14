@@ -24,9 +24,8 @@ import org.truenewx.support.audit.service.policy.AuditPolicy;
  * @param <A>
  *            审核者类型
  */
-public abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
-        extends ServiceSupport
-        implements TransitAction<U, Long, AuditState, AuditTransition, AuditUserIdentity> {
+public abstract class AuditTransitAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>, I extends AuditUserIdentity>
+        extends ServiceSupport implements TransitAction<U, Long, AuditState, AuditTransition, I> {
 
     protected AuditApplymentUnityDao<U, T, A> dao;
 

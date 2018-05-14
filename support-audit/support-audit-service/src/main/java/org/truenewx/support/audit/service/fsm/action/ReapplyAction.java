@@ -2,6 +2,7 @@ package org.truenewx.support.audit.service.fsm.action;
 
 import org.springframework.stereotype.Service;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
+import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.Auditor;
 
@@ -18,6 +19,11 @@ public class ReapplyAction<U extends AuditApplymentUnity<T, A>, T extends Enum<T
     @Override
     public AuditTransition getTransition() {
         return AuditTransition.REAPPLY;
+    }
+
+    @Override
+    public AuditState[] getBeginStates() {
+        return new AuditState[] { AuditState.CANCELED };
     }
 
 }

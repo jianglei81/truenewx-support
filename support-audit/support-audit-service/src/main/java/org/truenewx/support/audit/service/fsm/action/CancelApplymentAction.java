@@ -2,10 +2,10 @@ package org.truenewx.support.audit.service.fsm.action;
 
 import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.HandleableException;
+import org.truenewx.support.audit.data.model.ApplicantIdentity;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
-import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 
 /**
@@ -28,19 +28,24 @@ public class CancelApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    public AuditState getNextState(final AuditUserIdentity userIdentity, final AuditState state,
-            final Object context) {
+    public AuditState[] getBeginStates() {
+        return new AuditState[] { AuditState.PENDING };
+    }
+
+    @Override
+    public AuditState getEndState(final AuditState beginState, final Object condition) {
         return AuditState.CANCELED;
     }
 
     @Override
-    public U execute(final AuditUserIdentity userIdentity, final Long key, final Object context)
-            throws HandleableException {
-        final int applicantId = (Integer) context;
-        final U entity = load(applicantId, key);
-        entity.setState(AuditState.CANCELED);
-        this.dao.save(entity);
-        return entity;
+    public boolean execute(final ApplicantIdentity userIdentity, final U entity,
+            final Object context) throws HandleableException {
+        if (entity.getApplicantId() == userIdentity.getValue()) {
+            entity.setState(AuditState.CANCELED);
+            this.dao.save(entity);
+            return true;
+        }
+        return false;
     }
 
 }

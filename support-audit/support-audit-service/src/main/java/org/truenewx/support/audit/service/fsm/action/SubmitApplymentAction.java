@@ -24,6 +24,11 @@ public class SubmitApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
+    public AuditState[] getBeginStates() {
+        return new AuditState[] { AuditState.UNAPPLIED };
+    }
+
+    @Override
     public AuditState getEndState(final AuditState beginState, final Object condition) {
         return AuditState.PENDING;
     }
