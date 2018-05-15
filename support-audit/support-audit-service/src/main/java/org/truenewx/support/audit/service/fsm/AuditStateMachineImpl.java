@@ -6,15 +6,15 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
-import org.truenewx.data.finder.UnitaryEntityFinder;
 import org.truenewx.service.fsm.EventDrivenStateMachine;
-import org.truenewx.support.audit.data.dao.AuditApplymentUnityDao;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.AuditTransition;
 import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
+import org.truenewx.support.audit.service.AuditApplymentUnityService;
 import org.truenewx.support.audit.service.fsm.action.AuditTransitAction;
 
 /**
@@ -29,13 +29,10 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
         EventDrivenStateMachine<U, Long, AuditState, AuditTransition, AuditUserIdentity, AuditEvent>
         implements AuditStateMachine<U, T, A>, ContextInitializedBean {
 
-    private AuditApplymentUnityDao<U, T, A> dao;
-
     @Override
     @SuppressWarnings("unchecked")
     public void afterInitialized(final ApplicationContext context) throws Exception {
         setStartState(AuditState.UNAPPLIED);
-        this.dao = context.getBean(AuditApplymentUnityDao.class);
         @SuppressWarnings("rawtypes")
         final Map<String, AuditTransitAction> beans = context
                 .getBeansOfType(AuditTransitAction.class);
@@ -47,8 +44,10 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
     }
 
     @Override
-    protected UnitaryEntityFinder<U, Long> getFinder() {
-        return this.dao;
+    @SuppressWarnings("unchecked")
+    protected U loadEntity(final AuditUserIdentity userIdentity, final Long key,
+            final Object context) throws BusinessException {
+        return (U) getService(AuditApplymentUnityService.class).load(key);
     }
 
     @Override
@@ -58,7 +57,7 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
 
     @Override
     protected Object getCondition(final AuditUserIdentity userIdentity, final U entity,
-            final AuditTransition transition, final Object context) {
+            final Object context) {
         if (context instanceof AuditOperateContext) {
             return entity.getType();
         }
