@@ -29,6 +29,11 @@ public class VerifyExceptionCodes {
     /**
      * 验证码已过期
      */
-    public static final String OVERDUE_CODE = "errror.verify.overdue_code";
+    public static final String OVERDUE_CODE = "error.verify.overdue_code";
+
+    /**
+     * 已验证
+     */
+    public static final String VERIFIED = "error.verify.verified";
 
 }
