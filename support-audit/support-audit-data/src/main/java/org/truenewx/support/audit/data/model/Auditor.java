@@ -13,7 +13,7 @@ import org.truenewx.data.user.UserIdentifiable;
  * @param <T>
  *            申请类型的枚举类型
  */
-public interface Auditor<T extends Enum<T>> extends UserIdentifiable<AuditUserIdentity> {
+public interface Auditor<T extends Enum<T>> extends UserIdentifiable<AuditorIdentity> {
 
     /**
      * 获取审核级别映射集，key-审核类型，value-审核级别集合
