@@ -56,7 +56,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         entity.getLogs().add(log);
         log.setAuditor(auditor);
         log.setAttitude(attitude);
-        log.setNewStatus(newState);
+        log.setNewState(newState);
         log.setCreateTime(now);
         entity.setState(newState);
         entity.setLastAuditTime(now.getTime());
