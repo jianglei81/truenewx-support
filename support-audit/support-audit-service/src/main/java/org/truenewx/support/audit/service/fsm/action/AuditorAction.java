@@ -60,7 +60,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
         log.setCreateTime(now);
         entity.setState(newState);
         entity.setLastAuditTime(now.getTime());
-        this.dao.save(entity);
+        getDao().save(entity);
 
         final AuditPolicy<U, T, A> policy = loadPolicy(type);
         switch (newState) {

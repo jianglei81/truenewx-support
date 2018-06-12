@@ -42,7 +42,7 @@ public class CancelApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
             final Object context) throws HandleableException {
         if (entity.getApplicantId() == userIdentity.getValue()) {
             entity.setState(AuditState.CANCELED);
-            this.dao.save(entity);
+            getDao().save(entity);
             return true;
         }
         return false;

@@ -44,7 +44,7 @@ public class UpdateApplymentAction<U extends AuditApplymentUnity<T, A>, T extend
         getService().transform(model, entity);
         entity.setState(AuditState.UNAPPLIED);
         entity.setApplyTime(getApplyTime());
-        this.dao.save(entity);
+        getDao().save(entity);
         return true;
     }
 

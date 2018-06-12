@@ -11,10 +11,8 @@ import java.util.Set;
 import org.springframework.util.Assert;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.data.model.SubmitModel;
-import org.truenewx.data.orm.dao.OwnedUnityDao;
 import org.truenewx.data.query.QueryResult;
 import org.truenewx.service.unity.AbstractOwnedUnityService;
-import org.truenewx.support.audit.data.dao.AuditApplymentUnityDao;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
 import org.truenewx.support.audit.data.model.AuditState;
 import org.truenewx.support.audit.data.model.Auditor;
@@ -37,23 +35,14 @@ import org.truenewx.support.audit.service.policy.AuditPolicyRegistrar;
  */
 public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUnity<T, A>, T extends Enum<T>, A extends Auditor<T>>
         extends AbstractOwnedUnityService<U, Long, Integer>
-        implements AuditApplymentUnityService<U, T, A>, AuditPolicyRegistrar<U, T, A> {
+        implements AuditApplymentUnityService<U, T, A>, AuditPolicyRegistrar<U, T, A>,
+        AuditApplymentUnityDaoSupplier<U, T, A> {
 
-    private AuditApplymentUnityDao<U, T, A> dao;
     private Map<T, AuditPolicy<U, T, A>> policies = new HashMap<>();
-
-    public void setDao(final AuditApplymentUnityDao<U, T, A> dao) {
-        this.dao = dao;
-    }
 
     @Override
     protected String getNonexistentErorrCode() {
         return AuditExceptionCodes.NONEXISTENT_APPLYMENT;
-    }
-
-    @Override
-    protected OwnedUnityDao<U, Long, Integer> getDao() {
-        return this.dao;
     }
 
     @Override
@@ -71,7 +60,7 @@ public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUni
     @Override
     public U findLast(final T type, final Integer applicantId, final Long relatedId,
             final AuditState... statuses) {
-        return this.dao.findLast(type, applicantId, relatedId, statuses);
+        return getAuditApplymentUnityDao().findLast(type, applicantId, relatedId, statuses);
     }
 
     @Override
@@ -100,7 +89,7 @@ public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUni
             unity.setApplyTime(unity.getCreateTime());
         }
         unity.setLastAuditTime(Long.MAX_VALUE); // 添加申请时默认最后审核时间为最未来时间
-        this.dao.save(unity);
+        getAuditApplymentUnityDao().save(unity);
         return unity;
     }
 
@@ -116,7 +105,7 @@ public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUni
                 putTypeAuditingStatusesToMap(entry.getKey(), entry.getValue(), typeStatusesMap);
             }
         }
-        return this.dao.findByTypeStatusesMap(typeStatusesMap, pageSize, pageNo);
+        return getAuditApplymentUnityDao().findByTypeStatusesMap(typeStatusesMap, pageSize, pageNo);
     }
 
     private void putTypeAuditingStatusesToMap(final T type, final Set<Byte> levels,
@@ -145,22 +134,22 @@ public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUni
         for (final Entry<T, Set<Byte>> entry : levelMap.entrySet()) {
             putTypeAuditingStatusesToMap(entry.getKey(), entry.getValue(), typeStatusesMap);
         }
-        return this.dao.countGroupByTypeStatusesMap(typeStatusesMap);
+        return getAuditApplymentUnityDao().countGroupByTypeStatusesMap(typeStatusesMap);
     }
 
     @Override
     public QueryResult<U> find(final T type, final AuditApplymentUnityQueryParameter parameter) {
-        return this.dao.find(type, parameter);
+        return getAuditApplymentUnityDao().find(type, parameter);
     }
 
     @Override
     public int count(final T type, final int relatedId, final AuditState... status) {
-        return this.dao.count(type, relatedId, status);
+        return getAuditApplymentUnityDao().count(type, relatedId, status);
     }
 
     @Override
     public List<U> find(final T type, final int relatedId, final AuditState... status) {
-        return this.dao.find(type, relatedId, status);
+        return getAuditApplymentUnityDao().find(type, relatedId, status);
     }
 
     @Override
@@ -168,14 +157,14 @@ public abstract class AuditApplymentUnityServiceImpl<U extends AuditApplymentUni
         final U u = this.find(id);
         if (u != null) {
             u.setState(status);
-            this.dao.save(u);
+            getAuditApplymentUnityDao().save(u);
         }
     }
 
     @Override
     public List<U> findPassed(final T type, final int relatedId, final Date beforeApplyTime,
             final Date afterApplyTime) {
-        return this.dao.find(type, relatedId, beforeApplyTime, afterApplyTime,
+        return getAuditApplymentUnityDao().find(type, relatedId, beforeApplyTime, afterApplyTime,
                 AuditState.PASSED_LAST);
     }
 }
