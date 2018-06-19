@@ -49,7 +49,7 @@ abstract class AuditorAction<U extends AuditApplymentUnity<T, A>, T extends Enum
             throw new BusinessException(AuditExceptionCodes.NO_AUDIT_AUTHORITY);
         }
 
-        final AuditState newState = getEndState(entity.getState(), context);
+        final AuditState newState = getEndState(entity.getState(), type);
         final Date now = new Date();
         final AuditLogUnity<T, A> log = this.logEntityCreator.newLogEntity();
         log.setApplyment(entity);
