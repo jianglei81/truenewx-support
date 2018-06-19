@@ -12,6 +12,7 @@ public class AuditOperateContext<T extends Enum<T>> {
     private Object addition;
 
     public AuditOperateContext(final T type, final String attitude) {
+        this.type = type;
         this.attitude = attitude;
     }
 
