@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.truenewx.core.exception.BusinessException;
+import org.truenewx.core.exception.HandleableException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.service.fsm.EventDrivenStateMachine;
 import org.truenewx.support.audit.data.model.AuditApplymentUnity;
@@ -16,6 +17,8 @@ import org.truenewx.support.audit.data.model.AuditUserIdentity;
 import org.truenewx.support.audit.data.model.Auditor;
 import org.truenewx.support.audit.service.AuditApplymentUnityService;
 import org.truenewx.support.audit.service.fsm.action.AuditTransitAction;
+
+import com.google.common.eventbus.Subscribe;
 
 /**
  * 审核状态机实现
@@ -62,6 +65,12 @@ public class AuditStateMachineImpl<U extends AuditApplymentUnity<T, A>, T extend
             return entity.getType();
         }
         return null;
+    }
+
+    @Override
+    @Subscribe
+    public void onEvent(AuditEvent event) throws HandleableException {
+        super.onEvent(event);
     }
 
 }
