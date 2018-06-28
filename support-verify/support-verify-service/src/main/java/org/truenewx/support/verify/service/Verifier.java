@@ -3,6 +3,7 @@ package org.truenewx.support.verify.service;
 import java.util.Locale;
 import java.util.Map;
 
+import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.service.Service;
 import org.truenewx.verify.data.model.VerifyUnity;
@@ -65,6 +66,28 @@ public interface Verifier<U extends VerifyUnity<T>, T extends Enum<T>> extends S
      * @return 是否有效
      */
     boolean isValid(String code);
+
+    /**
+     * 校验指定验证码在指定验证对象中的有效性
+     *
+     * @param id
+     *            验证id
+     * @param code
+     *            验证码
+     * @throws BusinessException
+     *             如果校验失败
+     */
+    void validate(long id, String code) throws BusinessException;
+
+    /**
+     * 校验指定验证码的有效性
+     *
+     * @param code
+     *            验证码
+     * @throws BusinessException
+     *             如果校验失败
+     */
+    void validate(String code) throws BusinessException;
 
     /**
      * 验证确认
