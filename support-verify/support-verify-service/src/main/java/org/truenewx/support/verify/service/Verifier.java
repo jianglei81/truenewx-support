@@ -74,20 +74,22 @@ public interface Verifier<U extends VerifyUnity<T>, T extends Enum<T>> extends S
      *            验证id
      * @param code
      *            验证码
+     * @return 验证实体
      * @throws BusinessException
      *             如果校验失败
      */
-    void validate(long id, String code) throws BusinessException;
+    U validate(long id, String code) throws BusinessException;
 
     /**
      * 校验指定验证码的有效性
      *
      * @param code
      *            验证码
+     * @return 验证实体
      * @throws BusinessException
      *             如果校验失败
      */
-    void validate(String code) throws BusinessException;
+    U validate(String code) throws BusinessException;
 
     /**
      * 验证确认

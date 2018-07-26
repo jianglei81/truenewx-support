@@ -105,10 +105,12 @@ public class VerifierImpl<U extends VerifyUnity<T>, T extends Enum<T>> extends A
         return isValid(entity, code);
     }
 
+    @Override
     @ReadTransactional
-    public void validate(long id, String code) throws BusinessException {
+    public U validate(long id, String code) throws BusinessException {
         U entity = this.dao.find(id);
         validate(entity, code);
+        return entity;
     }
 
     private void validate(U entity, String code) throws BusinessException {
@@ -120,10 +122,12 @@ public class VerifierImpl<U extends VerifyUnity<T>, T extends Enum<T>> extends A
         }
     }
 
+    @Override
     @ReadTransactional
-    public void validate(String code) throws BusinessException {
+    public U validate(String code) throws BusinessException {
         U entity = this.dao.findByCode(code);
         validate(entity, code);
+        return entity;
     }
 
     @Override
