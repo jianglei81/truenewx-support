@@ -16,6 +16,7 @@ import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -23,8 +24,8 @@ import org.springframework.web.util.WebUtils;
 import org.truenewx.core.Strings;
 import org.truenewx.core.annotation.Caption;
 import org.truenewx.core.tuple.Binate;
-import org.truenewx.support.log.data.model.RpcAction;
-import org.truenewx.support.log.data.model.UrlAction;
+import org.truenewx.core.util.StringUtil;
+import org.truenewx.support.log.data.model.Action;
 import org.truenewx.support.log.service.ActionLogWriter;
 import org.truenewx.support.log.web.annotation.LogExcluded;
 import org.truenewx.web.http.HttpLink;
@@ -33,6 +34,7 @@ import org.truenewx.web.menu.model.Menu;
 import org.truenewx.web.menu.model.MenuItem;
 import org.truenewx.web.rpc.RpcPort;
 import org.truenewx.web.rpc.server.RpcInvokeInterceptor;
+import org.truenewx.web.rpc.server.annotation.RpcController;
 import org.truenewx.web.util.WebUtil;
 
 /**
@@ -135,6 +137,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                 Menu menu = getMenu();
                 String caption = getUrlActionCaption(menu, url, method, hm);
                 if (StringUtils.isNotBlank(caption)) {
+                    String beanId = getControllerBeanId(hm.getBeanType());
                     Map<String, Object> params;
                     if (logExcluded != null) {
                         params = WebUtil.getRequestParameterMap(request, logExcluded.excluded());
@@ -144,19 +147,31 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                     this.executor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            UrlAction action = new UrlAction();
-                            action.setUrl(url);
-                            action.setMethod(method.name());
+                            Action action = new Action(beanId, url, method.name(), params);
                             action.setCaption(caption);
-                            if (!params.isEmpty()) {
-                                action.setParams(params);
-                            }
                             AbstractActionLogInterceptor.this.writer.add(userId, action);
                         }
                     });
                 }
             }
         }
+    }
+
+    private String getControllerBeanId(Class<?> controllerClass) {
+        String beanId = null;
+        Controller controller = controllerClass.getAnnotation(Controller.class);
+        if (controller != null) {
+            beanId = controller.value();
+        } else {
+            RpcController rpcController = controllerClass.getAnnotation(RpcController.class);
+            if (rpcController != null) {
+                beanId = rpcController.value();
+            }
+        }
+        if (StringUtils.isEmpty(beanId)) {
+            beanId = StringUtil.firstToLowerCase(controllerClass.getSimpleName());
+        }
+        return beanId;
     }
 
     private String getUrlActionCaption(Menu menu, String url, HttpMethod method,
@@ -209,13 +224,7 @@ public abstract class AbstractActionLogInterceptor<K extends Serializable>
                     this.executor.execute(new Runnable() {
                         @Override
                         public void run() {
-                            RpcAction action = new RpcAction();
-                            action.setBeanId(beanId);
-                            action.setMethodName(methodName);
-                            List<Object> argList = Arrays.asList(args);
-                            if (!argList.isEmpty()) {
-                                action.setArgs(argList);
-                            }
+                            Action action = new Action(beanId, methodName, Arrays.asList(args));
                             action.setCaption(caption);
                             AbstractActionLogInterceptor.this.writer.add(userId, action);
                         }
