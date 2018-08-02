@@ -64,7 +64,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
         // 系统可选参数
         params.put("sign_type", "MD5"); // 签名类型,默认：MD5
         params.put("service_version", "1.0"); // 版本号，默认为1.0
-        params.put("input_charset", Strings.DEFAULT_ENCODING); // 字符编码
+        params.put("input_charset", Strings.ENCODING_UTF8); // 字符编码
         params.put("sign_key_index", "1"); // 密钥序号
 
         // 业务可选参数
@@ -183,7 +183,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
             final String k = entry.getKey();
             final String v = entry.getValue();
             try {
-                sb.append(k + "=" + URLEncoder.encode(v, Strings.DEFAULT_ENCODING) + "&");
+                sb.append(k + "=" + URLEncoder.encode(v, Strings.ENCODING_UTF8) + "&");
             } catch (final UnsupportedEncodingException e) {
                 e.printStackTrace();
             }

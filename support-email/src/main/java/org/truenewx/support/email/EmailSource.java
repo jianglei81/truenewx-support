@@ -23,7 +23,7 @@ public class EmailSource {
     private String encoding = Strings.ENCODING_UTF8;
 
     /**
-     * 用默认的字符编码（{@link Strings#DEFAULT_ENCODING}）构建邮件源
+     * 用默认的字符编码（{@link Strings#ENCODING_UTF8}）构建邮件源
      *
      * @param address
      *            发件人地址

@@ -14,7 +14,7 @@ public abstract class AbstractHttpSmsSendStrategy implements HttpSmsSendStrategy
 
     private String url;
     private String requestMethod = "POST";
-    private String encoding = Strings.DEFAULT_ENCODING;
+    private String encoding = Strings.ENCODING_UTF8;
     protected Map<String, Object> defaultParams;
 
     @Override
