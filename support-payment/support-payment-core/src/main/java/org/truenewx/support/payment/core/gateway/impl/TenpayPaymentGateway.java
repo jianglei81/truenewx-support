@@ -3,6 +3,7 @@ package org.truenewx.support.payment.core.gateway.impl;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.util.Currency;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,11 +37,11 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
     private TenpayHttpClient httpClient = new TenpayHttpClient();
     private String gateNofityFeedbackUrl = "https://gw.tenpay.com/gateway/simpleverifynotifyid.xml";
 
-    public void setPartner(final String partner) {
+    public void setPartner(String partner) {
         this.partner = partner;
     }
 
-    public void setPrivateKey(final String privateKey) {
+    public void setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
     }
 
@@ -50,9 +51,9 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(final Terminal terminal, final String orderNo,
-            final BigDecimal amount, final String description, final String payerIp) {
-        final SortedMap<String, String> params = new TreeMap<>();
+    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
+            BigDecimal amount, Currency currency, String description, String payerIp) {
+        SortedMap<String, String> params = new TreeMap<>();
         // 设置支付参数
         params.put("partner", this.partner); // 商户号
         params.put("notify_url", getResultConfirmUrl()); // 接收财付通通知的URL
@@ -86,7 +87,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
 
         params.put("out_trade_no", orderNo);
         // 商品价格（包含运费），以分为单位
-        final int fee = amount.multiply(new BigDecimal(100)).intValue();
+        int fee = amount.multiply(new BigDecimal(100)).intValue();
         params.put("total_fee", String.valueOf(fee));
         params.put("body", description);// 商品描述
         params.put("subject", description); // 商品名称(中介交易时必填)
@@ -94,24 +95,24 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
         return params;
     }
 
-    protected void sign(final Map<String, String> params) {
-        final StringBuffer sb = new StringBuffer();
-        final Set<Entry<String, String>> entrySet = params.entrySet();
-        for (final Entry<String, String> entry : entrySet) {
-            final String k = entry.getKey();
-            final String v = entry.getValue();
+    protected void sign(Map<String, String> params) {
+        StringBuffer sb = new StringBuffer();
+        Set<Entry<String, String>> entrySet = params.entrySet();
+        for (Entry<String, String> entry : entrySet) {
+            String k = entry.getKey();
+            String v = entry.getValue();
             if (StringUtils.isNotBlank(v) && !"sign".equals(k) && !"key".equals(k)) {
                 sb.append(k + "=" + v + "&");
             }
         }
         sb.append("key=" + this.privateKey);
-        final String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
+        String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
         params.put("sign", sign);
         // this.setDebugInfo(sb.toString() + " => sign:" + sign);
     }
 
     @Override
-    public PaymentResult getResult(final boolean confirmed, final Map<String, String> params)
+    public PaymentResult getResult(boolean confirmed, Map<String, String> params)
             throws BusinessException {
         try {
             if (confirmed) {
@@ -119,16 +120,15 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
             } else {
                 return getShowResult(params);
             }
-        } catch (final BusinessException e) {
+        } catch (BusinessException e) {
             throw e;
         }
     }
 
-    private PaymentResult getConfirmedResult(final Map<String, String> params)
-            throws BusinessException {
+    private PaymentResult getConfirmedResult(Map<String, String> params) throws BusinessException {
         // 通知id
-        final String notify_id = params.get("notify_id");
-        final Map<String, String> reqParams = new TreeMap<>();
+        String notify_id = params.get("notify_id");
+        Map<String, String> reqParams = new TreeMap<>();
         reqParams.put("partner", this.partner);
         reqParams.put("notify_id", notify_id);
         // 应答对象
@@ -138,18 +138,18 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
         this.httpClient.setReqContent(getRequestUrl(reqParams));
         // 后台调用
         if (this.httpClient.call()) {
-            final ClientResponseHandler crh = new ClientResponseHandler();
+            ClientResponseHandler crh = new ClientResponseHandler();
             crh.setKey(this.privateKey);
             // 设置结果参数
             try {
                 crh.setContent(this.httpClient.getResContent());
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 throw new RespondBusinessException("fail", PaymentExceptionCodes.CONNECTION_FAIL);
             }
-            final String retcode = crh.getParameter("retcode"); // 获取id验证返回状态码，0表示此通知id是财付通发起
-            final String trade_state = params.get("trade_state"); // 支付状态
-            final String trade_mode = params.get("trade_mode"); // 交易模式，1即时到账，2中介担保
+            String retcode = crh.getParameter("retcode"); // 获取id验证返回状态码，0表示此通知id是财付通发起
+            String trade_state = params.get("trade_state"); // 支付状态
+            String trade_mode = params.get("trade_mode"); // 交易模式，1即时到账，2中介担保
 
             // 判断签名及结果
             if (crh.isTenpaySign() && "0".equals(retcode)) { // id验证成功;
@@ -160,11 +160,11 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
                     throw new RespondBusinessException("fail",
                             PaymentExceptionCodes.NOT_INSTANT_TO_ACCOUNT);
                 }
-                final String orderNo = params.get("out_trade_no"); // 商户订单号
-                final String fee = params.get("total_fee"); // 金额,以分为单位
-                final BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
-                final String gatewayPaymentNo = params.get("transaction_id");
-                final Terminal terminal = null;
+                String orderNo = params.get("out_trade_no"); // 商户订单号
+                String fee = params.get("total_fee"); // 金额,以分为单位
+                BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
+                String gatewayPaymentNo = params.get("transaction_id");
+                Terminal terminal = null;
                 return new PaymentResult(gatewayPaymentNo, amount, terminal, orderNo, "success");
             }
             // 错误时，返回结果未签名，记录retcode、retmsg看失败详情。
@@ -175,52 +175,52 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
         }
     }
 
-    private String getRequestUrl(final Map<String, String> params) {
+    private String getRequestUrl(Map<String, String> params) {
         sign(params);
-        final StringBuffer sb = new StringBuffer();
-        final Set<Entry<String, String>> entrySet = params.entrySet();
-        for (final Entry<String, String> entry : entrySet) {
-            final String k = entry.getKey();
-            final String v = entry.getValue();
+        StringBuffer sb = new StringBuffer();
+        Set<Entry<String, String>> entrySet = params.entrySet();
+        for (Entry<String, String> entry : entrySet) {
+            String k = entry.getKey();
+            String v = entry.getValue();
             try {
                 sb.append(k + "=" + URLEncoder.encode(v, Strings.ENCODING_UTF8) + "&");
-            } catch (final UnsupportedEncodingException e) {
+            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
         // 去掉最后一个&
-        final String reqPars = sb.substring(0, sb.lastIndexOf("&"));
+        String reqPars = sb.substring(0, sb.lastIndexOf("&"));
         return this.gateNofityFeedbackUrl + "?" + reqPars;
     }
 
-    private PaymentResult getShowResult(final Map<String, String> params) throws BusinessException {
+    private PaymentResult getShowResult(Map<String, String> params) throws BusinessException {
         validateSign(params);
 
-        final String trade_state = params.get("trade_state"); // 支付状态
-        final String trade_mode = params.get("trade_mode"); // 交易模式，1即时到账，2中介担保
+        String trade_state = params.get("trade_state"); // 支付状态
+        String trade_mode = params.get("trade_mode"); // 交易模式，1即时到账，2中介担保
         if ("0".equals(trade_state) && "1".equals(trade_mode)) { // 直接到账支付成功
-            final String orderNo = params.get("out_trade_no"); // 商户订单号
-            final String fee = params.get("total_fee"); // 金额,以分为单位
-            final String gatewayPaymentNo = params.get("transaction_id"); // 支付交易号
-            final BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED);// 转换为以元为单位的金额
-            final Terminal terminal = null;
+            String orderNo = params.get("out_trade_no"); // 商户订单号
+            String fee = params.get("total_fee"); // 金额,以分为单位
+            String gatewayPaymentNo = params.get("transaction_id"); // 支付交易号
+            BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED);// 转换为以元为单位的金额
+            Terminal terminal = null;
             return new PaymentResult(gatewayPaymentNo, amount, terminal, orderNo, null);
         }
         throw new BusinessException(PaymentExceptionCodes.PAYMENT_FAIL);
     }
 
-    private void validateSign(final Map<String, String> params) throws BusinessException {
-        final StringBuffer sb = new StringBuffer();
-        final Set<Entry<String, String>> entrySet = params.entrySet();
-        for (final Entry<String, String> entry : entrySet) {
-            final String k = entry.getKey();
-            final String v = entry.getValue();
+    private void validateSign(Map<String, String> params) throws BusinessException {
+        StringBuffer sb = new StringBuffer();
+        Set<Entry<String, String>> entrySet = params.entrySet();
+        for (Entry<String, String> entry : entrySet) {
+            String k = entry.getKey();
+            String v = entry.getValue();
             if (!"sign".equals(k) && StringUtils.isNotBlank(v)) {
                 sb.append(k + "=" + v + "&");
             }
         }
         sb.append("key=" + this.privateKey);
-        final String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
+        String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
         if (!sign.equals(params.get("sign").toLowerCase())) {
             throw new BusinessException(PaymentExceptionCodes.SIGN_FAIL);
         }

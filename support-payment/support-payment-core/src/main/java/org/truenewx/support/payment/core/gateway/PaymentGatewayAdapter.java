@@ -1,6 +1,7 @@
 package org.truenewx.support.payment.core.gateway;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Map;
 
 import org.truenewx.core.exception.BusinessException;
@@ -16,13 +17,14 @@ public interface PaymentGatewayAdapter extends PaymentGateway {
 
     /**
      * 获取向支付网关发起支付请求所需的参数集
-     * 
+     *
      * @param terminal
      *            终端类型
      * @param orderNo
      *            订单编号
      * @param amount
      *            订单金额
+     * @param 币种
      * @param description
      *            订单描述
      * @param payerIp
@@ -31,7 +33,7 @@ public interface PaymentGatewayAdapter extends PaymentGateway {
      * @return 支付请求参数集
      */
     Map<String, String> getRequestParams(Terminal terminal, String orderNo, BigDecimal amount,
-            String description, String payerIp);
+            Currency currency, String description, String payerIp);
 
     /**
      * 获取支付结果

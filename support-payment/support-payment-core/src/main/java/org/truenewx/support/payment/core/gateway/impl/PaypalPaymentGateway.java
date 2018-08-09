@@ -1,6 +1,7 @@
 package org.truenewx.support.payment.core.gateway.impl;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Map;
 
 import org.truenewx.core.model.Terminal;
@@ -21,14 +22,14 @@ public class PaypalPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(final Terminal terminal, final String orderNo,
-            final BigDecimal amount, final String description, final String payerIp) {
+    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
+            BigDecimal amount, Currency currency, String description, String payerIp) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public PaymentResult getResult(final boolean confirmed, final Map<String, String> params) {
+    public PaymentResult getResult(boolean confirmed, Map<String, String> params) {
         // TODO Auto-generated method stub
         return null;
     }

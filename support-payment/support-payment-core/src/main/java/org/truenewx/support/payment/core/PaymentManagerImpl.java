@@ -2,6 +2,7 @@ package org.truenewx.support.payment.core;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,20 +32,20 @@ public class PaymentManagerImpl implements PaymentManager, ContextInitializedBea
     private PaymentListener listener;
 
     @Override
-    public void afterInitialized(final ApplicationContext context) throws Exception {
-        final Map<String, PaymentGatewayAdapter> adapters = context
+    public void afterInitialized(ApplicationContext context) throws Exception {
+        Map<String, PaymentGatewayAdapter> adapters = context
                 .getBeansOfType(PaymentGatewayAdapter.class);
-        for (final PaymentGatewayAdapter gateway : adapters.values()) {
-            final String name = gateway.getName();
+        for (PaymentGatewayAdapter gateway : adapters.values()) {
+            String name = gateway.getName();
             Assert.isNull(this.gateways.put(name, gateway), "More than one gateway named " + name);
         }
     }
 
     @Override
-    public List<PaymentGateway> getGateways(final Terminal terminal) {
-        final List<PaymentGateway> gateways = new ArrayList<>();
-        for (final PaymentGateway gateway : this.gateways.values()) {
-            for (final Terminal t : gateway.getTerminals()) {
+    public List<PaymentGateway> getGateways(Terminal terminal) {
+        List<PaymentGateway> gateways = new ArrayList<>();
+        for (PaymentGateway gateway : this.gateways.values()) {
+            for (Terminal t : gateway.getTerminals()) {
                 if (t.supports(terminal)) {
                     gateways.add(gateway);
                 }
@@ -54,27 +55,28 @@ public class PaymentManagerImpl implements PaymentManager, ContextInitializedBea
     }
 
     @Override
-    public PaymentGateway getGateway(final String gatewayName) {
+    public PaymentGateway getGateway(String gatewayName) {
         return this.gateways.get(gatewayName);
     }
 
     @Override
-    public Map<String, String> getRequestParams(final String gatewayName, final Terminal terminal,
-            final String orderNo, final BigDecimal amount, final String description,
-            final String payerIp) {
-        final PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
+    public Map<String, String> getRequestParams(String gatewayName, Terminal terminal,
+            String orderNo, BigDecimal amount, Currency currency, String description,
+            String payerIp) {
+        PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
-            return adapter.getRequestParams(terminal, orderNo, amount, description, payerIp);
+            return adapter.getRequestParams(terminal, orderNo, amount, currency, description,
+                    payerIp);
         }
         return null;
     }
 
     @Override
-    public PaymentResult notifyResult(final String gatewayName, final boolean confirmed,
-            final Map<String, String> params) throws HandleableException {
-        final PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
+    public PaymentResult notifyResult(String gatewayName, boolean confirmed,
+            Map<String, String> params) throws HandleableException {
+        PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
-            final PaymentResult result = adapter.getResult(confirmed, params);
+            PaymentResult result = adapter.getResult(confirmed, params);
             if (confirmed && this.listener != null) {
                 this.listener.onPaid(adapter.getChannel(), result.getGatewayPaymentNo(),
                         result.getTerminal(), result.getOrderNo());
@@ -85,12 +87,11 @@ public class PaymentManagerImpl implements PaymentManager, ContextInitializedBea
     }
 
     @Override
-    public void requestRefund(final String gatewayName, final String gatewayPaymentNo,
-            final BigDecimal paymentAmount, final String refundNo, final String refundAmount)
-            throws HandleableException {
-        final PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
+    public void requestRefund(String gatewayName, String gatewayPaymentNo, BigDecimal paymentAmount,
+            String refundNo, String refundAmount) throws HandleableException {
+        PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
-            final String gatewayRefundNo = adapter.requestRefund(gatewayPaymentNo, paymentAmount,
+            String gatewayRefundNo = adapter.requestRefund(gatewayPaymentNo, paymentAmount,
                     refundNo, refundAmount);
             if (this.listener != null) {
                 this.listener.onRefunded(refundNo, gatewayRefundNo);

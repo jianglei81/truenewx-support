@@ -1,6 +1,7 @@
 package org.truenewx.support.payment.core.gateway.impl.alipay;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -24,7 +25,7 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
 
     private String partner;
 
-    public void setPartner(final String partner) {
+    public void setPartner(String partner) {
         this.partner = partner;
     }
 
@@ -34,9 +35,9 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(final Terminal terminal, final String orderNo,
-            final BigDecimal amount, final String description, final String payerIp) {
-        final SortedMap<String, String> params = new TreeMap<>();
+    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
+            BigDecimal amount, Currency currency, String description, String payerIp) {
+        SortedMap<String, String> params = new TreeMap<>();
         params.put("service", "create_direct_pay_by_user");
         params.put("partner", this.partner);
         params.put("seller_id", this.partner);
@@ -48,7 +49,7 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
         }
         params.put("out_trade_no", orderNo);
         params.put("total_fee", amount.toString());
-        // final String body =
+        // String body =
         // this.messageSource.getMessage("info.payment.body",
         // new String[] { description }, Locale.getDefault());
         params.put("subject", description);
@@ -58,24 +59,24 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
         return params;
     }
 
-    protected abstract void sign(final SortedMap<String, String> params);
+    protected abstract void sign(SortedMap<String, String> params);
 
     @Override
-    public PaymentResult getResult(final boolean confirmed, final Map<String, String> params)
+    public PaymentResult getResult(boolean confirmed, Map<String, String> params)
             throws BusinessException {
         validateSign(params);
-        final String paymentStatus = params.get("trade_status"); // 支付状态
+        String paymentStatus = params.get("trade_status"); // 支付状态
         if ("TRADE_SUCCESS".equals(paymentStatus)) { // 支付结果不等于0，支付失败
-            final String gatewayPaymentNo = params.get("trade_no"); // 支付交易号
-            final String fee = params.get("total_fee"); // 金额，以分为单位
-            final BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
-            final Terminal terminal = null; // TODO 终端类型
-            final String orderNo = params.get("out_trade_no"); // 商户订单号
+            String gatewayPaymentNo = params.get("trade_no"); // 支付交易号
+            String fee = params.get("total_fee"); // 金额，以分为单位
+            BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
+            Terminal terminal = null; // TODO 终端类型
+            String orderNo = params.get("out_trade_no"); // 商户订单号
             return new PaymentResult(gatewayPaymentNo, amount, terminal, orderNo, "success");
         }
         return null; // 状态不为成功，则一律返回null
     }
 
-    protected abstract void validateSign(final Map<String, String> params) throws BusinessException;
+    protected abstract void validateSign(Map<String, String> params) throws BusinessException;
 
 }

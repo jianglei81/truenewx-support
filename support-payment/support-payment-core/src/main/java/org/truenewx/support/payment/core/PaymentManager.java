@@ -1,7 +1,9 @@
 package org.truenewx.support.payment.core;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.truenewx.core.exception.HandleableException;
@@ -52,8 +54,34 @@ public interface PaymentManager {
      *            付款者IP
      * @return 支付请求参数集
      */
+    default Map<String, String> getRequestParams(String gatewayName, Terminal terminal,
+            String orderNo, BigDecimal amount, String description, String payerIp) {
+        Currency currency = Currency.getInstance(Locale.getDefault());
+        return getRequestParams(gatewayName, terminal, orderNo, amount, currency, description,
+                payerIp);
+    }
+
+    /**
+     * 获取向支付网关发起支付请求所需的参数集（含币种）
+     *
+     * @param gatewayName
+     *            支付网关名称
+     * @param terminal
+     *            终端类型
+     * @param orderNo
+     *            订单编号
+     * @param amount
+     *            订单金额
+     * @param currency
+     *            币种
+     * @param description
+     *            订单描述
+     * @param payerIp
+     *            付款者IP
+     * @return 支付请求参数集
+     */
     Map<String, String> getRequestParams(String gatewayName, Terminal terminal, String orderNo,
-            BigDecimal amount, String description, String payerIp);
+            BigDecimal amount, Currency currency, String description, String payerIp);
 
     /**
      * 通知支付结果
