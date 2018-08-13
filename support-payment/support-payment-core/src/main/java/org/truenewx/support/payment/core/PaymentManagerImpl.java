@@ -2,7 +2,6 @@ package org.truenewx.support.payment.core;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.truenewx.core.model.Terminal;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.payment.core.gateway.PaymentGateway;
 import org.truenewx.support.payment.core.gateway.PaymentGatewayAdapter;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
 
 /**
  * 支付管理器实现
@@ -60,23 +58,20 @@ public class PaymentManagerImpl implements PaymentManager, ContextInitializedBea
     }
 
     @Override
-    public Map<String, String> getRequestParams(String gatewayName, Terminal terminal,
-            String orderNo, BigDecimal amount, Currency currency, String description,
-            String payerIp) {
+    public PaymentRequestParameter getRequestParameter(String gatewayName, PaymentDefinition definition) {
         PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
-            return adapter.getRequestParams(terminal, orderNo, amount, currency, description,
-                    payerIp);
+            return adapter.getRequestParameter(definition);
         }
         return null;
     }
 
     @Override
     public PaymentResult notifyResult(String gatewayName, boolean confirmed,
-            Map<String, String> params) throws HandleableException {
+            Terminal terminal, Map<String, String> params) throws HandleableException {
         PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
-            PaymentResult result = adapter.getResult(confirmed, params);
+            PaymentResult result = adapter.getResult(confirmed, terminal, params);
             if (confirmed && this.listener != null) {
                 this.listener.onPaid(adapter.getChannel(), result.getGatewayPaymentNo(),
                         result.getTerminal(), result.getOrderNo());

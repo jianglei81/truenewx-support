@@ -1,15 +1,12 @@
 package org.truenewx.support.payment.core;
 
 import java.math.BigDecimal;
-import java.util.Currency;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.support.payment.core.gateway.PaymentGateway;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
 
 /**
  * 支付管理器
@@ -38,50 +35,15 @@ public interface PaymentManager {
     PaymentGateway getGateway(String gatewayName);
 
     /**
-     * 获取向支付网关发起支付请求所需的参数集
+     * 获取向支付网关发起支付请求所需的参数
      *
      * @param gatewayName
      *            支付网关名称
-     * @param terminal
-     *            终端类型
-     * @param orderNo
-     *            订单编号
-     * @param amount
-     *            订单金额
-     * @param description
-     *            订单描述
-     * @param payerIp
-     *            付款者IP
+     * @param definition
+     *            支付定义
      * @return 支付请求参数集
      */
-    default Map<String, String> getRequestParams(String gatewayName, Terminal terminal,
-            String orderNo, BigDecimal amount, String description, String payerIp) {
-        Currency currency = Currency.getInstance(Locale.getDefault());
-        return getRequestParams(gatewayName, terminal, orderNo, amount, currency, description,
-                payerIp);
-    }
-
-    /**
-     * 获取向支付网关发起支付请求所需的参数集（含币种）
-     *
-     * @param gatewayName
-     *            支付网关名称
-     * @param terminal
-     *            终端类型
-     * @param orderNo
-     *            订单编号
-     * @param amount
-     *            订单金额
-     * @param currency
-     *            币种
-     * @param description
-     *            订单描述
-     * @param payerIp
-     *            付款者IP
-     * @return 支付请求参数集
-     */
-    Map<String, String> getRequestParams(String gatewayName, Terminal terminal, String orderNo,
-            BigDecimal amount, Currency currency, String description, String payerIp);
+    PaymentRequestParameter getRequestParameter(String gatewayName, PaymentDefinition definition);
 
     /**
      * 通知支付结果
@@ -90,14 +52,16 @@ public interface PaymentManager {
      *            支付网关名称
      * @param confirmed
      *            是否正式通知，false-表示结果展示通知
+     * @param terminal
+     *            支付终端
      * @param params
      *            结果参数集
      * @return 支付结果
      * @throws HandleableException
      *             如果通知结果处理过程中出现错误
      */
-    PaymentResult notifyResult(String gatewayName, boolean confirmed, Map<String, String> params)
-            throws HandleableException;
+    PaymentResult notifyResult(String gatewayName, boolean confirmed, Terminal terminal,
+            Map<String, String> params) throws HandleableException;
 
     /**
      * 发起退款请求

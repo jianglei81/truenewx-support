@@ -1,9 +1,8 @@
-package org.truenewx.support.payment.core.gateway.impl;
+package org.truenewx.support.payment.core.gateway.impl.tenpay;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.util.Currency;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,9 +16,13 @@ import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.core.util.DateUtil;
 import org.truenewx.core.util.MathUtil;
+import org.truenewx.support.payment.core.PaymentDefinition;
+import org.truenewx.support.payment.core.PaymentRequestParameter;
+import org.truenewx.support.payment.core.PaymentResult;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
 import org.truenewx.support.payment.core.gateway.PaymentExceptionCodes;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
+import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
+import org.truenewx.support.payment.core.gateway.impl.RespondBusinessException;
 
 import com.tenpay.client.ClientResponseHandler;
 import com.tenpay.client.TenpayHttpClient;
@@ -51,15 +54,14 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
-            BigDecimal amount, Currency currency, String description, String payerIp) {
+    public PaymentRequestParameter getRequestParameter(PaymentDefinition definition) {
         SortedMap<String, String> params = new TreeMap<>();
         // 设置支付参数
         params.put("partner", this.partner); // 商户号
         params.put("notify_url", getResultConfirmUrl()); // 接收财付通通知的URL
         params.put("return_url", getResultShowUrl()); // 交易完成后跳转的URL
         // this.params.put("bank_type", "DEFAULT"); // 银行类型(中介担保时此参数无效)
-        params.put("spbill_create_ip", payerIp); // 用户的公网ip，不是商户服务器IP
+        params.put("spbill_create_ip", definition.getPayerIp()); // 用户的公网ip，不是商户服务器IP
         params.put("fee_type", "1"); // 币种，1人民币
 
         // 系统可选参数
@@ -85,14 +87,14 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
         params.put("agent_type", ""); // 代理模式，0无代理(默认)，1表示卡易售模式，2表示网店模式
         params.put("seller_id", ""); // 卖家商户号，为空则等同于partner
 
-        params.put("out_trade_no", orderNo);
+        params.put("out_trade_no", definition.getOrderNo());
         // 商品价格（包含运费），以分为单位
-        int fee = amount.multiply(new BigDecimal(100)).intValue();
+        int fee = definition.getAmount().multiply(new BigDecimal(100)).intValue();
         params.put("total_fee", String.valueOf(fee));
-        params.put("body", description);// 商品描述
-        params.put("subject", description); // 商品名称(中介交易时必填)
+        params.put("body", definition.getDescription());// 商品描述
+        params.put("subject", definition.getDescription()); // 商品名称(中介交易时必填)
         sign(params);
-        return params;
+        return new PaymentRequestParameter(params);
     }
 
     protected void sign(Map<String, String> params) {
@@ -112,7 +114,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public PaymentResult getResult(boolean confirmed, Map<String, String> params)
+    public PaymentResult getResult(boolean confirmed, Terminal terminal, Map<String, String> params)
             throws BusinessException {
         try {
             if (confirmed) {

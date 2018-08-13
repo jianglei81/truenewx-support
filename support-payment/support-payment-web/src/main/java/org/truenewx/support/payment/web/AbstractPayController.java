@@ -18,7 +18,7 @@ import org.truenewx.core.Strings;
 import org.truenewx.core.exception.HandleableException;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.support.payment.core.PaymentManager;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
+import org.truenewx.support.payment.core.PaymentResult;
 
 import com.tenpay.util.XmlUtil;
 
@@ -49,14 +49,15 @@ public abstract class AbstractPayController {
     public abstract Map<String, String> getPayRequestParams(String gatewayName, Terminal terminal,
             String orderNo);
 
-    @RequestMapping(value = "/result/confirm/{gatewayName}")
+    @RequestMapping(value = "/result/confirm/{gatewayName}/{terminal}")
     @ResponseBody
-    public String confirm(@PathVariable("gatewayName") final String gatewayName,
-            final HttpServletRequest request) throws HandleableException {
-        final Map<String, String> params = getHttpRequestParams(request);
+    public String confirm(@PathVariable("gatewayName") String gatewayName,
+            @PathVariable(value = "terminal", required = false) String terminal,
+            HttpServletRequest request) throws HandleableException {
+        Map<String, String> params = getHttpRequestParams(request);
         if (params != null && params.size() > 0) {
-            final PaymentResult result = this.paymentManager.notifyResult(gatewayName, true,
-                    params);
+            PaymentResult result = this.paymentManager.notifyResult(gatewayName, true,
+                    new Terminal(terminal), params);
             if (result != null) {
                 return result.getResponse();
             }
@@ -64,35 +65,36 @@ public abstract class AbstractPayController {
         return null;
     }
 
-    private Map<String, String> getHttpRequestParams(final HttpServletRequest request) {
-        final Map<String, String[]> requestParams = request.getParameterMap();
+    private Map<String, String> getHttpRequestParams(HttpServletRequest request) {
+        Map<String, String[]> requestParams = request.getParameterMap();
         if (requestParams != null && requestParams.size() > 0) {
-            final Map<String, String> params = new HashMap<>();
-            for (final Entry<String, String[]> entry : requestParams.entrySet()) {
-                final String name = entry.getKey();
-                final String[] values = entry.getValue();
+            Map<String, String> params = new HashMap<>();
+            for (Entry<String, String[]> entry : requestParams.entrySet()) {
+                String name = entry.getKey();
+                String[] values = entry.getValue();
                 params.put(name, StringUtils.join(values, Strings.COMMA));
             }
             return params;
         } else {
             try {
-                final Reader reader = request.getReader();
-                final String xml = IOUtils.toString(reader);
+                Reader reader = request.getReader();
+                String xml = IOUtils.toString(reader);
                 reader.close();
                 return XmlUtil.doXmlParse(xml);
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return null;
     }
 
-    @RequestMapping(value = "/result/show/{gatewayName}")
-    public String show(@PathVariable("gatewayName") final String gatewayName,
-            final HttpServletRequest request, final RedirectAttributes attr)
-            throws HandleableException {
-        final Map<String, String> params = getHttpRequestParams(request);
-        final PaymentResult result = this.paymentManager.notifyResult(gatewayName, false, params);
+    @RequestMapping(value = "/result/show/{gatewayName}/{terminal}")
+    public String show(@PathVariable("gatewayName") String gatewayName,
+            @PathVariable(value = "terminal", required = false) String terminal,
+            HttpServletRequest request, RedirectAttributes attr) throws HandleableException {
+        Map<String, String> params = getHttpRequestParams(request);
+        PaymentResult result = this.paymentManager.notifyResult(gatewayName, false,
+                new Terminal(terminal), params);
         return getShowResultName(result);
     }
 

@@ -1,12 +1,12 @@
 package org.truenewx.support.payment.core.gateway.impl;
 
-import java.math.BigDecimal;
-import java.util.Currency;
 import java.util.Map;
 
 import org.truenewx.core.model.Terminal;
+import org.truenewx.support.payment.core.PaymentDefinition;
+import org.truenewx.support.payment.core.PaymentRequestParameter;
+import org.truenewx.support.payment.core.PaymentResult;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
 
 /**
  * 支付网关：PayPal 贝宝
@@ -22,14 +22,13 @@ public class PaypalPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
-            BigDecimal amount, Currency currency, String description, String payerIp) {
+    public PaymentRequestParameter getRequestParameter(PaymentDefinition definition) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public PaymentResult getResult(boolean confirmed, Map<String, String> params) {
+    public PaymentResult getResult(boolean confirmed, Terminal terminal, Map<String, String> params) {
         // TODO Auto-generated method stub
         return null;
     }

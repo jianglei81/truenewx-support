@@ -1,7 +1,6 @@
 package org.truenewx.support.payment.core.gateway.impl.alipay;
 
 import java.math.BigDecimal;
-import java.util.Currency;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -11,8 +10,10 @@ import org.truenewx.core.enums.Program;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.core.util.MathUtil;
+import org.truenewx.support.payment.core.PaymentDefinition;
+import org.truenewx.support.payment.core.PaymentRequestParameter;
+import org.truenewx.support.payment.core.PaymentResult;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
-import org.truenewx.support.payment.core.gateway.PaymentResult;
 import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
 
 /**
@@ -35,8 +36,7 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
     }
 
     @Override
-    public Map<String, String> getRequestParams(Terminal terminal, String orderNo,
-            BigDecimal amount, Currency currency, String description, String payerIp) {
+    public PaymentRequestParameter getRequestParameter(PaymentDefinition definition) {
         SortedMap<String, String> params = new TreeMap<>();
         params.put("service", "create_direct_pay_by_user");
         params.put("partner", this.partner);
@@ -44,25 +44,25 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
         params.put("_input_charset", Strings.ENCODING_UTF8.toLowerCase());
         params.put("payment_type", "1");
         params.put("notify_url", getResultConfirmUrl());
-        if (terminal.getProgram() == Program.WEB) { // 网页才需要提供结果展示页URL
+        if (definition.getTerminal().getProgram() == Program.WEB) { // 网页才需要提供结果展示页URL
             params.put("return_url", getResultShowUrl());
         }
-        params.put("out_trade_no", orderNo);
-        params.put("total_fee", amount.toString());
+        params.put("out_trade_no", definition.getOrderNo());
+        params.put("total_fee", definition.getAmount().toString());
         // String body =
         // this.messageSource.getMessage("info.payment.body",
         // new String[] { description }, Locale.getDefault());
-        params.put("subject", description);
-        params.put("body", description);
+        params.put("subject", definition.getDescription());
+        params.put("body", definition.getDescription());
 
         sign(params);
-        return params;
+        return new PaymentRequestParameter(params);
     }
 
     protected abstract void sign(SortedMap<String, String> params);
 
     @Override
-    public PaymentResult getResult(boolean confirmed, Map<String, String> params)
+    public PaymentResult getResult(boolean confirmed, Terminal terminal, Map<String, String> params)
             throws BusinessException {
         validateSign(params);
         String paymentStatus = params.get("trade_status"); // 支付状态
@@ -70,7 +70,6 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
             String gatewayPaymentNo = params.get("trade_no"); // 支付交易号
             String fee = params.get("total_fee"); // 金额，以分为单位
             BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
-            Terminal terminal = null; // TODO 终端类型
             String orderNo = params.get("out_trade_no"); // 商户订单号
             return new PaymentResult(gatewayPaymentNo, amount, terminal, orderNo, "success");
         }
