@@ -3,6 +3,7 @@ package org.truenewx.support.payment.core.gateway.impl.paypal;
 import java.math.BigDecimal;
 import java.util.Map;
 
+import org.truenewx.core.Strings;
 import org.truenewx.core.enums.Program;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.core.util.MathUtil;
@@ -60,7 +61,7 @@ public class PaypalAppPaymentGateway extends PaypalPaymentGateway {
                 String orderNo = item.getSku();
 
                 PaymentResult paymentResult = new PaymentResult(gatewayPaymentNo, amount, terminal,
-                        orderNo, "");
+                        orderNo, Strings.EMPTY);
                 return paymentResult;
             }
         } catch (PayPalRESTException e) {
