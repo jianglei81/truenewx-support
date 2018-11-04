@@ -6,9 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.Executor;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.truenewx.core.Strings;
 import org.truenewx.core.io.AttachInputStream;
@@ -29,10 +27,9 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
 
     private File root;
     private UnstructuredAccessor remoteAccessor;
-    private Executor executor;
 
-    public LocalUnstructuredAccessor(final String root) {
-        final File file = new File(root);
+    public LocalUnstructuredAccessor(String root) {
+        File file = new File(root);
         if (!file.exists()) { // 目录不存在则创建
             file.mkdirs();
         } else { // 必须是个目录
@@ -47,31 +44,23 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
      * @param remoteAccessor
      *            远程访问器
      */
-    public void setRemoteAccessor(final UnstructuredAccessor remoteAccessor) {
+    public void setRemoteAccessor(UnstructuredAccessor remoteAccessor) {
         if (remoteAccessor != this) { // 避免自己引用自己从而导致无限递归调用
             this.remoteAccessor = remoteAccessor;
         }
     }
 
-    /**
-     * @param executor
-     *            线程执行器
-     */
-    public void setExecutor(final Executor executor) {
-        this.executor = executor;
-    }
-
     @Override
-    public void write(final String bucket, final String path, final String filename,
-            final InputStream in) throws IOException {
+    public void write(String bucket, String path, String filename, InputStream in)
+            throws IOException {
         // 先上传内容到一个新建的临时文件中，以免在处理过程中原文件被读取
-        final File tempFile = createTempFile(bucket, path);
-        final OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename);
+        File tempFile = createTempFile(bucket, path);
+        OutputStream out = new AttachOutputStream(new FileOutputStream(tempFile), filename);
         IOUtil.writeAll(in, out);
         out.close();
 
         // 然后删除原文件，修改临时文件名为原文件名
-        final File file = getStorageFile(bucket, path);
+        File file = getStorageFile(bucket, path);
         if (file.exists()) {
             file.delete();
         }
@@ -81,11 +70,11 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         writeToRemote(bucket, path, filename, file);
     }
 
-    private File createTempFile(final String bucket, final String path) throws IOException {
+    private File createTempFile(String bucket, String path) throws IOException {
         // 形如：${正式文件名}_${32位UUID}.temp;
-        final String relativePath = standardize(bucket) + standardize(path) + Strings.UNDERLINE
+        String relativePath = standardize(bucket) + standardize(path) + Strings.UNDERLINE
                 + StringUtil.uuid32() + Strings.DOT + "temp";
-        final File file = new File(this.root, relativePath);
+        File file = new File(this.root, relativePath);
         ensureDirs(file);
         file.createNewFile(); // 创建新文件以写入内容
         file.setWritable(true);
@@ -98,7 +87,7 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
      * @param file
      *            文件
      */
-    private void ensureDirs(final File file) {
+    private void ensureDirs(File file) {
         File parent = file.getParentFile();
         // 上级目录路径中可能已经存在一个同名文件，导致目录无法创建，此时修改该文件的名称
         while (parent != null) {
@@ -111,9 +100,9 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         file.getParentFile().mkdirs(); // 确保目录存在
     }
 
-    private File getStorageFile(final String bucket, final String path) {
-        final String relativePath = standardize(bucket) + standardize(path);
-        final File file = new File(this.root, relativePath);
+    private File getStorageFile(String bucket, String path) {
+        String relativePath = standardize(bucket) + standardize(path);
+        File file = new File(this.root, relativePath);
         ensureDirs(file);
         return file;
     }
@@ -129,79 +118,68 @@ public class LocalUnstructuredAccessor implements UnstructuredAccessor {
         return path;
     }
 
-    private void writeToRemote(final String bucket, final String path, final String filename,
-            final File file) {
-        if (this.executor != null && this.remoteAccessor != null) {
-            this.executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // 上传至远程的文件内容不包含附加信息
-                        final InputStream in = new AttachInputStream(new FileInputStream(file));
-                        LocalUnstructuredAccessor.this.remoteAccessor.write(bucket, path, filename,
-                                in);
-                        in.close();
-                    } catch (final IOException e) {
-                        LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
-                    }
-                }
-            });
+    private void writeToRemote(String bucket, String path, String filename, File file)
+            throws IOException {
+        if (this.remoteAccessor != null) {
+            // 上传至远程的文件内容不包含附加信息
+            InputStream in = new AttachInputStream(new FileInputStream(file));
+            this.remoteAccessor.write(bucket, path, filename, in);
+            in.close();
         }
     }
 
     @Override
-    public UnstructuredStorageMetadata getStorageMetadata(final String bucket, final String path) {
+    public UnstructuredStorageMetadata getStorageMetadata(String bucket, String path) {
         try {
-            final File file = getStorageFile(bucket, path);
+            File file = getStorageFile(bucket, path);
             if (file.exists()) {
-                final AttachInputStream in = new AttachInputStream(new FileInputStream(file));
-                final String filename = in.readAttachement();
-                final int size = in.available(); // 读取完附加信息后，输入流剩余的长度即为资源大小
+                AttachInputStream in = new AttachInputStream(new FileInputStream(file));
+                String filename = in.readAttachement();
+                int size = in.available(); // 读取完附加信息后，输入流剩余的长度即为资源大小
                 in.close();
                 return new UnstructuredStorageMetadata(filename, size, file.lastModified());
             } else if (this.remoteAccessor != null) {
                 return this.remoteAccessor.getStorageMetadata(bucket, path);
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             // 忽略所有异常
         }
         return null;
     }
 
     @Override
-    public long getLastModifiedTime(final String bucket, final String path) {
+    public long getLastModifiedTime(String bucket, String path) {
         try {
-            final File file = getStorageFile(bucket, path);
+            File file = getStorageFile(bucket, path);
             if (file.exists()) {
                 return file.lastModified();
             } else if (this.remoteAccessor != null) {
                 return this.remoteAccessor.getLastModifiedTime(bucket, path);
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             // 忽略所有异常
         }
         return 0;
     }
 
     @Override
-    public void read(final String bucket, final String path, final OutputStream out)
-            throws IOException {
-        final File file = getStorageFile(bucket, path);
+    public void read(String bucket, String path, OutputStream out) throws IOException {
+        File file = getStorageFile(bucket, path);
         if (!file.exists()) { // 如果文件不存在，则需要从远程服务器读取内容，并缓存到本地文件
             if (this.remoteAccessor != null) {
-                final UnstructuredStorageMetadata metadata = this.remoteAccessor
+                UnstructuredStorageMetadata metadata = this.remoteAccessor
                         .getStorageMetadata(bucket, path);
                 if (metadata != null) {
                     file.createNewFile();
-                    final String filename = metadata.getFilename();
-                    final OutputStream fileOut = new AttachOutputStream(new FileOutputStream(file),
+                    String filename = metadata.getFilename();
+                    OutputStream fileOut = new AttachOutputStream(new FileOutputStream(file),
                             filename);
                     this.remoteAccessor.read(bucket, path, new CompositeOutputStream(out, fileOut));
                     fileOut.close();
                 }
             }
         } else {
-            final InputStream in = new AttachInputStream(new FileInputStream(file));
+            InputStream in = new AttachInputStream(new FileInputStream(file));
             IOUtil.writeAll(in, out);
             in.close();
         }

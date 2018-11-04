@@ -30,7 +30,7 @@ public class AliyunAccountProvider implements AliyunAccount {
      * @param accountId
      *            阿里云账户编号
      */
-    public void setAccountId(final String accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 
@@ -38,10 +38,10 @@ public class AliyunAccountProvider implements AliyunAccount {
      * @param ossRegion
      *            OSS区域
      */
-    public void setOssRegion(final String ossRegion) {
+    public void setOssRegion(String ossRegion) {
         this.ossRegion = ossRegion;
         if (StringUtils.isNotBlank(this.ossRegion)) {
-            this.ossEndpoint = this.ossRegion + ".aliyuncs.com";
+            this.ossEndpoint = "oss-" + this.ossRegion + ".aliyuncs.com";
         } else {
             this.ossEndpoint = null;
         }
@@ -51,7 +51,7 @@ public class AliyunAccountProvider implements AliyunAccount {
      * @param ramRegion
      *            RAM区域
      */
-    public void setRamRegion(final String ramRegion) {
+    public void setRamRegion(String ramRegion) {
         this.ramRegion = ramRegion;
     }
 
@@ -59,7 +59,7 @@ public class AliyunAccountProvider implements AliyunAccount {
      * @param adminAccessKeyId
      *            管理账号访问id
      */
-    public void setAdminAccessKeyId(final String adminAccessKeyId) {
+    public void setAdminAccessKeyId(String adminAccessKeyId) {
         this.adminAccessKeyId = adminAccessKeyId;
     }
 
@@ -67,7 +67,7 @@ public class AliyunAccountProvider implements AliyunAccount {
      * @param adminAccessKeySecret
      *            管理账号访问密钥
      */
-    public void setAdminAccessKeySecret(final String adminAccessKeySecret) {
+    public void setAdminAccessKeySecret(String adminAccessKeySecret) {
         this.adminAccessKeySecret = adminAccessKeySecret;
     }
 
@@ -98,7 +98,7 @@ public class AliyunAccountProvider implements AliyunAccount {
     @Override
     public IAcsClient getAcsClient() {
         if (this.acsClient == null) {
-            final IClientProfile profile = DefaultProfile.getProfile(this.ramRegion,
+            IClientProfile profile = DefaultProfile.getProfile(this.ramRegion,
                     this.adminAccessKeyId, this.adminAccessKeySecret);
             this.acsClient = new DefaultAcsClient(profile);
         }

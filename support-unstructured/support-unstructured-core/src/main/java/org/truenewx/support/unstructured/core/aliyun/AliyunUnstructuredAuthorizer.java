@@ -29,36 +29,25 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     private AliyunPolicyBuilder policyBuilder;
     private AliyunStsRoleAssumer readStsRoleAssumer;
 
+    public AliyunUnstructuredAuthorizer(AliyunAccount account) {
+        this.account = account;
+        this.policyBuilder = new AliyunPolicyBuilder(account);
+    }
+
     /**
      * @param tempReadExpiredSeconds
      *            临时读取权限过期秒数
      */
-    public void setTempReadExpiredSeconds(final int tempReadExpiredSeconds) {
+    public void setTempReadExpiredSeconds(int tempReadExpiredSeconds) {
         this.tempReadExpiredSeconds = tempReadExpiredSeconds;
     }
 
     /**
-     * @param account
-     *            阿里云账户信息
+     * @param readStsRoleName
+     *            读权限的STS临时角色名
      */
-    public void setAccount(final AliyunAccount account) {
-        this.account = account;
-    }
-
-    /**
-     * @param policyBuilder
-     *            授权方针构建器
-     */
-    public void setPolicyBuilder(final AliyunPolicyBuilder policyBuilder) {
-        this.policyBuilder = policyBuilder;
-    }
-
-    /**
-     * @param readStsRoleAssumer
-     *            读权限的STS临时角色假扮器
-     */
-    public void setReadStsRoleAssumer(final AliyunStsRoleAssumer readStsRoleAssumer) {
-        this.readStsRoleAssumer = readStsRoleAssumer;
+    public void setReadStsRoleName(String readStsRoleName) {
+        this.readStsRoleAssumer = new AliyunStsRoleAssumer(this.account, readStsRoleName);
     }
 
     @Override
@@ -67,21 +56,25 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     @Override
-    public void authorizePublicRead(final String bucket, final String path) {
+    public void authorizePublicRead(String bucket, String path) {
         // TODO 避免同样的路径反复多次申请公开读
         this.account.getOssClient().setObjectAcl(bucket, path, CannedAccessControlList.PublicRead);
     }
 
-    private boolean isPublicRead(final String bucket, final String path) {
-        final ObjectAcl acl = this.account.getOssClient().getObjectAcl(bucket, path);
-        final ObjectPermission permission = acl.getPermission();
+    private boolean isPublicRead(String bucket, String path) {
+        ObjectAcl acl = this.account.getOssClient().getObjectAcl(bucket, path);
+        ObjectPermission permission = acl.getPermission();
         return permission == ObjectPermission.PublicRead
                 || permission == ObjectPermission.PublicReadWrite;
     }
 
+    protected String getReadHost(String bucket) {
+        return bucket + Strings.DOT + this.account.getOssEndpoint();
+    }
+
     @Override
-    public String getReadUrl(final String userKey, final String bucket, String path) {
-        final int index = path.indexOf("?");
+    public String getReadUrl(String userKey, String bucket, String path) {
+        int index = path.indexOf("?");
         String paramString = Strings.EMPTY;
         if (index > 0) {
             paramString = path.substring(index);
@@ -89,24 +82,24 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
         }
         try {
             if (isPublicRead(bucket, path)) {
-                final StringBuffer url = new StringBuffer(bucket).append(Strings.DOT)
-                        .append(this.account.getOssEndpoint()).append(Strings.SLASH).append(path);
+                // 以双斜杠开头，表示采用当前上下文的相同协议
+                StringBuffer url = new StringBuffer("//").append(getReadHost(bucket))
+                        .append(Strings.SLASH).append(path);
                 return url.toString() + paramString;
-            } else { // 非公开可读的，授予临时读取权限
-                final String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
-                final Credentials credentials = this.readStsRoleAssumer.assumeRole(userKey,
+            } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
+                String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
+                Credentials credentials = this.readStsRoleAssumer.assumeRole(userKey,
                         policyDocument);
                 if (credentials != null) {
-                    final OSS oss = new OSSClient(this.account.getOssEndpoint(),
+                    OSS oss = new OSSClient(this.account.getOssEndpoint(),
                             credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
                             credentials.getSecurityToken());
-                    final Date expiration = DateUtil.addSeconds(new Date(),
-                            this.tempReadExpiredSeconds);
-                    final URL url = oss.generatePresignedUrl(bucket, path, expiration);
+                    Date expiration = DateUtil.addSeconds(new Date(), this.tempReadExpiredSeconds);
+                    URL url = oss.generatePresignedUrl(bucket, path, expiration);
                     return url.toString() + paramString;
                 }
             }
-        } catch (final Exception e) {
+        } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
         return null;
