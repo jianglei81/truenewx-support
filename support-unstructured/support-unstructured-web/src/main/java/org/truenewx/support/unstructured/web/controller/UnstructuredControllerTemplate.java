@@ -59,18 +59,17 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
      * 获取在当前方针下，当前用户能上传指定授权类型的文件的最大容量，单位：B<br/>
      * 注意：因模板方法中无法确定授权枚举类型，故需要子类覆写该方法，由于覆写方法不能继承注解，故同时需要使用{@link RpcMethod}注解进行标注
      *
-     * @param authorizeType
-     *            授权类型
+     * @param authorizeType 授权类型
      * @return 当前用户能上传指定授权类型的文件的最大容量
      */
-    public UnstructuredUploadLimit getUploadLimit(final T authorizeType) throws BusinessException {
+    public UnstructuredUploadLimit getUploadLimit(T authorizeType) throws BusinessException {
         return this.service.getUploadLimit(authorizeType, getUser());
     }
 
     // 跨域上传支持
     @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.OPTIONS)
-    public String upload(@PathVariable("authorizeType") final T authorizeType,
-            final HttpServletResponse response) {
+    public String upload(@PathVariable("authorizeType") T authorizeType,
+            HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", Strings.ASTERISK);
         response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
@@ -81,25 +80,25 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.POST)
     @HandleableExceptionMessage(respondErrorStatus = false)
     @ResponseBody
-    public String upload(@PathVariable("authorizeType") final T authorizeType,
-            final HttpServletRequest request, final HttpServletResponse response)
+    public String upload(@PathVariable("authorizeType") T authorizeType, HttpServletRequest request,
+            HttpServletResponse response)
             throws BusinessException, IOException, FileUploadException {
-        final List<UploadResult> results = new ArrayList<>();
-        final FileItemFactory fileItemFactory = new DiskFileItemFactory();
-        final ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
+        List<UploadResult> results = new ArrayList<>();
+        FileItemFactory fileItemFactory = new DiskFileItemFactory();
+        ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
         servletFileUpload.setHeaderEncoding(Strings.ENCODING_UTF8);
-        final List<FileItem> fileItems = servletFileUpload.parseRequest(request);
-        for (final FileItem fileItem : fileItems) {
+        List<FileItem> fileItems = servletFileUpload.parseRequest(request);
+        for (FileItem fileItem : fileItems) {
             if (!fileItem.isFormField()) {
-                final String filename = fileItem.getName();
-                final InputStream in = fileItem.getInputStream();
+                String filename = fileItem.getName();
+                InputStream in = fileItem.getInputStream();
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
-                final U user = getUser();
-                final String storageUrl = this.service.write(authorizeType, user, filename, in);
+                U user = getUser();
+                String storageUrl = this.service.write(authorizeType, user, filename, in);
                 in.close();
-                String readUrl = this.service.getReadUrl(user, storageUrl);
+                String readUrl = this.service.getReadUrl(user, storageUrl, false);
                 readUrl = getFullReadUrl(readUrl);
-                final UploadResult result = new UploadResult(filename, storageUrl, readUrl);
+                UploadResult result = new UploadResult(filename, storageUrl, readUrl);
                 results.add(result);
             }
         }
@@ -113,9 +112,9 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     }
 
     @Override
-    public final String getReadUrl(final String storageUrl) throws BusinessException {
+    public String getReadUrl(String storageUrl, boolean thumbnail) throws BusinessException {
         if (StringUtils.isNotBlank(storageUrl)) {
-            final String readUrl = this.service.getReadUrl(getUser(), storageUrl);
+            String readUrl = this.service.getReadUrl(getUser(), storageUrl, thumbnail);
             return getFullReadUrl(readUrl);
         }
         return null;
@@ -126,17 +125,17 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         if (readUrl != null && readUrl.length() > 1 && readUrl.startsWith(Strings.SLASH)
                 && readUrl.charAt(1) != '/') {
             // 先加上上下文根路径
-            final String contextPath = SpringWebContext.getRequest().getContextPath();
+            String contextPath = SpringWebContext.getRequest().getContextPath();
             if (!contextPath.equals(Strings.SLASH)) {
                 readUrl = contextPath + readUrl;
             }
             // 再加上主机地址
-            final String host = getHost();
+            String host = getHost();
             if (host != null) {
                 String requestUrl = SpringWebContext.getRequest().getRequestURL().toString();
                 // 如果配置的主机地址以//开头，说明允许各种访问协议，此时需去掉请求地址中的协议部分再进行比较
                 if (host.startsWith("//")) {
-                    final int index = requestUrl.indexOf("://");
+                    int index = requestUrl.indexOf("://");
                     requestUrl = requestUrl.substring(index + 1); // 让请求地址也以//开头
                 }
                 // 当前请求地址与非结构化存储的外部读取主机地址不一致，则需要将主机地址加入读取地址中
@@ -159,17 +158,15 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 当前用户获取指定内部存储URL集对应的资源读取元信息集<br/>
      *
-     * @param storageUrls
-     *            内部存储URL集
+     * @param storageUrls 内部存储URL集
      * @return 资源读取元信息集
-     * @throws BusinessException
-     *             如果指定用户对某个资源没有读取权限
+     * @throws BusinessException 如果指定用户对某个资源没有读取权限
      */
     @RpcMethod
     @Accessibility(anonymous = true) // 默认匿名可获取，用户读取权限控制由各方针决定
-    public UnstructuredReadMetadata[] getReadMetadatas(final String[] storageUrls)
+    public UnstructuredReadMetadata[] getReadMetadatas(String[] storageUrls)
             throws BusinessException {
-        final UnstructuredReadMetadata[] metadatas = new UnstructuredReadMetadata[storageUrls.length];
+        UnstructuredReadMetadata[] metadatas = new UnstructuredReadMetadata[storageUrls.length];
         for (int i = 0; i < storageUrls.length; i++) {
             metadatas[i] = this.service.getReadMetadata(getUser(), storageUrls[i]);
             if (metadatas[i] != null) {
@@ -183,22 +180,22 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
 
     @RequestMapping(value = "/dl/**", method = RequestMethod.GET)
     @Accessibility(anonymous = true) // 默认匿名可下载，用户读取权限控制由各方针决定
-    public String download(final HttpServletRequest request, final HttpServletResponse response)
+    public String download(HttpServletRequest request, HttpServletResponse response)
             throws BusinessException, IOException {
-        final String url = getBucketAndPathFragmentUrl(request);
-        final int index = url.indexOf(Strings.SLASH);
-        final String bucket = url.substring(0, index);
-        final String path = url.substring(index + 1);
+        String url = getBucketAndPathFragmentUrl(request);
+        int index = url.indexOf(Strings.SLASH);
+        String bucket = url.substring(0, index);
+        String path = url.substring(index + 1);
 
-        final long modifiedSince = request.getDateHeader("If-Modified-Since");
-        final U user = getUser();
-        final long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);
+        long modifiedSince = request.getDateHeader("If-Modified-Since");
+        U user = getUser();
+        long modifiedTime = this.service.getLastModifiedTime(user, bucket, path);
         response.setDateHeader("Last-Modified", modifiedTime);
         response.setContentType(Mimetypes.getInstance().getMimetype(path));
         if (modifiedSince == modifiedTime) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED); // 如果相等则返回表示未修改的状态码
         } else {
-            final ServletOutputStream out = response.getOutputStream();
+            ServletOutputStream out = response.getOutputStream();
             this.service.read(user, bucket, path, out);
             out.close();
         }
@@ -208,18 +205,17 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 获取存储桶和路径所在的URL片段，子类可覆写实现自定义的路径格式
      *
-     * @param request
-     *            HTTP请求
+     * @param request HTTP请求
      * @return 存储桶和路径所在的URL片段
      */
-    protected String getBucketAndPathFragmentUrl(final HttpServletRequest request) {
+    protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {
         String url = WebUtil.getRelativeRequestUrl(request);
         try {
             url = URLDecoder.decode(url, Strings.ENCODING_UTF8);
-        } catch (final UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             // 可以保证字符集不会有错
         }
-        final int index = url.indexOf("/dl/");
+        int index = url.indexOf("/dl/");
         return url.substring(index + 4); // 通配符部分
     }
 

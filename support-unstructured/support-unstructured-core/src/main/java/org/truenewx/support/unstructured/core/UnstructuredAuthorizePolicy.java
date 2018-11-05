@@ -1,5 +1,7 @@
 package org.truenewx.support.unstructured.core;
 
+import java.util.Map;
+
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
@@ -58,5 +60,14 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
     boolean isReadable(U user, String path);
 
     boolean isWritable(U user, String path);
+
+    /**
+     * 获取缩略图读取参数集，仅在文件为图片时有效，返回空时表示不支持缩略图
+     *
+     * @return 缩略图读取参数集
+     */
+    default Map<String, String> getThumbnailParameters() {
+        return null;
+    }
 
 }

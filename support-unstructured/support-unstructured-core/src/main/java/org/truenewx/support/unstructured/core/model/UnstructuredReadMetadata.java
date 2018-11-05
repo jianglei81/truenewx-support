@@ -9,20 +9,30 @@ package org.truenewx.support.unstructured.core.model;
 public class UnstructuredReadMetadata {
 
     private String readUrl;
+    private String thumbnailReadUrl;
     private UnstructuredStorageMetadata storageMetadata;
 
-    public UnstructuredReadMetadata(final String readUrl,
-            final UnstructuredStorageMetadata storageMetadata) {
+    public UnstructuredReadMetadata(String readUrl, String thumbnailReadUrl,
+            UnstructuredStorageMetadata storageMetadata) {
         this.readUrl = readUrl;
+        this.thumbnailReadUrl = thumbnailReadUrl;
         this.storageMetadata = storageMetadata;
     }
 
-    public void setReadUrl(final String readUrl) {
+    public void setReadUrl(String readUrl) {
         this.readUrl = readUrl;
     }
 
     public String getReadUrl() {
         return this.readUrl;
+    }
+
+    public String getThumbnailReadUrl() {
+        return this.thumbnailReadUrl;
+    }
+
+    public void setThumbnailReadUrl(String thumbnailReadUrl) {
+        this.thumbnailReadUrl = thumbnailReadUrl;
     }
 
     public String getFilename() {

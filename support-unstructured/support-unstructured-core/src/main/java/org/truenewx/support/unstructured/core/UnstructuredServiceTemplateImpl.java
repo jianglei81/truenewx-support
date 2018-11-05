@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -166,22 +167,47 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public String getReadUrl(U user, String storageUrl) throws BusinessException {
-        return getReadUrl(user, new UnstructuredStorageUrl(storageUrl));
+    public String getReadUrl(U user, String storageUrl, boolean thumbnail)
+            throws BusinessException {
+        return getReadUrl(user, new UnstructuredStorageUrl(storageUrl), thumbnail);
     }
 
-    private String getReadUrl(U user, UnstructuredStorageUrl url) throws BusinessException {
+    private String getReadUrl(U user, UnstructuredStorageUrl url, boolean thumbnail)
+            throws BusinessException {
         if (url.isValid()) {
             String bucket = url.getBucket();
             String path = standardizePath(url.getPath());
-            validateUserRead(user, bucket, path);
+            UnstructuredAuthorizePolicy<T, U> policy = validateUserRead(user, bucket, path);
             // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
             UnstructuredProvider provider = url.getProvider();
             UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
             String userKey = user == null ? null : user.toString();
-            return authorizer.getReadUrl(userKey, bucket, path);
+            String readUrl = authorizer.getReadUrl(userKey, bucket, path);
+            if (thumbnail) {
+                Map<String, String> thumbnailParameters = policy.getThumbnailParameters();
+                readUrl = appendParameters(readUrl, thumbnailParameters);
+            }
+            return readUrl;
         }
         return null;
+    }
+
+    private String appendParameters(String url, Map<String, String> thumbnailParameters) {
+        if (thumbnailParameters != null && thumbnailParameters.size() > 0) {
+            String parameterString = "";
+            for (Entry<String, String> entry : thumbnailParameters.entrySet()) {
+                parameterString += "&" + entry.getKey() + "=" + entry.getValue();
+            }
+            if (parameterString.length() > 0) {
+                parameterString = parameterString.substring(1);
+            }
+            if (url.indexOf("?") > 0) {
+                url += "&" + parameterString;
+            } else {
+                url += "?" + parameterString;
+            }
+        }
+        return url;
     }
 
     private UnstructuredAuthorizePolicy<T, U> validateUserRead(U user, String bucket, String path)
@@ -203,7 +229,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     public UnstructuredReadMetadata getReadMetadata(U user, String storageUrl)
             throws BusinessException {
         UnstructuredStorageUrl url = new UnstructuredStorageUrl(storageUrl);
-        String readUrl = getReadUrl(user, url);
+        String readUrl = getReadUrl(user, url, false);
         if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
             // 先尝试从本地获取
             UnstructuredStorageMetadata storageMetadata = this.localAccessor
@@ -218,7 +244,8 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
                 }
             }
             if (storageMetadata != null) {
-                return new UnstructuredReadMetadata(readUrl, storageMetadata);
+                String thumbnailReadUrl = getReadUrl(user, url, true);
+                return new UnstructuredReadMetadata(readUrl, thumbnailReadUrl, storageMetadata);
             }
         }
         return null;

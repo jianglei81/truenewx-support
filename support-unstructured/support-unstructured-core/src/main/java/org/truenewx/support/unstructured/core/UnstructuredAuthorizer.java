@@ -36,7 +36,6 @@ public interface UnstructuredAuthorizer {
      *            存储桶名称
      * @param path
      *            资源路径
-     *
      * @return 资源读取URL
      */
     String getReadUrl(String userKey, String bucket, String path);

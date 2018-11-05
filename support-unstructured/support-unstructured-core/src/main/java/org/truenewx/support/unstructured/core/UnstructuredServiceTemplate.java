@@ -59,12 +59,12 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U> {
      *            用户标识
      * @param storageUrl
      *            内部存储URL
-     *
+     * @param thumbnail TODO
      * @return 外部读取URL
      * @throws BusinessException
      *             如果指定用户对指定资源没有读取权限
      */
-    String getReadUrl(U user, String storageUrl) throws BusinessException;
+    String getReadUrl(U user, String storageUrl, boolean thumbnail) throws BusinessException;
 
     /**
      * 获取指定资源的读取元信息
