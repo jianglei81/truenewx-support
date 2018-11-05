@@ -38,6 +38,6 @@ public interface UnstructuredAccessor {
      */
     UnstructuredStorageMetadata getStorageMetadata(String bucket, String path);
 
-    void read(String bucket, String path, OutputStream out) throws IOException;
+    boolean read(String bucket, String path, OutputStream out) throws IOException;
 
 }

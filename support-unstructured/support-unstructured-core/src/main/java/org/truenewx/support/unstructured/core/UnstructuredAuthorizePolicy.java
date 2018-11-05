@@ -17,10 +17,18 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
     UnstructuredProvider getProvider();
 
     /**
+     * 指定是否需要本地存储，默认为true
+     *
+     * @return 是否本地存储
+     */
+    default boolean isStoreLocally() {
+        return true;
+    }
+
+    /**
      * 获取在当前方针下，指定用户上传文件的限制条件
      *
-     * @param user
-     *            用户标识
+     * @param user 用户标识
      * @return 指定用户上传文件的限制条件
      */
     UnstructuredUploadLimit getUploadLimit(U user);

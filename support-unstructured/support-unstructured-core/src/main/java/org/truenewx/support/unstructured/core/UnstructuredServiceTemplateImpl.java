@@ -33,11 +33,12 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
 
     private Map<T, UnstructuredAuthorizePolicy<T, U>> policies = new HashMap<>();
     private Map<UnstructuredProvider, UnstructuredAuthorizer> authorizers = new HashMap<>();
-    private UnstructuredAccessor accessor;
+    private Map<UnstructuredProvider, UnstructuredProviderAccessor> accessors = new HashMap<>();
+    private UnstructuredLocalAccessor localAccessor;
 
     @Autowired
-    public void setAccessor(UnstructuredAccessor accessor) {
-        this.accessor = accessor;
+    public void setLocalAccessor(UnstructuredLocalAccessor localAccessor) {
+        this.localAccessor = localAccessor;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -53,6 +54,12 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
                 .getBeansOfType(UnstructuredAuthorizer.class);
         for (UnstructuredAuthorizer authorizer : authorizers.values()) {
             this.authorizers.put(authorizer.getProvider(), authorizer);
+        }
+
+        Map<String, UnstructuredProviderAccessor> accessors = context
+                .getBeansOfType(UnstructuredProviderAccessor.class);
+        for (UnstructuredProviderAccessor accessor : accessors.values()) {
+            this.accessors.put(accessor.getProvider(), accessor);
         }
     }
 
@@ -96,7 +103,16 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         }
 
         String bucket = policy.getBucket();
-        this.accessor.write(bucket, path, filename, in);
+        // 如果方针指定需要本地存储，则进行本地存储；
+        // 但如果此时服务提供商是自有，则为了避免重复存储，跳过本地存储
+        if (policy.isStoreLocally() && provider != UnstructuredProvider.OWN) {
+            this.localAccessor.write(bucket, path, filename, in);
+        }
+        UnstructuredProviderAccessor providerAccessor = this.accessors.get(provider);
+        if (providerAccessor != null) {
+            in.reset(); // 读取输入流之前先重置，以重新读取
+            providerAccessor.write(bucket, path, filename, in);
+        }
         if (policy.isPublicReadable()) {
             UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
             authorizer.authorizePublicRead(bucket, path);
@@ -168,7 +184,8 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         return null;
     }
 
-    private void validateUserRead(U user, String bucket, String path) throws BusinessException {
+    private UnstructuredAuthorizePolicy<T, U> validateUserRead(U user, String bucket, String path)
+            throws BusinessException {
         // 存储桶相同，且用户对指定路径具有读权限，则匹配
         // 这要求方针具有唯一的存储桶，或者与其它方针的存储桶相同时，下级存放路径不同
         UnstructuredAuthorizePolicy<T, U> policy = this.policies.values().stream()
@@ -179,6 +196,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             String url = Strings.SLASH + bucket + path;
             throw new BusinessException(UnstructuredExceptionCodes.NO_READ_PERMISSION, url);
         }
+        return policy;
     }
 
     @Override
@@ -187,8 +205,18 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         UnstructuredStorageUrl url = new UnstructuredStorageUrl(storageUrl);
         String readUrl = getReadUrl(user, url);
         if (readUrl != null) { // 不为null，则说明存储url有效且用户权限校验通过
-            UnstructuredStorageMetadata storageMetadata = this.accessor
+            // 先尝试从本地获取
+            UnstructuredStorageMetadata storageMetadata = this.localAccessor
                     .getStorageMetadata(url.getBucket(), url.getPath());
+            if (storageMetadata == null) {
+                // 本地无法获取才尝试从服务提供商处获取
+                UnstructuredProvider provider = url.getProvider();
+                UnstructuredProviderAccessor providerAccessor = this.accessors.get(provider);
+                if (providerAccessor != null) {
+                    storageMetadata = providerAccessor.getStorageMetadata(url.getBucket(),
+                            url.getPath());
+                }
+            }
             if (storageMetadata != null) {
                 return new UnstructuredReadMetadata(readUrl, storageMetadata);
             }
@@ -199,16 +227,30 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     @Override
     public long getLastModifiedTime(U user, String bucket, String path) throws BusinessException {
         path = standardizePath(path);
-        validateUserRead(user, bucket, path);
-        return this.accessor.getLastModifiedTime(bucket, path);
+        UnstructuredAuthorizePolicy<T, U> policy = validateUserRead(user, bucket, path);
+        long lastModifiedTime = this.localAccessor.getLastModifiedTime(bucket, path);
+        if (lastModifiedTime <= 0) {
+            UnstructuredProviderAccessor providerAccessor = this.accessors
+                    .get(policy.getProvider());
+            if (providerAccessor != null) {
+                lastModifiedTime = providerAccessor.getLastModifiedTime(bucket, path);
+            }
+        }
+        return lastModifiedTime;
     }
 
     @Override
     public void read(U user, String bucket, String path, OutputStream out)
             throws BusinessException, IOException {
         path = standardizePath(path);
-        validateUserRead(user, bucket, path); // 校验读取权限
-        this.accessor.read(bucket, path, out);
+        UnstructuredAuthorizePolicy<T, U> policy = validateUserRead(user, bucket, path); // 校验读取权限
+        if (!this.localAccessor.read(bucket, path, out)) {
+            UnstructuredProviderAccessor providerAccessor = this.accessors
+                    .get(policy.getProvider());
+            if (providerAccessor != null) {
+                providerAccessor.read(bucket, path, out);
+            }
+        }
     }
 
 }
