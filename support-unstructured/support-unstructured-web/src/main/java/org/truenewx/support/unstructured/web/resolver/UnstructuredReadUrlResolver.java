@@ -17,10 +17,13 @@ public interface UnstructuredReadUrlResolver {
      * 2.http://或https://开头，包含主机地址且指定了访问协议的绝对地址；<br/>
      * 3.//开头，包含主机地址但不指定访问协议，允许使用http和https中的任意一种协议访问
      *
-     * @param storageUrl 内部存储地址
-     * @param thumbnail  TODO
+     * @param storageUrl
+     *            内部存储地址
+     * @param thumbnail
+     *            是否缩略图
      * @return 外部读取地址
-     * @throws BusinessException 如果对指定资源没有读取权限
+     * @throws BusinessException
+     *             如果对指定资源没有读取权限
      */
     String getReadUrl(String storageUrl, boolean thumbnail) throws BusinessException;
 

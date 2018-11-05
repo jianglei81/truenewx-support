@@ -59,7 +59,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
      * 获取在当前方针下，当前用户能上传指定授权类型的文件的最大容量，单位：B<br/>
      * 注意：因模板方法中无法确定授权枚举类型，故需要子类覆写该方法，由于覆写方法不能继承注解，故同时需要使用{@link RpcMethod}注解进行标注
      *
-     * @param authorizeType 授权类型
+     * @param authorizeType
+     *            授权类型
      * @return 当前用户能上传指定授权类型的文件的最大容量
      */
     public UnstructuredUploadLimit getUploadLimit(T authorizeType) throws BusinessException {
@@ -96,9 +97,13 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
                 U user = getUser();
                 String storageUrl = this.service.write(authorizeType, user, filename, in);
                 in.close();
+
                 String readUrl = this.service.getReadUrl(user, storageUrl, false);
                 readUrl = getFullReadUrl(readUrl);
-                UploadResult result = new UploadResult(filename, storageUrl, readUrl);
+                String thumbnailReadUrl = this.service.getReadUrl(user, storageUrl, true);
+                thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
+                UploadResult result = new UploadResult(filename, storageUrl, readUrl,
+                        thumbnailReadUrl);
                 results.add(result);
             }
         }
@@ -158,9 +163,11 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 当前用户获取指定内部存储URL集对应的资源读取元信息集<br/>
      *
-     * @param storageUrls 内部存储URL集
+     * @param storageUrls
+     *            内部存储URL集
      * @return 资源读取元信息集
-     * @throws BusinessException 如果指定用户对某个资源没有读取权限
+     * @throws BusinessException
+     *             如果指定用户对某个资源没有读取权限
      */
     @RpcMethod
     @Accessibility(anonymous = true) // 默认匿名可获取，用户读取权限控制由各方针决定
@@ -205,7 +212,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 获取存储桶和路径所在的URL片段，子类可覆写实现自定义的路径格式
      *
-     * @param request HTTP请求
+     * @param request
+     *            HTTP请求
      * @return 存储桶和路径所在的URL片段
      */
     protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {

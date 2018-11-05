@@ -11,11 +11,14 @@ public class UploadResult {
     private String filename;
     private String storageUrl;
     private String readUrl;
+    private String thumbnailReadUrl;
 
-    public UploadResult(final String filename, final String storageUrl, final String readUrl) {
+    public UploadResult(String filename, String storageUrl, String readUrl,
+            String thumbnailReadUrl) {
         this.filename = filename;
         this.storageUrl = storageUrl;
         this.readUrl = readUrl;
+        this.thumbnailReadUrl = thumbnailReadUrl;
     }
 
     public String getFilename() {
@@ -28,5 +31,9 @@ public class UploadResult {
 
     public String getReadUrl() {
         return this.readUrl;
+    }
+
+    public String getThumbnailReadUrl() {
+        return this.thumbnailReadUrl;
     }
 }
