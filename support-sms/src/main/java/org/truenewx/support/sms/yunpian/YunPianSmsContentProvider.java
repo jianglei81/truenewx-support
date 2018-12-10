@@ -28,7 +28,7 @@ import com.yunpian.sdk.model.SmsSingleSend;
  */
 public class YunPianSmsContentProvider implements SmsContentSender {
     private Executor executor;
-    private String freeSignName;
+    private Map<String, String> signName;
     private String apiKey;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -47,7 +47,7 @@ public class YunPianSmsContentProvider implements SmsContentSender {
         final YunpianClient clnt = new YunpianClient(this.apiKey).init();
         final Map<String, String> param = clnt.newParam(2);
         final StringBuffer msg = new StringBuffer("【");
-        msg.append(this.freeSignName);
+        msg.append(this.signName.get(locale.toString()));
         msg.append("】").append(content);
         final List<String> failures = new ArrayList<>();
         try {
@@ -75,25 +75,6 @@ public class YunPianSmsContentProvider implements SmsContentSender {
     public void send(final String content, final int maxCount, final Locale locale,
             final String[] mobilePhones, final SmsSendCallback callback) {
         this.executor.execute(new SendCommand(content, locale, mobilePhones, callback));
-    }
-
-    /**
-     * @return freeSignName
-     *
-     * @author liubodong
-     */
-    public String getFreeSignName() {
-        return this.freeSignName;
-    }
-
-    /**
-     * @param freeSignName
-     *            freeSignName
-     *
-     * @author liubodong
-     */
-    public void setFreeSignName(final String freeSignName) {
-        this.freeSignName = freeSignName;
     }
 
     /**
@@ -145,6 +126,14 @@ public class YunPianSmsContentProvider implements SmsContentSender {
      */
     public void setExecutor(final Executor executor) {
         this.executor = executor;
+    }
+
+    public Map<String, String> getSignName() {
+        return this.signName;
+    }
+
+    public void setSignName(Map<String, String> signName) {
+        this.signName = signName;
     }
 
 }
