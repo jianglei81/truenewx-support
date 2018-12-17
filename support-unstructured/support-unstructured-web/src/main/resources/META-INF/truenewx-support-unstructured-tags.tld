@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.5" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+
+    <tlib-version>1.2</tlib-version>
+    <short-name>truenewx-support-unstructured</short-name>
+    <uri>/truenewx-support-unstructured-tags</uri>
+    <display-name>Truenewx Support Unstructured Tags</display-name>
+    <description>Truenewx非结构化存储标签库</description>
+
+    <tag>
+        <name>readUrl</name>
+        <tag-class>org.truenewx.support.unstructured.web.tag.UnstructuredReadUrlTag</tag-class>
+        <body-content>empty</body-content>
+        <description>转换内部存储地址为外部读取地址</description>
+        <attribute>
+            <name>value</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <description>内部存储地址</description>
+        </attribute>
+        <attribute>
+            <name>thumbnail</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <description>是否缩略图，默认为false</description>
+        </attribute>
+    </tag>
+
+</taglib>
