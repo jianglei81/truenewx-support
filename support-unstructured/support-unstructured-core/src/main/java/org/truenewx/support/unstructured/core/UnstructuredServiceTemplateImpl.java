@@ -85,10 +85,11 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         UnstructuredAuthorizePolicy<T, U> policy = getPolicy(authorizeType);
         String extension = validateExtension(policy, user, filename);
         UnstructuredProvider provider = policy.getProvider();
+        // 用BufferedInputStream装载以确保输入流可以标记和重置位置
+        in = new BufferedInputStream(in);
+        in.mark(Integer.MAX_VALUE);
         String path;
         if (policy.isMd5AsFilename()) {
-            in = new BufferedInputStream(in);
-            in.mark(Integer.MAX_VALUE);
             String md5Code = Md5Encrypter.encrypt32(in);
             in.reset();
             path = policy.getPath(user, md5Code + extension);
