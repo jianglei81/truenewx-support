@@ -49,15 +49,14 @@ public abstract class AbstractPayController {
     public abstract Map<String, String> getPayRequestParams(String gatewayName, Terminal terminal,
             String orderNo);
 
-    @RequestMapping(value = "/result/confirm/{gatewayName}/{terminal}")
+    @RequestMapping(value = "/result/confirm/{gatewayName}")
     @ResponseBody
-    public String confirm(@PathVariable("gatewayName") String gatewayName,
-            @PathVariable(value = "terminal", required = false) String terminal,
-            HttpServletRequest request) throws HandleableException {
+    public String confirm(@PathVariable("gatewayName")
+    String gatewayName, HttpServletRequest request) throws HandleableException {
         Map<String, String> params = getHttpRequestParams(request);
         if (params != null && params.size() > 0) {
-            PaymentResult result = this.paymentManager.notifyResult(gatewayName, true,
-                    new Terminal(terminal), params);
+            PaymentResult result = this.paymentManager.notifyResult(gatewayName, true, null,
+                    params);
             if (result != null) {
                 return result.getResponse();
             }
@@ -89,9 +88,10 @@ public abstract class AbstractPayController {
     }
 
     @RequestMapping(value = "/result/show/{gatewayName}/{terminal}")
-    public String show(@PathVariable("gatewayName") String gatewayName,
-            @PathVariable(value = "terminal", required = false) String terminal,
-            HttpServletRequest request, RedirectAttributes attr) throws HandleableException {
+    public String show(@PathVariable("gatewayName")
+    String gatewayName, @PathVariable(value = "terminal", required = false)
+    String terminal, HttpServletRequest request, RedirectAttributes attr)
+            throws HandleableException {
         Map<String, String> params = getHttpRequestParams(request);
         PaymentResult result = this.paymentManager.notifyResult(gatewayName, false,
                 new Terminal(terminal), params);

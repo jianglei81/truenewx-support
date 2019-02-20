@@ -24,7 +24,7 @@ import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
  */
 public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
 
-    private String partner;
+    public String partner;
 
     public void setPartner(String partner) {
         this.partner = partner;
@@ -66,7 +66,7 @@ public abstract class AlipayPaymentGateway extends AbstractPaymentGateway {
             throws BusinessException {
         validateSign(params);
         String paymentStatus = params.get("trade_status"); // 支付状态
-        if ("TRADE_SUCCESS".equals(paymentStatus)) { // 支付结果不等于0，支付失败
+        if ("TRADE_SUCCESS".equals(paymentStatus) || "TRADE_FINISHED".equals(paymentStatus)) { // 支付结果不等于0，支付失败
             String gatewayPaymentNo = params.get("trade_no"); // 支付交易号
             String fee = params.get("total_fee"); // 金额，以分为单位
             BigDecimal amount = new BigDecimal(fee).divide(MathUtil.HUNDRED); // 转换为以元为单位的金额
