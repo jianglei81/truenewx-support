@@ -37,6 +37,7 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U> {
      *
      * @param authorizeType
      *            授权类型
+     * @param token TODO
      * @param user
      *            用户标识
      * @param filename
@@ -49,7 +50,7 @@ public interface UnstructuredServiceTemplate<T extends Enum<T>, U> {
      * @throws IOException
      *             如果写的过程中出现错误
      */
-    String write(T authorizeType, U user, String filename, InputStream in)
+    String write(T authorizeType, String token, U user, String filename, InputStream in)
             throws BusinessException, IOException;
 
     /**

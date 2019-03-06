@@ -51,7 +51,16 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
         return false;
     }
 
-    String getPath(U user, String filename) throws BusinessException;
+    /**
+     * 获取指定资源的存储路径
+     *
+     * @param token    业务标识
+     * @param user     当前登录用户
+     * @param filename 原始文件名
+     * @return 存储路径，已预见的业务场景中不会出现无写权限时，直接返回null表示没有写权限
+     * @throws BusinessException 已预见的业务场景中可能出现无写权限时，为了好的用户体验，才需要抛出业务异常
+     */
+    String getPath(String token, U user, String filename) throws BusinessException;
 
     default boolean isPublicReadable() {
         return false;

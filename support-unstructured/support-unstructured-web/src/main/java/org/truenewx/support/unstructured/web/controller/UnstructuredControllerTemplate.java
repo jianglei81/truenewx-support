@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
@@ -59,8 +58,7 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
      * 获取在当前方针下，当前用户能上传指定授权类型的文件的最大容量，单位：B<br/>
      * 注意：因模板方法中无法确定授权枚举类型，故需要子类覆写该方法，由于覆写方法不能继承注解，故同时需要使用{@link RpcMethod}注解进行标注
      *
-     * @param authorizeType
-     *            授权类型
+     * @param authorizeType 授权类型
      * @return 当前用户能上传指定授权类型的文件的最大容量
      */
     public UnstructuredUploadLimit getUploadLimit(T authorizeType) throws BusinessException {
@@ -79,11 +77,19 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     }
 
     @RequestMapping(value = "/upload/{authorizeType}", method = RequestMethod.POST)
-    @HandleableExceptionMessage(respondErrorStatus = false)
+    @HandleableExceptionMessage
     @ResponseBody
     public String upload(@PathVariable("authorizeType") T authorizeType, HttpServletRequest request,
-            HttpServletResponse response)
-            throws BusinessException, IOException, FileUploadException {
+            HttpServletResponse response) throws Exception {
+        return upload(authorizeType, null, request, response);
+    }
+
+    @RequestMapping(value = "/upload/{authorizeType}/{token}", method = RequestMethod.POST)
+    @HandleableExceptionMessage
+    @ResponseBody
+    public String upload(@PathVariable("authorizeType") T authorizeType,
+            @PathVariable("token") String token, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
         List<UploadResult> results = new ArrayList<>();
         FileItemFactory fileItemFactory = new DiskFileItemFactory();
         ServletFileUpload servletFileUpload = new ServletFileUpload(fileItemFactory);
@@ -95,7 +101,7 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
                 InputStream in = fileItem.getInputStream();
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 U user = getUser();
-                String storageUrl = this.service.write(authorizeType, user, filename, in);
+                String storageUrl = this.service.write(authorizeType, token, user, filename, in);
                 in.close();
 
                 String readUrl = this.service.getReadUrl(user, storageUrl, false);
@@ -163,11 +169,9 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 当前用户获取指定内部存储URL集对应的资源读取元信息集<br/>
      *
-     * @param storageUrls
-     *            内部存储URL集
+     * @param storageUrls 内部存储URL集
      * @return 资源读取元信息集
-     * @throws BusinessException
-     *             如果指定用户对某个资源没有读取权限
+     * @throws BusinessException 如果指定用户对某个资源没有读取权限
      */
     @RpcMethod
     @Accessibility(anonymous = true) // 默认匿名可获取，用户读取权限控制由各方针决定
@@ -212,8 +216,7 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
     /**
      * 获取存储桶和路径所在的URL片段，子类可覆写实现自定义的路径格式
      *
-     * @param request
-     *            HTTP请求
+     * @param request HTTP请求
      * @return 存储桶和路径所在的URL片段
      */
     protected String getBucketAndPathFragmentUrl(HttpServletRequest request) {

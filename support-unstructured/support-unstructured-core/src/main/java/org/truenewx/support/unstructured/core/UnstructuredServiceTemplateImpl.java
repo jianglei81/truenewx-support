@@ -80,7 +80,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
     }
 
     @Override
-    public String write(T authorizeType, U user, String filename, InputStream in)
+    public String write(T authorizeType, String token, U user, String filename, InputStream in)
             throws BusinessException, IOException {
         UnstructuredAuthorizePolicy<T, U> policy = getPolicy(authorizeType);
         String extension = validateExtension(policy, user, filename);
@@ -92,9 +92,9 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         if (policy.isMd5AsFilename()) {
             String md5Code = Md5Encrypter.encrypt32(in);
             in.reset();
-            path = policy.getPath(user, md5Code + extension);
+            path = policy.getPath(token, user, md5Code + extension);
         } else {
-            path = policy.getPath(user, filename);
+            path = policy.getPath(token, user, filename);
         }
         if (path == null) {
             throw new BusinessException(UnstructuredExceptionCodes.NO_WRITE_PERMISSION);
