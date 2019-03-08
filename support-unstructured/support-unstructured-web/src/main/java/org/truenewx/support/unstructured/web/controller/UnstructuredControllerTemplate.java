@@ -104,12 +104,18 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
                 String storageUrl = this.service.write(authorizeType, token, user, filename, in);
                 in.close();
 
-                String readUrl = this.service.getReadUrl(user, storageUrl, false);
-                readUrl = getFullReadUrl(readUrl);
-                String thumbnailReadUrl = this.service.getReadUrl(user, storageUrl, true);
-                thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
-                UploadResult result = new UploadResult(filename, storageUrl, readUrl,
-                        thumbnailReadUrl);
+                UploadResult result;
+                boolean noReadUrl = Boolean.valueOf(request.getParameter("noReadUrl"));
+                if (!noReadUrl) { // 指定不需要返回读取地址，则不需要生成读取地址
+                    String readUrl = this.service.getReadUrl(user, storageUrl, false);
+                    readUrl = getFullReadUrl(readUrl);
+                    // 缩略读取地址附加的缩略参数对最终URL可能产生影响，故需要重新生成，而不能在读取URL上简单附加缩略参数
+                    String thumbnailReadUrl = this.service.getReadUrl(user, storageUrl, true);
+                    thumbnailReadUrl = getFullReadUrl(thumbnailReadUrl);
+                    result = new UploadResult(filename, storageUrl, readUrl, thumbnailReadUrl);
+                } else {
+                    result = new UploadResult(filename, storageUrl, null, null);
+                }
                 results.add(result);
             }
         }

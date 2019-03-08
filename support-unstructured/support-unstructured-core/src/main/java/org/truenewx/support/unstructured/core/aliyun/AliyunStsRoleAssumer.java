@@ -21,30 +21,28 @@ public class AliyunStsRoleAssumer {
 
     /**
      *
-     * @param accountId
-     *            阿里云账号id
-     * @param roleName
-     *            sts临时角色名称
+     * @param accountId 阿里云账号id
+     * @param roleName  sts临时角色名称
      */
-    public AliyunStsRoleAssumer(final AliyunAccount account, final String roleName) {
+    public AliyunStsRoleAssumer(AliyunAccount account, String roleName) {
         this.account = account;
         this.roleArn = "acs:ram::" + account.getAccountId() + ":role/" + roleName.toLowerCase();
     }
 
-    public void setDurationSeconds(final long durationSeconds) {
+    public void setDurationSeconds(long durationSeconds) {
         this.durationSeconds = durationSeconds;
     }
 
-    public Credentials assumeRole(final String roleSessionName, final String policyDocument) {
-        final AssumeRoleRequest request = new AssumeRoleRequest();
+    public Credentials assumeRole(String roleSessionName, String policyDocument) {
+        AssumeRoleRequest request = new AssumeRoleRequest();
         request.setRoleArn(this.roleArn);
         request.setRoleSessionName(roleSessionName);
         request.setPolicy(policyDocument);
         request.setDurationSeconds(this.durationSeconds);
         try {
-            final AssumeRoleResponse response = this.account.getAcsClient().getAcsResponse(request);
+            AssumeRoleResponse response = this.account.getAcsClient().getAcsResponse(request);
             return response.getCredentials();
-        } catch (final ClientException e) {
+        } catch (ClientException e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
         return null;

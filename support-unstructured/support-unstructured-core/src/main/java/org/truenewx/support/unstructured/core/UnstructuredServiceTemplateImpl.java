@@ -17,6 +17,8 @@ import org.truenewx.core.Strings;
 import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
+import org.truenewx.data.user.UserIdentifiable;
+import org.truenewx.data.user.UserIdentity;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 import org.truenewx.support.unstructured.core.model.UnstructuredReadMetadata;
 import org.truenewx.support.unstructured.core.model.UnstructuredStorageMetadata;
@@ -182,33 +184,49 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
             UnstructuredProvider provider = url.getProvider();
             UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
-            String userKey = user == null ? null : user.toString();
-            String readUrl = authorizer.getReadUrl(userKey, bucket, path);
+            String userKey = getUserKey(user);
             if (thumbnail) {
-                Map<String, String> thumbnailParameters = policy.getThumbnailParameters();
-                readUrl = appendParameters(readUrl, thumbnailParameters);
+                path = appendThumbnailParameters(policy, path);
             }
-            return readUrl;
+            return authorizer.getReadUrl(userKey, bucket, path);
         }
         return null;
     }
 
-    private String appendParameters(String url, Map<String, String> thumbnailParameters) {
-        if (thumbnailParameters != null && thumbnailParameters.size() > 0) {
-            String parameterString = "";
-            for (Entry<String, String> entry : thumbnailParameters.entrySet()) {
-                parameterString += "&" + entry.getKey() + "=" + entry.getValue();
+    protected String getUserKey(U user) {
+        if (user != null) {
+            if (user instanceof UserIdentifiable) {
+                UserIdentity ui = ((UserIdentifiable<?>) user).getUserIdentity();
+                return ui == null ? null : ui.toString();
             }
-            if (parameterString.length() > 0) {
-                parameterString = parameterString.substring(1);
-            }
-            if (url.indexOf("?") > 0) {
-                url += "&" + parameterString;
-            } else {
-                url += "?" + parameterString;
+            return user.toString();
+        }
+        return null;
+    }
+
+    private String appendThumbnailParameters(UnstructuredAuthorizePolicy<T, U> policy, String path) {
+        if (policy != null) {
+            Map<String, String> thumbnailParameters = policy.getThumbnailParameters();
+            if (thumbnailParameters != null && thumbnailParameters.size() > 0) {
+                String parameterString = Strings.EMPTY;
+                for (Entry<String, String> entry : thumbnailParameters.entrySet()) {
+                    parameterString += Strings.AND + entry.getKey() + Strings.EQUAL
+                            + entry.getValue();
+                }
+                if (parameterString.length() > 0) {
+                    parameterString = parameterString.substring(1);
+                }
+                int index = path.indexOf(Strings.QUESTION);
+                // 确保缩略参数作为优先参数
+                if (index > 0) {
+                    path = path.substring(0, index + 1) + parameterString + Strings.AND
+                            + path.substring(index + 1);
+                } else {
+                    path += Strings.QUESTION + parameterString;
+                }
             }
         }
-        return url;
+        return path;
     }
 
     private UnstructuredAuthorizePolicy<T, U> validateUserRead(U user, String bucket, String path)
