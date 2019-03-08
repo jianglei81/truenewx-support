@@ -11,6 +11,7 @@ import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.CannedAccessControlList;
+import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.ObjectAcl;
 import com.aliyun.oss.model.ObjectPermission;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
@@ -59,11 +60,6 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
     }
 
     private boolean isPublicRead(String bucket, String path) {
-        // 去掉请求参数后再进行判断
-        int index = path.indexOf(Strings.QUESTION);
-        if (index >= 0) {
-            path = path.substring(0, index);
-        }
         ObjectAcl acl = this.account.getOssClient().getObjectAcl(bucket, path);
         ObjectPermission permission = acl.getPermission();
         return permission == ObjectPermission.PublicRead
@@ -76,6 +72,13 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
     @Override
     public String getReadUrl(String userKey, String bucket, String path) {
+        // 拆分请求参数，确保路径不带参数
+        int index = path.indexOf(Strings.QUESTION);
+        String parameterString = Strings.EMPTY;
+        if (index >= 0) {
+            parameterString = path.substring(index + 1);
+            path = path.substring(0, index);
+        }
         try {
             if (isPublicRead(bucket, path)) {
                 // 以双斜杠开头，表示采用当前上下文的相同协议
@@ -90,8 +93,20 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                     OSS oss = new OSSClient(this.account.getOssEndpoint(),
                             credentials.getAccessKeyId(), credentials.getAccessKeySecret(),
                             credentials.getSecurityToken());
+                    GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket,
+                            path);
                     Date expiration = DateUtil.addSeconds(new Date(), this.tempReadExpiredSeconds);
-                    String url = oss.generatePresignedUrl(bucket, path, expiration).toString();
+                    request.setExpiration(expiration);
+                    if (parameterString.length() > 0) {
+                        String[] params = parameterString.split(Strings.AND);
+                        for (String param : params) {
+                            String[] array = param.split(Strings.EQUAL);
+                            if (array.length > 1) {
+                                request.addQueryParameter(array[0], array[1]);
+                            }
+                        }
+                    }
+                    String url = oss.generatePresignedUrl(request).toString();
                     url = replaceHost(url, getReadHost(bucket));
                     return url;
                 }
