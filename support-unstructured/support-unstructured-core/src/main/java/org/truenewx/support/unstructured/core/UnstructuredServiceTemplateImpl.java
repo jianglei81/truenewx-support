@@ -181,8 +181,9 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
             String bucket = url.getBucket();
             String path = standardizePath(url.getPath());
             UnstructuredAuthorizePolicy<T, U> policy = validateUserRead(user, bucket, path);
-            // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
-            UnstructuredProvider provider = url.getProvider();
+            // 如果方针要求读取地址为本地地址，则使用自有提供商
+            UnstructuredProvider provider = policy.isReadLocally() ? UnstructuredProvider.OWN
+                    : url.getProvider(); // 使用内部协议确定的提供商而不是方针下现有的提供商，以免方针的历史提供商有变化
             UnstructuredAuthorizer authorizer = this.authorizers.get(provider);
             String userKey = getUserKey(user);
             if (thumbnail) {
@@ -204,7 +205,8 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         return null;
     }
 
-    private String appendThumbnailParameters(UnstructuredAuthorizePolicy<T, U> policy, String path) {
+    private String appendThumbnailParameters(UnstructuredAuthorizePolicy<T, U> policy,
+            String path) {
         if (policy != null) {
             Map<String, String> thumbnailParameters = policy.getThumbnailParameters();
             if (thumbnailParameters != null && thumbnailParameters.size() > 0) {

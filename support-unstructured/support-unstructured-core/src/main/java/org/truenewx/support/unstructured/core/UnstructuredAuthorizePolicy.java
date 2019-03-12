@@ -28,6 +28,16 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
     }
 
     /**
+     * 指定读取地址是否为本地地址，当需要由方针严格控制读取权限时应该返回true<br>
+     * 默认返回false，此时读取地址由提供商提供
+     *
+     * @return 读取地址是否为本地地址
+     */
+    default boolean isReadLocally() {
+        return false;
+    }
+
+    /**
      * 获取在当前方针下，指定用户上传文件的限制条件
      *
      * @param user 用户标识
