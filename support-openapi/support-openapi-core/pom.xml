@@ -1,0 +1,16 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.truenewx.support</groupId>
+    <artifactId>support-openapi</artifactId>
+    <version>2.2.0</version>
+  </parent>
+  <groupId>org.truenewx.support.openapi</groupId>
+  <artifactId>support-openapi-core</artifactId>
+  <dependencies>
+      <dependency>
+          <groupId>org.truenewx</groupId>
+          <artifactId>truenewx-core</artifactId>
+      </dependency>
+  </dependencies>
+</project>
