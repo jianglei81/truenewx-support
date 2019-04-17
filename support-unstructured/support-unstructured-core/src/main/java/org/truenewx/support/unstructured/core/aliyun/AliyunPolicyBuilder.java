@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.truenewx.core.Strings;
-import org.truenewx.core.encrypt.Md5Encrypter;
+import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.core.util.JsonUtil;
 
 /**
@@ -29,7 +29,7 @@ public class AliyunPolicyBuilder {
     }
 
     public String buildName(final String prefix, final String bucket, final String path) {
-        return prefix + bucket + Strings.MINUS + Md5Encrypter.encrypt32(path); // 加密路径以确保无特殊字符
+        return prefix + bucket + Strings.MINUS + EncryptUtil.encryptByMd5(path); // 加密路径以确保无特殊字符
     }
 
     public String buildReadDocument(final String bucket, final String path) {

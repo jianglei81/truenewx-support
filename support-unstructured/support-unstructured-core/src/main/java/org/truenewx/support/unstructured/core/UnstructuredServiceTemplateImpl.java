@@ -14,9 +14,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.truenewx.core.Strings;
-import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
+import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.data.user.UserIdentifiable;
 import org.truenewx.data.user.UserIdentity;
 import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
@@ -92,7 +92,7 @@ public class UnstructuredServiceTemplateImpl<T extends Enum<T>, U>
         in.mark(Integer.MAX_VALUE);
         String path;
         if (policy.isMd5AsFilename()) {
-            String md5Code = Md5Encrypter.encrypt32(in);
+            String md5Code = EncryptUtil.encryptByMd5(in);
             in.reset();
             path = policy.getPath(token, user, md5Code + extension);
         } else {

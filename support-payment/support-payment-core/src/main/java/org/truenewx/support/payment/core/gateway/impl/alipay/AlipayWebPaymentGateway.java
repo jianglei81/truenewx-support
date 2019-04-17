@@ -6,10 +6,10 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.enums.Program;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.Terminal;
+import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.support.payment.core.gateway.PaymentExceptionCodes;
 
 /**
@@ -42,8 +42,8 @@ public class AlipayWebPaymentGateway extends AlipayPaymentGateway {
                 sb.append(k + "=" + v + "&");
             }
         }
-        final String sign = Md5Encrypter
-                .encrypt32(sb.substring(0, sb.lastIndexOf("&")) + this.privateKey);
+        final String sign = EncryptUtil
+                .encryptByMd5(sb.substring(0, sb.lastIndexOf("&")) + this.privateKey);
         params.put("sign_type", "MD5"); // 签名类型,默认：MD5
         params.put("sign", sign);
 
@@ -62,8 +62,8 @@ public class AlipayWebPaymentGateway extends AlipayPaymentGateway {
                 sb.append(k + "=" + v + "&");
             }
         }
-        final String sign = Md5Encrypter
-                .encrypt32(sb.substring(0, sb.lastIndexOf("&")) + this.privateKey);
+        final String sign = EncryptUtil
+                .encryptByMd5(sb.substring(0, sb.lastIndexOf("&")) + this.privateKey);
         if (!sign.equals(params.get("sign").toLowerCase())) {
             throw new BusinessException(PaymentExceptionCodes.SIGN_FAIL);
         }

@@ -11,10 +11,10 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
-import org.truenewx.core.encrypt.Md5Encrypter;
 import org.truenewx.core.exception.BusinessException;
 import org.truenewx.core.model.Terminal;
 import org.truenewx.core.util.DateUtil;
+import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.core.util.MathUtil;
 import org.truenewx.support.payment.core.PaymentDefinition;
 import org.truenewx.support.payment.core.PaymentRequestParameter;
@@ -108,7 +108,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
             }
         }
         sb.append("key=" + this.privateKey);
-        String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
+        String sign = EncryptUtil.encryptByMd5(sb.toString()).toLowerCase();
         params.put("sign", sign);
         // this.setDebugInfo(sb.toString() + " => sign:" + sign);
     }
@@ -222,7 +222,7 @@ public class TenpayPaymentGateway extends AbstractPaymentGateway {
             }
         }
         sb.append("key=" + this.privateKey);
-        String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
+        String sign = EncryptUtil.encryptByMd5(sb.toString()).toLowerCase();
         if (!sign.equals(params.get("sign").toLowerCase())) {
             throw new BusinessException(PaymentExceptionCodes.SIGN_FAIL);
         }

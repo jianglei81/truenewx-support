@@ -9,7 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.jdom.JDOMException;
-import org.truenewx.core.encrypt.Md5Encrypter;
+import org.truenewx.core.util.EncryptUtil;
 
 import com.tenpay.util.XmlUtil;
 
@@ -146,7 +146,7 @@ public class ClientResponseHandler {
         sb.append("key=" + this.getKey());
 
         // 算出摘要
-        final String sign = Md5Encrypter.encrypt32(sb.toString()).toLowerCase();
+        final String sign = EncryptUtil.encryptByMd5(sb.toString()).toLowerCase();
 
         final String tenpaySign = this.getParameter("sign").toLowerCase();
 
@@ -177,7 +177,7 @@ public class ClientResponseHandler {
         signPars.append("key=" + this.getKey());
 
         // 算出摘要
-        final String sign = Md5Encrypter.encrypt32(signPars.toString()).toLowerCase();
+        final String sign = EncryptUtil.encryptByMd5(signPars.toString()).toLowerCase();
 
         final String tenpaySign = this.getParameter("sign").toLowerCase();
 
