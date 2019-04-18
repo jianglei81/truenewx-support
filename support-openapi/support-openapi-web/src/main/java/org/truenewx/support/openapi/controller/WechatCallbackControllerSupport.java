@@ -21,11 +21,12 @@ import org.truenewx.core.Strings;
 import org.truenewx.core.spring.core.env.functor.FuncProfile;
 import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.core.util.MathUtil;
-import org.truenewx.support.openapi.core.listener.WeixinOpenApiMessageListener;
-import org.truenewx.support.openapi.core.model.WeixinOpenApiEventMessage;
-import org.truenewx.support.openapi.core.model.WeixinOpenApiEventType;
-import org.truenewx.support.openapi.core.model.WeixinOpenApiMessage;
-import org.truenewx.support.openapi.core.model.WeixinOpenApiMessageType;
+import org.truenewx.support.openapi.core.access.WechatMessageListener;
+import org.truenewx.support.openapi.core.model.WechatEventMessage;
+import org.truenewx.support.openapi.core.model.WechatEventType;
+import org.truenewx.support.openapi.core.model.WechatMessage;
+import org.truenewx.support.openapi.core.model.WechatMessageType;
+import org.truenewx.support.openapi.core.model.WechatTextMessage;
 
 /**
  * 微信开放接口回调控制器支持
@@ -33,21 +34,26 @@ import org.truenewx.support.openapi.core.model.WeixinOpenApiMessageType;
  * @author jianglei
  * @since JDK 1.8
  */
-public abstract class WeixinOpenApiCallbackControllerSupport {
+public abstract class WechatCallbackControllerSupport {
 
     @Autowired
-    private WeixinOpenApiMessageListener listener;
+    private WechatMessageListener listener;
 
     @RequestMapping("/callback")
     @ResponseBody
     public String callback(HttpServletRequest request) {
-        if (!checkSignature(request)) {
-            return Strings.EMPTY;
+        if (checkSignature(request)) {
+            Map<String, String> parameters = getParameters(request);
+            WechatMessage message = getMessage(parameters);
+            if (message == null) { // 无法解析出消息的，为验证访问，直接返回echostr参数
+                return request.getParameter("echostr");
+            }
+            WechatMessage reply = this.listener.onReceived(message);
+            if (reply != null) {
+                return toXml(reply);
+            }
         }
-        Map<String, String> parameters = getParameters(request);
-        WeixinOpenApiMessage message = getMessage(parameters);
-        this.listener.onReceived(message);
-        return request.getParameter("echostr");
+        return Strings.EMPTY;
     }
 
     private boolean checkSignature(HttpServletRequest request) {
@@ -87,22 +93,21 @@ public abstract class WeixinOpenApiCallbackControllerSupport {
         return parameters;
     }
 
-    private WeixinOpenApiMessage getMessage(Map<String, String> parameters) {
+    private WechatMessage getMessage(Map<String, String> parameters) {
         String messageType = parameters.get("MsgType");
         if (StringUtils.isNotBlank(messageType)) {
             messageType = messageType.toUpperCase();
-            WeixinOpenApiMessageType type = EnumUtils.getEnum(WeixinOpenApiMessageType.class,
-                    messageType);
+            WechatMessageType type = EnumUtils.getEnum(WechatMessageType.class, messageType);
             if (type != null) {
-                WeixinOpenApiMessage message = null;
+                WechatMessage message = null;
                 switch (type) {
                 case EVENT:
                     String event = parameters.get("Event");
                     if (StringUtils.isNotBlank(event)) {
-                        WeixinOpenApiEventType eventType = EnumUtils
-                                .getEnum(WeixinOpenApiEventType.class, event.toUpperCase());
+                        WechatEventType eventType = EnumUtils.getEnum(WechatEventType.class,
+                                event.toUpperCase());
                         if (eventType != null) {
-                            message = new WeixinOpenApiEventMessage(eventType);
+                            message = new WechatEventMessage(eventType);
                         }
                     }
                     break;
@@ -111,7 +116,8 @@ public abstract class WeixinOpenApiCallbackControllerSupport {
                 }
                 if (message != null) {
                     message.setId(MathUtil.parseLong(parameters.get("MsgId")));
-                    message.setUserOpenId(parameters.get("FromUserName"));
+                    message.setFromUsername(parameters.get("FromUserName"));
+                    message.setToUsername(parameters.get("ToUserName"));
                     long createTime = MathUtil.parseLong(parameters.get("CreateTime"));
                     if (createTime > 0) {
                         message.setCreateTime(Instant.ofEpochMilli(createTime));
@@ -121,6 +127,21 @@ public abstract class WeixinOpenApiCallbackControllerSupport {
             }
         }
         return null;
+    }
+
+    private String toXml(WechatMessage message) {
+        if (message instanceof WechatTextMessage) {
+            WechatTextMessage tm = (WechatTextMessage) message;
+            String xml = "<xml>";
+            xml += "<ToUserName><![CDATA[" + tm.getToUsername() + "]]></ToUserName>";
+            xml += "<FromUserName><![CDATA[" + tm.getFromUsername() + "]]></FromUserName>";
+            xml += "<CreateTime>" + tm.getCreateTime().toEpochMilli() + "</CreateTime>";
+            xml += "<MsgType><![CDATA[" + tm.getType().name().toLowerCase() + "]]></MsgType>";
+            xml += "<Content><![CDATA[" + tm.getContent() + "]]></Content>";
+            xml += "</xml>";
+            return xml;
+        }
+        return Strings.EMPTY;
     }
 
     protected abstract String getToken();

@@ -8,10 +8,11 @@ import java.time.Instant;
  * @author jianglei
  * @since JDK 1.8
  */
-public abstract class WeixinOpenApiMessage {
+public abstract class WechatMessage {
 
     private long id;
-    private String userOpenId;
+    private String fromUsername;
+    private String toUsername;
     private Instant createTime;
 
     public long getId() {
@@ -22,12 +23,20 @@ public abstract class WeixinOpenApiMessage {
         this.id = id;
     }
 
-    public String getUserOpenId() {
-        return this.userOpenId;
+    public String getFromUsername() {
+        return this.fromUsername;
     }
 
-    public void setUserOpenId(String userOpenId) {
-        this.userOpenId = userOpenId;
+    public void setFromUsername(String fromUsername) {
+        this.fromUsername = fromUsername;
+    }
+
+    public String getToUsername() {
+        return this.toUsername;
+    }
+
+    public void setToUsername(String toUsername) {
+        this.toUsername = toUsername;
     }
 
     public Instant getCreateTime() {
@@ -38,6 +47,6 @@ public abstract class WeixinOpenApiMessage {
         this.createTime = createTime;
     }
 
-    public abstract WeixinOpenApiMessageType getType();
+    public abstract WechatMessageType getType();
 
 }

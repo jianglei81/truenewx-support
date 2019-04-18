@@ -9,7 +9,7 @@ import org.truenewx.core.enums.annotation.EnumValue;
  * @author jianglei
  * @since JDK 1.8
  */
-public enum WeixinOpenApiEventType {
+public enum WechatEventType {
 
     @Caption("关注")
     @EnumValue("S")
