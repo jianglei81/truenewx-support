@@ -10,7 +10,7 @@
   <dependencies>
       <dependency>
           <groupId>org.truenewx</groupId>
-          <artifactId>truenewx-core</artifactId>
+          <artifactId>truenewx-data</artifactId>
       </dependency>
   </dependencies>
 </project>

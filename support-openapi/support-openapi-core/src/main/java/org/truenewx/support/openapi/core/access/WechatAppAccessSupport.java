@@ -1,6 +1,7 @@
 package org.truenewx.support.openapi.core.access;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,13 +19,18 @@ import org.truenewx.support.openapi.core.model.WechatUser;
  */
 public abstract class WechatAppAccessSupport {
 
+    private static final String HOST = "https://api.weixin.qq.com";
+    private static final long ACCESS_TOKEN_INTERVAL = 3600 * 1000; // 有效期1小时
+    private String accessToken;
+    private Long accessTokenExpiredTimestamp = Long.valueOf(0); // 作为同步锁，定义为Long对象
+
     private Map<String, Object> request(String url, Map<String, Object> params, boolean getMethod) {
         ClientRequestSupport request = new ClientRequestSupport();
         if (getMethod) {
             request.setMethod("GET");
         }
         try {
-            Binate<Integer, String> response = request.request(url, params);
+            Binate<Integer, String> response = request.request(HOST + url, params);
             String body = response.getRight();
             return JsonUtil.json2Map(body);
         } catch (Exception e) {
@@ -39,24 +45,40 @@ public abstract class WechatAppAccessSupport {
         params.put("secret", getSecret());
         params.put("js_code", loginCode);
         params.put("grant_type", "authorization_code");
-        Map<String, Object> result = request("https://api.weixin.qq.com/sns/jscode2session", params,
-                true);
-        String unionId = (String) result.get("unionid");
+        Map<String, Object> result = request("/sns/jscode2session", params, true);
         String openId = (String) result.get("openid");
         if (StringUtils.isNotBlank(openId)) { // openId不能为空
-            return new WechatUser(unionId, openId);
+            WechatUser user = new WechatUser();
+            user.setOpenId(openId);
+            user.setUnionId((String) result.get("unionid"));
+            return user;
         }
         return null;
     }
 
-    protected String getAccessToken() {
+    public String getUnionId(String openId, Locale locale) {
         Map<String, Object> params = new HashMap<>();
-        params.put("appid", getAppId());
-        params.put("secret", getSecret());
-        params.put("grant_type", "client_credential");
-        Map<String, Object> result = request("https://api.weixin.qq.com/cgi-bin/token", params,
-                true);
-        return (String) result.get("access_token");
+        params.put("access_token", getAccessToken());
+        params.put("openid", openId);
+        params.put("lang", locale.toString());
+        Map<String, Object> result = request("/cgi-bin/user/info", params, true);
+        return (String) result.get("unionid");
+    }
+
+    protected String getAccessToken() {
+        long now = System.currentTimeMillis();
+        synchronized (this.accessTokenExpiredTimestamp) {
+            if (this.accessToken == null || this.accessTokenExpiredTimestamp < now) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("appid", getAppId());
+                params.put("secret", getSecret());
+                params.put("grant_type", "client_credential");
+                Map<String, Object> result = request("/cgi-bin/token", params, true);
+                this.accessToken = (String) result.get("access_token");
+                this.accessTokenExpiredTimestamp = now + ACCESS_TOKEN_INTERVAL;
+            }
+            return this.accessToken;
+        }
     }
 
     /**

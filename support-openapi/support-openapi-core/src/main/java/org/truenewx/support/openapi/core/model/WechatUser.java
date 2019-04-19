@@ -1,18 +1,23 @@
 package org.truenewx.support.openapi.core.model;
 
+import org.truenewx.data.model.UnitaryEntity;
+
 /**
  * 微信用户信息
  *
  * @author jianglei
  * @since JDK 1.8
  */
-public class WechatUser {
+public class WechatUser implements UnitaryEntity<String> {
 
-    private String unionId;
     private String openId;
+    private String unionId;
 
-    public WechatUser(String unionId, String openId) {
-        this.unionId = unionId;
+    public String getOpenId() {
+        return this.openId;
+    }
+
+    public void setOpenId(String openId) {
         this.openId = openId;
     }
 
@@ -20,8 +25,8 @@ public class WechatUser {
         return this.unionId;
     }
 
-    public String getOpenId() {
-        return this.openId;
+    public void setUnionId(String unionId) {
+        this.unionId = unionId;
     }
 
 }
