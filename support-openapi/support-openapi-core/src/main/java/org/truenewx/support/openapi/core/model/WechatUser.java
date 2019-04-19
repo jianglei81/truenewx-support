@@ -1,14 +1,12 @@
 package org.truenewx.support.openapi.core.model;
 
-import org.truenewx.data.model.UnitaryEntity;
-
 /**
  * 微信用户信息
  *
  * @author jianglei
  * @since JDK 1.8
  */
-public class WechatUser implements UnitaryEntity<String> {
+public class WechatUser {
 
     private String openId;
     private String unionId;
