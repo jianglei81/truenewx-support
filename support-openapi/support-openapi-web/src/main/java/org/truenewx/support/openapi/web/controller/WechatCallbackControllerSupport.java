@@ -62,7 +62,7 @@ public abstract class WechatCallbackControllerSupport {
                     return toXml(reply);
                 }
             } catch (NoSuchMessageHandlerException e) {
-                // 没有forward属性才转发，以避免转发给自身导致无限转发
+                // 没有转发标记属性才转发，以避免转发给自身导致无限转发
                 if (request.getAttribute(FORWARD_ATTRIBUTE_NAME) == null) {
                     String forwardUrl = getForwardUrl();
                     if (StringUtils.isNotBlank(forwardUrl)) {
