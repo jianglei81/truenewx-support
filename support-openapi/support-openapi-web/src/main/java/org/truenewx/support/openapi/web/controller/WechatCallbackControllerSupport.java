@@ -1,19 +1,23 @@
 package org.truenewx.support.openapi.web.controller;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -21,12 +25,14 @@ import org.truenewx.core.Strings;
 import org.truenewx.core.spring.core.env.functor.FuncProfile;
 import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.core.util.MathUtil;
+import org.truenewx.support.openapi.core.access.NoSuchMessageHandlerException;
 import org.truenewx.support.openapi.core.access.WechatMessageListener;
 import org.truenewx.support.openapi.core.model.WechatEventMessage;
 import org.truenewx.support.openapi.core.model.WechatEventType;
 import org.truenewx.support.openapi.core.model.WechatMessage;
 import org.truenewx.support.openapi.core.model.WechatMessageType;
 import org.truenewx.support.openapi.core.model.WechatTextMessage;
+import org.truenewx.web.util.WebUtil;
 
 /**
  * 微信开放接口回调控制器支持
@@ -36,21 +42,38 @@ import org.truenewx.support.openapi.core.model.WechatTextMessage;
  */
 public abstract class WechatCallbackControllerSupport {
 
+    private static final String FORWARD_ATTRIBUTE_NAME = "tnx_openapi_forward";
+
     @Autowired
     private WechatMessageListener listener;
 
     @RequestMapping("/callback")
     @ResponseBody
-    public String callback(HttpServletRequest request) {
+    public String callback(HttpServletRequest request, HttpServletResponse response) {
         if (checkSignature(request)) {
             Map<String, String> parameters = getParameters(request);
             WechatMessage message = getMessage(parameters);
             if (message == null) { // 无法解析出消息的，为验证访问，直接返回echostr参数
                 return request.getParameter("echostr");
             }
-            WechatMessage reply = this.listener.onReceived(message);
-            if (reply != null) {
-                return toXml(reply);
+            try {
+                WechatMessage reply = this.listener.onReceived(message);
+                if (reply != null) {
+                    return toXml(reply);
+                }
+            } catch (NoSuchMessageHandlerException e) {
+                // 没有forward属性才转发，以避免转发给自身导致无限转发
+                if (request.getAttribute(FORWARD_ATTRIBUTE_NAME) == null) {
+                    String forwardUrl = getForwardUrl();
+                    if (StringUtils.isNotBlank(forwardUrl)) {
+                        try {
+                            request.setAttribute(FORWARD_ATTRIBUTE_NAME, Boolean.TRUE); // 设置转发标记属性
+                            WebUtil.forward(request, response, forwardUrl);
+                        } catch (ServletException | IOException ex) {
+                            LoggerFactory.getLogger(getClass()).error(ex.getMessage(), ex);
+                        }
+                    }
+                }
             }
         }
         return Strings.EMPTY;
@@ -142,6 +165,10 @@ public abstract class WechatCallbackControllerSupport {
             return xml;
         }
         return Strings.EMPTY;
+    }
+
+    protected String getForwardUrl() {
+        return null;
     }
 
     protected abstract String getToken();

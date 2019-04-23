@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -44,26 +45,27 @@ public class WechatMessageListenerImpl implements WechatMessageListener, Context
     }
 
     @Override
-    public WechatMessage onReceived(WechatMessage message) {
+    public WechatMessage onReceived(WechatMessage message) throws NoSuchMessageHandlerException {
         if (message != null) {
             List<WechatMessageHandler> handlers = this.handlerMapping.get(message.getType());
-            if (handlers != null) {
-                for (WechatMessageHandler handler : handlers) {
-                    if (handler instanceof WechatMessageSyncHandler) { // 同步处理
-                        WechatMessageSyncHandler syncHandler = (WechatMessageSyncHandler) handler;
-                        WechatMessage result = syncHandler.handleMessage(message);
-                        if (result != null) {
-                            return result;
-                        }
-                    } else if (handler instanceof WechatMessageAsynHandler) { // 异步处理
-                        WechatMessageAsynHandler asynHandler = (WechatMessageAsynHandler) handler;
-                        this.executor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                asynHandler.handleMessage(message);
-                            }
-                        });
+            if (CollectionUtils.isEmpty(handlers)) {
+                throw new NoSuchMessageHandlerException();
+            }
+            for (WechatMessageHandler handler : handlers) {
+                if (handler instanceof WechatMessageSyncHandler) { // 同步处理
+                    WechatMessageSyncHandler syncHandler = (WechatMessageSyncHandler) handler;
+                    WechatMessage result = syncHandler.handleMessage(message);
+                    if (result != null) {
+                        return result;
                     }
+                } else if (handler instanceof WechatMessageAsynHandler) { // 异步处理
+                    WechatMessageAsynHandler asynHandler = (WechatMessageAsynHandler) handler;
+                    this.executor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            asynHandler.handleMessage(message);
+                        }
+                    });
                 }
             }
         }

@@ -10,6 +10,6 @@ import org.truenewx.support.openapi.core.model.WechatMessage;
  */
 public interface WechatMessageListener {
 
-    WechatMessage onReceived(WechatMessage message);
+    WechatMessage onReceived(WechatMessage message) throws NoSuchMessageHandlerException;
 
 }
