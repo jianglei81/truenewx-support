@@ -1,7 +1,6 @@
 package org.truenewx.support.openapi.core.access;
 
 import org.springframework.core.Ordered;
-import org.truenewx.support.openapi.core.model.WechatMessage;
 import org.truenewx.support.openapi.core.model.WechatMessageType;
 
 /**
@@ -16,15 +15,7 @@ public interface WechatMessageHandler extends Ordered, Comparable<WechatMessageH
      *
      * @return 侦听的消息类型集合
      */
-    WechatMessageType[] getMessageTypes();
-
-    /**
-     * 当接收到指定类型的消息时触发的处理方法
-     *
-     * @param message 消息
-     * @return 处理完消息后返回给微信服务端的消息，返回null表示没有返回消息
-     */
-    WechatMessage handleMessage(WechatMessage message);
+    WechatMessageType getMessageType();
 
     @Override
     default int getOrder() {

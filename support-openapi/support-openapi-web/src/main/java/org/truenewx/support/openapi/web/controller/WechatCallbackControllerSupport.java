@@ -1,4 +1,4 @@
-package org.truenewx.support.openapi.controller;
+package org.truenewx.support.openapi.web.controller;
 
 import java.time.Instant;
 import java.util.Arrays;

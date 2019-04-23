@@ -20,9 +20,9 @@ import org.truenewx.support.openapi.core.model.WechatUser;
 public abstract class WechatAppAccessSupport {
 
     private static final String HOST = "https://api.weixin.qq.com";
-    private static final long ACCESS_TOKEN_INTERVAL = 3600 * 1000; // 有效期1小时
+    private static final long ACCESS_TOKEN_INTERVAL = 1000 * 60 * 60; // 有效期1小时
     private String accessToken;
-    private Long accessTokenExpiredTimestamp = Long.valueOf(0); // 作为同步锁，定义为Long对象
+    private Long accessTokenExpiredTimestamp = 0L; // 作为同步锁，定义为Long对象
 
     private Map<String, Object> request(String url, Map<String, Object> params, boolean getMethod) {
         ClientRequestSupport request = new ClientRequestSupport();
@@ -56,11 +56,11 @@ public abstract class WechatAppAccessSupport {
         return null;
     }
 
-    public String getUnionId(String openId, Locale locale) {
+    public String getUnionId(String openId) {
         Map<String, Object> params = new HashMap<>();
         params.put("access_token", getAccessToken());
         params.put("openid", openId);
-        params.put("lang", locale.toString());
+        params.put("lang", Locale.getDefault().toString());
         Map<String, Object> result = request("/cgi-bin/user/info", params, true);
         return (String) result.get("unionid");
     }

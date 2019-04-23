@@ -5,7 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
@@ -21,6 +23,8 @@ import org.truenewx.support.openapi.core.model.WechatMessageType;
 @Service
 public class WechatMessageListenerImpl implements WechatMessageListener, ContextInitializedBean {
 
+    @Autowired
+    private Executor executor;
     private Map<WechatMessageType, List<WechatMessageHandler>> handlerMapping = new HashMap<>();
 
     @Override
@@ -28,16 +32,14 @@ public class WechatMessageListenerImpl implements WechatMessageListener, Context
         Map<String, WechatMessageHandler> beans = context
                 .getBeansOfType(WechatMessageHandler.class);
         beans.values().forEach(handler -> {
-            WechatMessageType[] messageTypes = handler.getMessageTypes();
-            for (WechatMessageType messageType : messageTypes) {
-                List<WechatMessageHandler> handlers = this.handlerMapping.get(messageType);
-                if (handlers == null) {
-                    handlers = new ArrayList<>();
-                    this.handlerMapping.put(messageType, handlers);
-                }
-                handlers.add(handler);
-                Collections.sort(handlers);
+            WechatMessageType messageType = handler.getMessageType();
+            List<WechatMessageHandler> handlers = this.handlerMapping.get(messageType);
+            if (handlers == null) {
+                handlers = new ArrayList<>();
+                this.handlerMapping.put(messageType, handlers);
             }
+            handlers.add(handler);
+            Collections.sort(handlers);
         });
     }
 
@@ -47,9 +49,20 @@ public class WechatMessageListenerImpl implements WechatMessageListener, Context
             List<WechatMessageHandler> handlers = this.handlerMapping.get(message.getType());
             if (handlers != null) {
                 for (WechatMessageHandler handler : handlers) {
-                    WechatMessage result = handler.handleMessage(message);
-                    if (result != null) {
-                        return result;
+                    if (handler instanceof WechatMessageSyncHandler) { // 同步处理
+                        WechatMessageSyncHandler syncHandler = (WechatMessageSyncHandler) handler;
+                        WechatMessage result = syncHandler.handleMessage(message);
+                        if (result != null) {
+                            return result;
+                        }
+                    } else if (handler instanceof WechatMessageAsynHandler) { // 异步处理
+                        WechatMessageAsynHandler asynHandler = (WechatMessageAsynHandler) handler;
+                        this.executor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                asynHandler.handleMessage(message);
+                            }
+                        });
                     }
                 }
             }
