@@ -24,6 +24,7 @@ public interface HttpSmsSendStrategy {
      *
      * @return 请求方式
      */
+    // TODO 3.0中应该改为HttpRequestMethod枚举类型
     String getRequestMethod();
 
     /**
@@ -42,8 +43,7 @@ public interface HttpSmsSendStrategy {
     /**
      * 判断指定手机号码是否有效
      *
-     * @param mobilePhone
-     *            手机号码
+     * @param mobilePhone 手机号码
      * @return 指定手机号码是否有效
      */
     boolean isValid(String mobilePhone);
@@ -51,12 +51,9 @@ public interface HttpSmsSendStrategy {
     /**
      * 获取发送请求参数集
      *
-     * @param contents
-     *            短信内容清单，每一个内容为一条短信
-     * @param index
-     *            内容索引下标，支持批量发送时，传入小于0的值
-     * @param mobilePhones
-     *            手机号码集
+     * @param contents     短信内容清单，每一个内容为一条短信
+     * @param index        内容索引下标，支持批量发送时，传入小于0的值
+     * @param mobilePhones 手机号码集
      * @return 发送请求参数集
      */
     Map<String, Object> getParams(List<String> contents, int index, Set<String> mobilePhones);
@@ -64,10 +61,8 @@ public interface HttpSmsSendStrategy {
     /**
      * 根据响应获取发送失败的手机号码清单
      *
-     * @param statusCode
-     *            响应状态码
-     * @param content
-     *            响应内容
+     * @param statusCode 响应状态码
+     * @param content    响应内容
      * @return 发送失败的手机号码清单
      */
     Set<String> getFailures(int statusCode, String content);
