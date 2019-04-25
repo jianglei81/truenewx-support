@@ -70,18 +70,18 @@ public abstract class WechatAppAccessSupport {
     /**
      * 获取不限数量的小程序码图片
      *
-     * @param scene   场景内容，一般为类型如：a=1,b=2的字符串，不能包含&
-     * @param page    打开的页面路径，为空时默认进入首页
-     * @param width   图片宽度，默认430，最小280，最大1280，单位：px
-     * @param color   主色调颜色值，形如：#rrggbb
-     * @param hyaline TODO
+     * @param parameters 包含的参数集
+     * @param page       打开的页面路径，为空时默认进入首页
+     * @param width      图片宽度，默认430，最小280，最大1280，单位：px
+     * @param color      主色调颜色值，形如：#rrggbb
+     * @param hyaline    背景是否透明
      * @return 小程序图片的输入流
      */
-    public InputStream getUnlimitedWxacodeImage(String scene, String page, Integer width,
-            String color, boolean hyaline) {
+    public InputStream getUnlimitedWxacodeImage(Map<String, Object> parameters, String page,
+            Integer width, String color, boolean hyaline) {
         String url = HOST + "/wxa/getwxacodeunlimit?access_token=" + getAccessToken();
         Map<String, Object> params = new HashMap<>();
-        params.put("scene", scene);
+        params.put("scene", getScene(parameters));
         params.put("is_hyaline", hyaline);
         params.put("auto_color", Boolean.TRUE);
         if (page != null) {
@@ -100,12 +100,24 @@ public abstract class WechatAppAccessSupport {
                 colorMap.put("r", String.valueOf(r));
                 colorMap.put("g", String.valueOf(g));
                 colorMap.put("b", String.valueOf(b));
-                // 官方API文档中有错误，字段名称应为以下名称，取值应为字符串类型
+                // 官方API文档中有错误，参数名称应为以下名称，取值应为字符串类型
                 params.put("line_color", colorMap);
                 params.put("auto_color", Boolean.FALSE);
             }
         }
         return HttpClientUtil.getImageByPostJson(url, params);
+    }
+
+    private String getScene(Map<String, Object> parameters) {
+        StringBuffer scene = new StringBuffer();
+        // 形如：a=1,b=2
+        parameters.forEach((key, value) -> {
+            scene.append(Strings.COMMA).append(key).append(Strings.EQUAL).append(value);
+        });
+        if (scene.length() > 0) {
+            scene.deleteCharAt(0); // 去掉首位的逗号
+        }
+        return scene.toString();
     }
 
     protected String getAccessToken() {
