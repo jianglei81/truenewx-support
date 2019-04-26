@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>org.truenewx</groupId>
-            <artifactId>truenewx-data</artifactId>
+            <artifactId>truenewx-service</artifactId>
         </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>

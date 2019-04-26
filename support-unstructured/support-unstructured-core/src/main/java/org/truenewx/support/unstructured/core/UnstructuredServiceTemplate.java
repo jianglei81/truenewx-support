@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.truenewx.core.exception.BusinessException;
+import org.truenewx.service.Service;
 import org.truenewx.support.unstructured.core.model.UnstructuredReadMetadata;
 import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
 
@@ -15,7 +16,7 @@ import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
  * @param <T> 授权类型
  * @param <U> 用户标识类型
  */
-public interface UnstructuredServiceTemplate<T extends Enum<T>, U> {
+public interface UnstructuredServiceTemplate<T extends Enum<T>, U> extends Service {
 
     /**
      * 获取在当前方针下，指定用户上传指定授权类型文件的限制条件
