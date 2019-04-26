@@ -10,7 +10,6 @@ import org.truenewx.support.unstructured.core.model.UnstructuredUploadLimit;
  * 非结构化存储授权方针
  *
  * @author jianglei
- *
  */
 public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
 
@@ -40,8 +39,7 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
     /**
      * 获取在当前方针下，指定用户上传文件的限制条件
      *
-     * @param user
-     *            用户标识
+     * @param user 用户标识
      * @return 指定用户上传文件的限制条件
      */
     UnstructuredUploadLimit getUploadLimit(U user);
@@ -65,15 +63,11 @@ public interface UnstructuredAuthorizePolicy<T extends Enum<T>, U> {
     /**
      * 获取指定资源的存储路径（含扩展名）
      *
-     * @param token
-     *            业务标识
-     * @param user
-     *            当前登录用户
-     * @param filename
-     *            原始文件名，含扩展名
+     * @param token 业务标识
+     * @param user 当前登录用户
+     * @param filename 原始文件名，含扩展名
      * @return 存储路径，已预见的业务场景中不会出现无写权限时，直接返回null表示没有写权限
-     * @throws BusinessException
-     *             已预见的业务场景中可能出现无写权限时，为了好的用户体验，才需要抛出业务异常
+     * @throws BusinessException 已预见的业务场景中可能出现无写权限时，为了好的用户体验，才需要抛出业务异常
      */
     String getPath(String token, U user, String filename) throws BusinessException;
 
