@@ -23,7 +23,7 @@
       </dependency>
       <dependency>
           <groupId>org.truenewx.support.openapi</groupId>
-          <artifactId>support-openapi-core</artifactId>
+          <artifactId>support-openapi-service</artifactId>
           <version>${project.version}</version>
       </dependency>
   </dependencies>
