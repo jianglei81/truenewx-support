@@ -20,18 +20,6 @@
     <orderEntry type="module" module-name="truenewx-web" />
     <orderEntry type="module" module-name="truenewx-service" />
     <orderEntry type="module" module-name="truenewx-data" />
-    <orderEntry type="library" name="Maven: org.hibernate:hibernate-validator:5.4.1.Final" level="project" />
-    <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging:3.3.0.Final" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml:classmate:1.3.1" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-jdbc:4.3.21.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-webmvc:4.3.21.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: javax.servlet:jstl:1.2" level="project" />
-    <orderEntry type="library" name="Maven: org.json:org.json:chargebee-1.0" level="project" />
-    <orderEntry type="library" name="Maven: com.yahoo.platform.yui:yuicompressor:2.3.6" level="project" />
-    <orderEntry type="library" name="Maven: com.google.zxing:javase:2.3.0" level="project" />
-    <orderEntry type="library" name="Maven: com.google.zxing:core:2.3.0" level="project" />
-    <orderEntry type="module" module-name="support-openapi-core" />
     <orderEntry type="module" module-name="truenewx-core" />
     <orderEntry type="library" name="Maven: org.springframework:spring-tx:4.3.21.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.4" level="project" />
@@ -52,5 +40,17 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.stuxuhai:jpinyin:1.1.8" level="project" />
     <orderEntry type="library" name="Maven: net.coobird:thumbnailator:0.4.8" level="project" />
+    <orderEntry type="library" name="Maven: org.hibernate:hibernate-validator:5.4.1.Final" level="project" />
+    <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging:3.3.0.Final" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml:classmate:1.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-jdbc:4.3.21.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-webmvc:4.3.21.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: javax.servlet:jstl:1.2" level="project" />
+    <orderEntry type="library" name="Maven: org.json:org.json:chargebee-1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.yahoo.platform.yui:yuicompressor:2.3.6" level="project" />
+    <orderEntry type="library" name="Maven: com.google.zxing:javase:2.3.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.zxing:core:2.3.0" level="project" />
+    <orderEntry type="module" module-name="support-openapi-core" />
   </component>
 </module>

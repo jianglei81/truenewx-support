@@ -1,6 +1,7 @@
 package org.truenewx.support.openapi.core.access;
 
 import org.truenewx.core.spring.transaction.annotation.WriteTransactional;
+import org.truenewx.service.ServiceSupport;
 import org.truenewx.support.openapi.core.model.WechatEventMessage;
 import org.truenewx.support.openapi.core.model.WechatEventType;
 import org.truenewx.support.openapi.core.model.WechatMessage;
@@ -12,7 +13,7 @@ import org.truenewx.support.openapi.core.model.WechatMessageType;
  * @author jianglei
  * @since JDK 1.8
  */
-public abstract class WechatEventMessageSyncHandler implements WechatMessageSyncHandler {
+public abstract class WechatEventMessageSyncHandler extends ServiceSupport implements WechatMessageSyncHandler {
 
     @Override
     public final WechatMessageType getMessageType() {
@@ -21,7 +22,7 @@ public abstract class WechatEventMessageSyncHandler implements WechatMessageSync
 
     @Override
     @WriteTransactional
-    public final WechatMessage handleMessage(WechatMessage message) {
+    public WechatMessage handleMessage(WechatMessage message) {
         WechatEventMessage eventMessage = (WechatEventMessage) message;
         if (eventMessage.getEventType() == getEventType()) {
             return doHandleMessage(eventMessage);
