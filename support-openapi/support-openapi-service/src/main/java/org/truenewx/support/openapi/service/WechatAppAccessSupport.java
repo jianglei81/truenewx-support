@@ -1,5 +1,9 @@
 package org.truenewx.support.openapi.service;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
@@ -9,11 +13,6 @@ import org.truenewx.core.util.HttpClientUtil;
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.core.util.MathUtil;
 import org.truenewx.support.openapi.data.model.WechatUser;
-
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * 微信应用访问支持
@@ -26,19 +25,20 @@ public abstract class WechatAppAccessSupport {
     private static final String HOST = "https://api.weixin.qq.com";
     private static final long ACCESS_TOKEN_INTERVAL = 1000 * 60 * 60; // 有效期1小时
     private String accessToken;
-    private Long accessTokenExpiredTimestamp = 0L; // 作为同步锁，定义为Long对象
+    private long accessTokenExpiredTimestamp = 0L;
 
-    private Map<String, Object> request(String url, Map<String, Object> params,
-            HttpRequestMethod method) {
+    private Map<String, Object> request(String url, Map<String, Object> params) {
         try {
-            Binate<Integer, String> response = HttpClientUtil.request(HOST + url, params, method,
-                    Strings.ENCODING_UTF8);
-            String body = response.getRight();
-            return JsonUtil.json2Map(body);
+            Binate<Integer, String> response = HttpClientUtil
+                    .request(HOST + url, params, HttpRequestMethod.GET, Strings.ENCODING_UTF8);
+            if (response != null) {
+                String body = response.getRight();
+                return JsonUtil.json2Map(body);
+            }
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
-            return new HashMap<>();
         }
+        return new HashMap<>();
     }
 
     public WechatUser getUser(String loginCode) {
@@ -47,7 +47,7 @@ public abstract class WechatAppAccessSupport {
         params.put("secret", getSecret());
         params.put("js_code", loginCode);
         params.put("grant_type", "authorization_code");
-        Map<String, Object> result = request("/sns/jscode2session", params, HttpRequestMethod.GET);
+        Map<String, Object> result = request("/sns/jscode2session", params);
         String openId = (String) result.get("openid");
         if (StringUtils.isNotBlank(openId)) { // openId不能为空
             WechatUser user = new WechatUser();
@@ -63,7 +63,7 @@ public abstract class WechatAppAccessSupport {
         params.put("access_token", getAccessToken());
         params.put("openid", openId);
         params.put("lang", Locale.getDefault().toString());
-        Map<String, Object> result = request("/cgi-bin/user/info", params, HttpRequestMethod.GET);
+        Map<String, Object> result = request("/cgi-bin/user/info", params);
         return (String) result.get("unionid");
     }
 
@@ -110,47 +110,45 @@ public abstract class WechatAppAccessSupport {
 
     private String getScene(Map<String, Object> parameters) {
         StringBuffer scene = new StringBuffer();
-        // 形如：a=1,b=2
+        // 为避免出现=，形如：a-1;b-2，所以key和value中都不能带减号和分号
         parameters.forEach((key, value) -> {
-            scene.append(Strings.COMMA).append(key).append(Strings.EQUAL).append(value);
+            String sValue = value.toString();
+            if (!key.contains(Strings.SEMICOLON) && !key.contains(Strings.MINUS) && !sValue
+                    .contains(Strings.SEMICOLON) && !sValue.contains(Strings.MINUS)) {
+                scene.append(Strings.SEMICOLON).append(key).append(Strings.MINUS).append(sValue);
+            }
         });
         if (scene.length() > 0) {
-            scene.deleteCharAt(0); // 去掉首位的逗号
+            scene.deleteCharAt(0); // 去掉首位的分号
         }
         return scene.toString();
     }
 
-    protected String getAccessToken() {
+    protected synchronized String getAccessToken() {
         long now = System.currentTimeMillis();
-        synchronized (this.accessTokenExpiredTimestamp) {
-            if (this.accessToken == null || this.accessTokenExpiredTimestamp < now) {
-                Map<String, Object> params = new HashMap<>();
-                params.put("appid", getAppId());
-                params.put("secret", getSecret());
-                params.put("grant_type", "client_credential");
-                Map<String, Object> result = request("/cgi-bin/token", params,
-                        HttpRequestMethod.GET);
-                this.accessToken = (String) result.get("access_token");
-                this.accessTokenExpiredTimestamp = now + ACCESS_TOKEN_INTERVAL;
-            }
-            return this.accessToken;
+        if (this.accessToken == null || this.accessTokenExpiredTimestamp < now) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("appid", getAppId());
+            params.put("secret", getSecret());
+            params.put("grant_type", "client_credential");
+            Map<String, Object> result = request("/cgi-bin/token", params);
+            this.accessToken = (String) result.get("access_token");
+            this.accessTokenExpiredTimestamp = now + ACCESS_TOKEN_INTERVAL;
         }
+        return this.accessToken;
     }
 
     /**
-     *
      * @return 应用id
      */
     protected abstract String getAppId();
 
     /**
-     *
      * @return 访问秘钥
      */
     protected abstract String getSecret();
 
     /**
-     *
      * @return 开发者微信号
      */
     public abstract String getUsername();
