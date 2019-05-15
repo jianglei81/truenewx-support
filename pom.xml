@@ -17,6 +17,7 @@
         <module>support-batch</module>
         <module>support-email</module>
         <module>support-log</module>
+        <module>support-office</module>
         <module>support-openapi</module>
         <module>support-payment</module>
         <module>support-sms</module>
