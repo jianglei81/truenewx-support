@@ -9,6 +9,7 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -125,6 +126,17 @@ public class ExcelUtil {
         style.cloneStyleFrom(baseStyle);
         consumer.accept(style);
         cell.setCellStyle(style);
+    }
+
+    public static void setCellStyleFont(HSSFWorkbook doc, HSSFCellStyle style,
+            Consumer<HSSFFont> consumer, HSSFFont baseFont) {
+        if (baseFont == null) {
+            baseFont = style.getFont(doc);
+        }
+        HSSFFont font = doc.createFont();
+        cloneFont(baseFont, font);
+        consumer.accept(font);
+        style.setFont(font);
     }
 
 }
