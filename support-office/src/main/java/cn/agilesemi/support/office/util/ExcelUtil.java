@@ -1,7 +1,6 @@
-package cn.agilesemi.support.office.excel;
+package cn.agilesemi.support.office.util;
 
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -9,7 +8,6 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -115,28 +113,6 @@ public class ExcelUtil {
     public static void setBackgroundColor(HSSFCellStyle style, HSSFColorPredefined color) {
         style.setFillForegroundColor(color.getIndex());
         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-    }
-
-    public static void setCellStyle(HSSFCell cell, Consumer<HSSFCellStyle> consumer,
-            HSSFCellStyle baseStyle) {
-        if (baseStyle == null) { // 未指定基础样式，则将当前单元格的样式作为基础样式
-            baseStyle = cell.getCellStyle();
-        }
-        HSSFCellStyle style = cell.getSheet().getWorkbook().createCellStyle();
-        style.cloneStyleFrom(baseStyle);
-        consumer.accept(style);
-        cell.setCellStyle(style);
-    }
-
-    public static void setCellStyleFont(HSSFWorkbook doc, HSSFCellStyle style,
-            Consumer<HSSFFont> consumer, HSSFFont baseFont) {
-        if (baseFont == null) {
-            baseFont = style.getFont(doc);
-        }
-        HSSFFont font = doc.createFont();
-        cloneFont(baseFont, font);
-        consumer.accept(font);
-        style.setFont(font);
     }
 
     public static void setCellHyperLink(HSSFCell cell, String caption, String url) {
