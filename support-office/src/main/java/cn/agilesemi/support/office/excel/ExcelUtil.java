@@ -139,4 +139,8 @@ public class ExcelUtil {
         style.setFont(font);
     }
 
+    public static void setCellHyperLink(HSSFCell cell, String caption, String url) {
+        cell.setCellFormula("HYPERLINK(\"" + url + "\",\"" + caption + "\")");
+    }
+
 }
