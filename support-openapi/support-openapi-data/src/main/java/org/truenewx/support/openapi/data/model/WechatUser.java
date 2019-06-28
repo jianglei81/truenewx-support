@@ -1,12 +1,14 @@
 package org.truenewx.support.openapi.data.model;
 
+import org.truenewx.data.model.Entity;
+
 /**
  * 微信用户标识
  *
  * @author jianglei
  * @since JDK 1.8
  */
-public class WechatUser {
+public class WechatUser implements Entity {
 
     private String openId;
     private String unionId;
