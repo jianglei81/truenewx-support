@@ -10,6 +10,7 @@ public class WechatUser {
 
     private String openId;
     private String unionId;
+    private String sessionKey;
     private String accessToken;
 
     public String getOpenId() {
@@ -26,6 +27,14 @@ public class WechatUser {
 
     public void setUnionId(String unionId) {
         this.unionId = unionId;
+    }
+
+    public String getSessionKey() {
+        return this.sessionKey;
+    }
+
+    public void setSessionKey(String sessionKey) {
+        this.sessionKey = sessionKey;
     }
 
     public String getAccessToken() {

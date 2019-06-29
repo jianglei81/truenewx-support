@@ -1,13 +1,23 @@
 package org.truenewx.support.openapi.service;
 
 import java.io.InputStream;
+import java.security.AlgorithmParameters;
+import java.security.Security;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.HttpClientUtil;
+import org.truenewx.core.util.JsonUtil;
 import org.truenewx.core.util.MathUtil;
 import org.truenewx.support.openapi.data.model.WechatUser;
 
@@ -35,7 +45,57 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
             WechatUser user = new WechatUser();
             user.setOpenId(openId);
             user.setUnionId((String) result.get("unionid"));
+            user.setSessionKey((String) result.get("session_key"));
             return user;
+        }
+        return null;
+    }
+
+    public String decryptUnionId(String encryptedData, String iv, String sessionKey) {
+        if (StringUtils.isBlank(encryptedData) || StringUtils.isBlank(iv)
+                || StringUtils.isBlank(sessionKey)) {
+            return null;
+        }
+        // 被加密的数据
+        byte[] dataBytes = Base64.getDecoder().decode(encryptedData);
+        // 加密秘钥
+        byte[] sessionKeyBytes = Base64.getDecoder().decode(sessionKey);
+        // 偏移量
+        byte[] ivBytes = Base64.getDecoder().decode(iv);
+        // 如果密钥不足16位就补足
+        int base = 16;
+        if (sessionKeyBytes.length % base != 0) {
+            int groups = sessionKeyBytes.length / base
+                    + (sessionKeyBytes.length % base != 0 ? 1 : 0);
+            byte[] temp = new byte[groups * base];
+            Arrays.fill(temp, (byte) 0);
+            System.arraycopy(sessionKeyBytes, 0, temp, 0, sessionKeyBytes.length);
+            sessionKeyBytes = temp;
+        }
+        try {
+            // 初始化
+            Security.addProvider(new BouncyCastleProvider());
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+            SecretKeySpec spec = new SecretKeySpec(sessionKeyBytes, "AES");
+            AlgorithmParameters parameters = AlgorithmParameters.getInstance("AES");
+            parameters.init(new IvParameterSpec(ivBytes));
+            cipher.init(Cipher.DECRYPT_MODE, spec, parameters);
+            byte[] resultBytes = cipher.doFinal(dataBytes);
+            if (resultBytes != null && resultBytes.length > 0) {
+                String json = new String(resultBytes, Strings.ENCODING_UTF8);
+                Map<String, Object> result = JsonUtil.json2Map(json);
+                @SuppressWarnings("unchecked")
+                Map<String, Object> watermark = (Map<String, Object>) result.get("watermark");
+                if (watermark == null) {
+                    return null;
+                }
+                if (!getAppId().equals(watermark.get("appid"))) {
+                    return null;
+                }
+                return (String) result.get("unionId");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
