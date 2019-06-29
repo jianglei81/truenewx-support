@@ -15,6 +15,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.HttpClientUtil;
 import org.truenewx.core.util.JsonUtil;
@@ -32,6 +33,12 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
     private static final long ACCESS_TOKEN_INTERVAL = 1000 * 60 * 60; // 有效期1小时
     private String accessToken;
     private long accessTokenExpiredTimestamp = 0L;
+
+    static {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
 
     public WechatUser getUser(String loginCode) {
         Map<String, Object> params = new HashMap<>();
@@ -73,9 +80,8 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
             sessionKeyBytes = temp;
         }
         try {
-            // 初始化
-            Security.addProvider(new BouncyCastleProvider());
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding",
+                    BouncyCastleProvider.PROVIDER_NAME);
             SecretKeySpec spec = new SecretKeySpec(sessionKeyBytes, "AES");
             AlgorithmParameters parameters = AlgorithmParameters.getInstance("AES");
             parameters.init(new IvParameterSpec(ivBytes));
@@ -95,7 +101,7 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
                 return (String) result.get("unionId");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(getClass()).error(e.getLocalizedMessage(), e);
         }
         return null;
     }
