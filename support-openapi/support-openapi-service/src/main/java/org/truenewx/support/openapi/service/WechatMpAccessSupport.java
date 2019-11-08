@@ -18,18 +18,21 @@ public abstract class WechatMpAccessSupport extends WechatPublicAppAccessSupport
     /**
      * 获取不限数量的小程序码图片
      *
-     * @param parameters 包含的参数集
-     * @param page       打开的页面路径，为空时默认进入首页
-     * @param width      图片宽度，默认430，最小280，最大1280，单位：px
-     * @param color      主色调颜色值，形如：#rrggbb
-     * @param hyaline    背景是否透明
+     * @param scene   场景参数字符串，长度不能超过32位
+     * @param page    打开的页面路径，为空时默认进入首页
+     * @param width   图片宽度，默认430，最小280，最大1280，单位：px
+     * @param color   主色调颜色值，形如：#rrggbb
+     * @param hyaline 背景是否透明
      * @return 小程序图片的输入流
      */
-    public InputStream getUnlimitedWxacodeImage(Map<String, Object> parameters, String page,
-            Integer width, String color, boolean hyaline) {
+    public InputStream getUnlimitedWxacodeImage(String scene, String page, Integer width,
+            String color, boolean hyaline) {
+        if (scene.length() > 32) {
+            return null;
+        }
         String url = HOST + "/wxa/getwxacodeunlimit?access_token=" + getAccessToken();
         Map<String, Object> params = new HashMap<>();
-        params.put("scene", getScene(parameters));
+        params.put("scene", scene);
         params.put("is_hyaline", hyaline);
         params.put("auto_color", Boolean.TRUE);
         if (page != null) {
@@ -56,7 +59,7 @@ public abstract class WechatMpAccessSupport extends WechatPublicAppAccessSupport
         return HttpClientUtil.getImageByPostJson(url, params);
     }
 
-    private String getScene(Map<String, Object> parameters) {
+    public String getScene(Map<String, Object> parameters) {
         StringBuffer scene = new StringBuffer();
         // 为避免出现=，形如：a-1;b-2，所以key和value中都不能带减号和分号
         parameters.forEach((key, value) -> {
