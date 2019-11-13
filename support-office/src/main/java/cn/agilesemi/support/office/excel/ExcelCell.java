@@ -60,4 +60,9 @@ public class ExcelCell {
         return this.origin.getCellStyle();
     }
 
+    public void formatStringValue(Object... args) {
+        String value = getStringCellValue();
+        setCellValue(String.format(value, args));
+    }
+
 }
