@@ -66,29 +66,31 @@ public class ExcelUtil {
         }
         // 不同数据类型处理
         CellType type = source.getCellType();
-        target.setCellType(type);
+        if (type != CellType.FORMULA) {
+            target.setCellType(type);
+        }
         switch (type) {
-        case NUMERIC:
-            if (HSSFDateUtil.isCellDateFormatted(source)) {
-                target.setCellValue(source.getDateCellValue());
-            } else {
-                target.setCellValue(source.getNumericCellValue());
-            }
-            break;
-        case STRING:
-            target.setCellValue(source.getRichStringCellValue());
-            break;
-        case BOOLEAN:
-            target.setCellValue(source.getBooleanCellValue());
-            break;
-        case ERROR:
-            target.setCellErrorValue(FormulaError.forInt(source.getErrorCellValue()));
-            break;
-        case FORMULA:
-            target.setCellFormula(source.getCellFormula());
-            break;
-        default:
-            break;
+            case NUMERIC:
+                if (HSSFDateUtil.isCellDateFormatted(source)) {
+                    target.setCellValue(source.getDateCellValue());
+                } else {
+                    target.setCellValue(source.getNumericCellValue());
+                }
+                break;
+            case STRING:
+                target.setCellValue(source.getRichStringCellValue());
+                break;
+            case BOOLEAN:
+                target.setCellValue(source.getBooleanCellValue());
+                break;
+            case ERROR:
+                target.setCellErrorValue(FormulaError.forInt(source.getErrorCellValue()));
+                break;
+            case FORMULA:
+                target.setCellFormula(source.getCellFormula());
+                break;
+            default:
+                break;
         }
     }
 
