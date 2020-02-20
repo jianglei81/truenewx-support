@@ -1,13 +1,5 @@
 package org.truenewx.support.unstructured.core.aliyun;
 
-import java.util.Date;
-
-import org.slf4j.LoggerFactory;
-import org.truenewx.core.Strings;
-import org.truenewx.core.util.DateUtil;
-import org.truenewx.support.unstructured.core.UnstructuredAuthorizer;
-import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
-
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.CannedAccessControlList;
@@ -15,12 +7,18 @@ import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.ObjectAcl;
 import com.aliyun.oss.model.ObjectPermission;
 import com.aliyuncs.sts.model.v20150401.AssumeRoleResponse.Credentials;
+import org.slf4j.LoggerFactory;
+import org.truenewx.core.Strings;
+import org.truenewx.core.util.DateUtil;
+import org.truenewx.support.unstructured.core.UnstructuredAuthorizer;
+import org.truenewx.support.unstructured.core.model.UnstructuredProvider;
+
+import java.util.Date;
 
 /**
  * 阿里云的非结构化存储授权器
  *
  * @author jianglei
- *
  */
 public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
 
@@ -84,6 +82,9 @@ public class AliyunUnstructuredAuthorizer implements UnstructuredAuthorizer {
                 // 以双斜杠开头，表示采用当前上下文的相同协议
                 StringBuffer url = new StringBuffer("//").append(getReadHost(bucket))
                         .append(Strings.SLASH).append(path);
+                if (parameterString.length() > 0) {
+                    url.append(Strings.QUESTION).append(parameterString);
+                }
                 return url.toString();
             } else if (this.readStsRoleAssumer != null) { // 非公开可读的，授予临时读取权限
                 String policyDocument = this.policyBuilder.buildReadDocument(bucket, path);
