@@ -1,12 +1,13 @@
 package org.truenewx.support.openapi.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.tuple.Binate;
 import org.truenewx.core.util.HttpClientUtil;
 import org.truenewx.core.util.JsonUtil;
+import org.truenewx.support.openapi.data.model.WechatUser;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 微信应用访问支持
@@ -46,5 +47,17 @@ public abstract class WechatAppAccessSupport {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
     }
+
+    /**
+     * @return 应用id
+     */
+    protected abstract String getAppId();
+
+    /**
+     * @return 访问秘钥
+     */
+    protected abstract String getSecret();
+
+    public abstract WechatUser getUser(String loginCode);
 
 }

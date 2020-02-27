@@ -1,11 +1,11 @@
 package org.truenewx.support.openapi.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.truenewx.support.openapi.data.model.WechatUser;
 import org.truenewx.support.openapi.data.model.WechatUserDetail;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 微信开放平台（open.weixin.qq.com）应用访问支持
@@ -15,6 +15,7 @@ import org.truenewx.support.openapi.data.model.WechatUserDetail;
  */
 public abstract class WechatOpenAppAccessSupport extends WechatAppAccessSupport {
 
+    @Override
     public WechatUser getUser(String loginCode) {
         Map<String, Object> params = new HashMap<>();
         params.put("appid", getAppId());
@@ -61,13 +62,4 @@ public abstract class WechatOpenAppAccessSupport extends WechatAppAccessSupport 
         return null;
     }
 
-    /**
-     * @return 应用id
-     */
-    protected abstract String getAppId();
-
-    /**
-     * @return 访问秘钥
-     */
-    protected abstract String getSecret();
 }

@@ -1,12 +1,14 @@
 package org.truenewx.support.openapi.service;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
+import org.apache.commons.lang3.StringUtils;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.HttpClientUtil;
 import org.truenewx.core.util.MathUtil;
+import org.truenewx.support.openapi.data.model.WechatUser;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 微信小程序访问支持
@@ -14,6 +16,25 @@ import org.truenewx.core.util.MathUtil;
  * @author jianglei
  */
 public abstract class WechatMpAccessSupport extends WechatPublicAppAccessSupport {
+
+    @Override
+    public WechatUser getUser(String loginCode) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("appid", getAppId());
+        params.put("secret", getSecret());
+        params.put("js_code", loginCode);
+        params.put("grant_type", "authorization_code");
+        Map<String, Object> result = get("/sns/jscode2session", params);
+        String openId = (String) result.get("openid");
+        if (StringUtils.isNotBlank(openId)) { // openId不能为空
+            WechatUser user = new WechatUser();
+            user.setOpenId(openId);
+            user.setUnionId((String) result.get("unionid"));
+            user.setSessionKey((String) result.get("session_key"));
+            return user;
+        }
+        return null;
+    }
 
     /**
      * 获取不限数量的小程序码图片

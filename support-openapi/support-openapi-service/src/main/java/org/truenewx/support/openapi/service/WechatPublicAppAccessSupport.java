@@ -17,7 +17,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
 import org.truenewx.core.util.JsonUtil;
-import org.truenewx.support.openapi.data.model.WechatUser;
 
 /**
  * 微信公众平台（mp.weixin.qq.com）应用访问支持
@@ -35,24 +34,6 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
             Security.addProvider(new BouncyCastleProvider());
         }
-    }
-
-    public WechatUser getUser(String loginCode) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("appid", getAppId());
-        params.put("secret", getSecret());
-        params.put("js_code", loginCode);
-        params.put("grant_type", "authorization_code");
-        Map<String, Object> result = get("/sns/jscode2session", params);
-        String openId = (String) result.get("openid");
-        if (StringUtils.isNotBlank(openId)) { // openId不能为空
-            WechatUser user = new WechatUser();
-            user.setOpenId(openId);
-            user.setUnionId((String) result.get("unionid"));
-            user.setSessionKey((String) result.get("session_key"));
-            return user;
-        }
-        return null;
     }
 
     public String decryptUnionId(String encryptedData, String iv, String sessionKey) {
@@ -125,16 +106,6 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
         }
         return this.accessToken;
     }
-
-    /**
-     * @return 应用id
-     */
-    protected abstract String getAppId();
-
-    /**
-     * @return 访问秘钥
-     */
-    protected abstract String getSecret();
 
     /**
      * @return 开发者微信号
