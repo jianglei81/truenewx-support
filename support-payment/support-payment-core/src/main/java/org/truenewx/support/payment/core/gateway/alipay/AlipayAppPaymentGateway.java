@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.alipay;
+package org.truenewx.support.payment.core.gateway.alipay;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;

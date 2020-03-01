@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.paypal;
+package org.truenewx.support.payment.core.gateway.paypal;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
-package org.truenewx.support.payment.core.gateway.impl.tenpay;
+package org.truenewx.support.payment.core.gateway.tenpay;
 
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
 
 /**
- * 支付网关：支付宝
+ * 支付网关：微信
  *
  * @author jianglei
  * @since JDK 1.8

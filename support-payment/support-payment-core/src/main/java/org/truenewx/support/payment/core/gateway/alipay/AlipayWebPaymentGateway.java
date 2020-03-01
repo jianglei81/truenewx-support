@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.alipay;
+package org.truenewx.support.payment.core.gateway.alipay;
 
 import java.util.Map;
 import java.util.Map.Entry;

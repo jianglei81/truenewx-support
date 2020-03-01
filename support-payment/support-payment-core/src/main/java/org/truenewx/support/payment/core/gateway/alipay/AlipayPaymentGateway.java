@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.alipay;
+package org.truenewx.support.payment.core.gateway.alipay;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -13,8 +13,8 @@ import org.truenewx.core.util.MathUtil;
 import org.truenewx.support.payment.core.PaymentDefinition;
 import org.truenewx.support.payment.core.PaymentRequestParameter;
 import org.truenewx.support.payment.core.PaymentResult;
+import org.truenewx.support.payment.core.gateway.AbstractPaymentGateway;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
-import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
 
 /**
  * 支付网关：支付宝

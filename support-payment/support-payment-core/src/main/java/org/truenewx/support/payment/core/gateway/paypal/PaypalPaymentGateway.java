@@ -1,7 +1,7 @@
-package org.truenewx.support.payment.core.gateway.impl.paypal;
+package org.truenewx.support.payment.core.gateway.paypal;
 
+import org.truenewx.support.payment.core.gateway.AbstractPaymentGateway;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
-import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
 
 /**
  * PayPal 贝宝支付网关

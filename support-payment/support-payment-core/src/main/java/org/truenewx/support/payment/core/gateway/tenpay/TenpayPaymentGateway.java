@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.tenpay;
+package org.truenewx.support.payment.core.gateway.tenpay;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -19,10 +19,10 @@ import org.truenewx.core.util.MathUtil;
 import org.truenewx.support.payment.core.PaymentDefinition;
 import org.truenewx.support.payment.core.PaymentRequestParameter;
 import org.truenewx.support.payment.core.PaymentResult;
+import org.truenewx.support.payment.core.gateway.AbstractPaymentGateway;
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
 import org.truenewx.support.payment.core.gateway.PaymentExceptionCodes;
-import org.truenewx.support.payment.core.gateway.impl.AbstractPaymentGateway;
-import org.truenewx.support.payment.core.gateway.impl.RespondBusinessException;
+import org.truenewx.support.payment.core.gateway.RespondBusinessException;
 
 import com.tenpay.client.ClientResponseHandler;
 import com.tenpay.client.TenpayHttpClient;

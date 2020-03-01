@@ -1,4 +1,4 @@
-package org.truenewx.support.payment.core.gateway.impl.tenpay;
+package org.truenewx.support.payment.core.gateway.tenpay;
 
 import org.truenewx.support.payment.core.gateway.PaymentChannel;
 
