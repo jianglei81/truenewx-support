@@ -1,11 +1,5 @@
 package org.truenewx.support.payment.core;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -15,6 +9,12 @@ import org.truenewx.core.model.Terminal;
 import org.truenewx.core.spring.beans.ContextInitializedBean;
 import org.truenewx.support.payment.core.gateway.PaymentGateway;
 import org.truenewx.support.payment.core.gateway.PaymentGatewayAdapter;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 支付管理器实现
@@ -72,7 +72,7 @@ public class PaymentManagerImpl implements PaymentManager, ContextInitializedBea
         PaymentGatewayAdapter adapter = this.gateways.get(gatewayName);
         if (adapter != null) {
             PaymentResult result = adapter.getResult(confirmed, terminal, params);
-            if (confirmed && this.listener != null) {
+            if (confirmed && result != null && this.listener != null) {
                 this.listener.onPaid(adapter.getChannel(), result.getGatewayPaymentNo(),
                         result.getTerminal(), result.getOrderNo());
             }

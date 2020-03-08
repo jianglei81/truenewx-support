@@ -1,9 +1,9 @@
 package org.truenewx.support.payment.core;
 
+import org.truenewx.core.model.Terminal;
+
 import java.math.BigDecimal;
 import java.util.Currency;
-
-import org.truenewx.core.model.Terminal;
 
 /**
  * 支付定义
@@ -19,6 +19,7 @@ public class PaymentDefinition {
     private Currency currency;
     private String description;
     private String payerIp;
+    private String target;
 
     public Terminal getTerminal() {
         return this.terminal;
@@ -68,4 +69,11 @@ public class PaymentDefinition {
         this.payerIp = payerIp;
     }
 
+    public String getTarget() {
+        return this.target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
 }

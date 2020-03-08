@@ -39,8 +39,8 @@ public abstract class AbstractPayController {
 
     @RequestMapping(value = "/result/confirm/{gatewayName}")
     @ResponseBody
-    public String confirm(@PathVariable("gatewayName")
-            String gatewayName, HttpServletRequest request) throws HandleableException {
+    public String confirm(@PathVariable("gatewayName") String gatewayName, HttpServletRequest request)
+            throws HandleableException {
         Map<String, String> params = getHttpRequestParams(request);
         if (params != null && params.size() > 0) {
             PaymentResult result = this.paymentManager.notifyResult(gatewayName, true, null,
@@ -49,7 +49,7 @@ public abstract class AbstractPayController {
                 return result.getResponse();
             }
         }
-        return null;
+        return Strings.EMPTY;
     }
 
     private Map<String, String> getHttpRequestParams(HttpServletRequest request) {
@@ -83,7 +83,7 @@ public abstract class AbstractPayController {
         Map<String, String> params = getHttpRequestParams(request);
         PaymentResult result = this.paymentManager.notifyResult(gatewayName, false,
                 new Terminal(terminal), params);
-        return getShowResultName(result);
+        return result == null ? null : getShowResultName(result);
     }
 
     protected abstract String getShowResultName(PaymentResult result);

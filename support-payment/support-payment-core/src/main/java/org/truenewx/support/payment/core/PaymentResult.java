@@ -1,8 +1,8 @@
 package org.truenewx.support.payment.core;
 
-import java.math.BigDecimal;
-
 import org.truenewx.core.model.Terminal;
+
+import java.math.BigDecimal;
 
 /**
  * 支付结果

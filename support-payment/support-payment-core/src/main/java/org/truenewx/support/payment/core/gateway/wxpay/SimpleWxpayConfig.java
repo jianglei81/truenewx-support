@@ -2,6 +2,7 @@ package org.truenewx.support.payment.core.gateway.wxpay;
 
 import com.github.wxpay.sdk.IWXPayDomain;
 import com.github.wxpay.sdk.WXPayConfig;
+import com.github.wxpay.sdk.WXPayConstants;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.io.InputStream;
 /**
  * 简单的微信支付配置
  */
-public class SimpleWxpayConfig implements WXPayConfig {
+public class SimpleWxpayConfig implements WXPayConfig, Cloneable {
 
     private String appId;
     private String merchantId;
@@ -68,10 +69,20 @@ public class SimpleWxpayConfig implements WXPayConfig {
 
             @Override
             public DomainInfo getDomain(WXPayConfig config) {
-                return new DomainInfo("api.mch.weixin.qq.com", true);
+                return new DomainInfo(WXPayConstants.DOMAIN_API, true);
             }
 
         };
+    }
+
+    @Override
+    public SimpleWxpayConfig clone() {
+        SimpleWxpayConfig config = new SimpleWxpayConfig();
+        config.appId = this.appId;
+        config.merchantId = this.merchantId;
+        config.apiKey = this.apiKey;
+        config.cert = this.cert;
+        return config;
     }
 
 }

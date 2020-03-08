@@ -1,22 +1,18 @@
 package org.truenewx.support.openapi.service;
 
-import java.security.AlgorithmParameters;
-import java.security.Security;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.Strings;
+import org.truenewx.core.util.EncryptUtil;
 import org.truenewx.core.util.JsonUtil;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.AlgorithmParameters;
+import java.security.Security;
+import java.util.*;
 
 /**
  * 微信公众平台（mp.weixin.qq.com）应用访问支持
@@ -27,8 +23,11 @@ import org.truenewx.core.util.JsonUtil;
 public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSupport {
 
     private static final long ACCESS_TOKEN_INTERVAL = 1000 * 60 * 60; // 有效期1小时
+
     private String accessToken;
     private long accessTokenExpiredTimestamp = 0L;
+    private String jsApiTicket;
+    private long jsApiTicketExpiredTimestamp = 0L;
 
     static {
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
@@ -105,6 +104,24 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
             this.accessTokenExpiredTimestamp = now + ACCESS_TOKEN_INTERVAL;
         }
         return this.accessToken;
+    }
+
+    protected synchronized String getJsApiTicket() {
+        long now = System.currentTimeMillis();
+        if (this.jsApiTicket == null || this.jsApiTicketExpiredTimestamp < now) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("access_token", getAccessToken());
+            params.put("type", "jsapi");
+            Map<String, Object> result = get("/cgi-bin/ticket/getticket", params);
+            this.jsApiTicket = (String) result.get("ticket");
+            this.jsApiTicketExpiredTimestamp = now + ACCESS_TOKEN_INTERVAL; // 临时票据的过期间隔与AccessToken一致
+        }
+        return this.jsApiTicket;
+    }
+
+    public String signJsApiPage(String noncestr, long timestamp, String url) {
+        String s = "jsapi_ticket=" + getJsApiTicket() + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
+        return EncryptUtil.encryptBySha1(s);
     }
 
     /**
