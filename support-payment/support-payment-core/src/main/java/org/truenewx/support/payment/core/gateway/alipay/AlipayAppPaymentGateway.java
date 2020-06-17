@@ -32,7 +32,7 @@ public class AlipayAppPaymentGateway extends AlipayPaymentGateway {
     private String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCnxj/9qwVfgoUh/y2W89L6BkRAFljhNhgPdyPuBV64bfQNN1PjbCzkIM6qRdKBoLPXmKKMiFYnkd6rAoprih3/PrQEB/VsW8OoM8fxn67UDYuyBTqA23MML9q1+ilIZwBC2AQ2UBVOrFXfFl75p6/B5KsiNG9zpgmLCUYuLkxpLQIDAQAB";
 
     public AlipayAppPaymentGateway() {
-        setTerminals(new Terminal(null, null, Program.APP));
+        setTerminals(new Terminal(null, null, Program.NATIVE));
     }
 
     public void setPrivateKey(final String privateKey) {
@@ -94,7 +94,7 @@ public class AlipayAppPaymentGateway extends AlipayPaymentGateway {
     @Override
     protected void validateSign(final Map<String, String> params) throws BusinessException {
         final StringBuffer sb = new StringBuffer();
-        List<String> keys = new ArrayList<String>(params.keySet());
+        List<String> keys = new ArrayList<>(params.keySet());
         Collections.sort(keys);
         for (int i = 0; i < keys.size(); i++) {
             String k = keys.get(i);

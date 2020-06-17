@@ -29,7 +29,7 @@ import com.paypal.base.rest.PayPalRESTException;
 public class PaypalAppPaymentGateway extends PaypalPaymentGateway {
 
     public PaypalAppPaymentGateway() {
-        setTerminals(new Terminal(null, null, Program.APP));
+        setTerminals(new Terminal(null, null, Program.NATIVE));
     }
 
     @Override
