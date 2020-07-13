@@ -1,18 +1,25 @@
 package org.truenewx.support.openapi.service;
 
-import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.slf4j.LoggerFactory;
-import org.truenewx.core.Strings;
-import org.truenewx.core.util.EncryptUtil;
-import org.truenewx.core.util.JsonUtil;
+import java.security.AlgorithmParameters;
+import java.security.Security;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.AlgorithmParameters;
-import java.security.Security;
-import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.LoggerFactory;
+import org.truenewx.core.Strings;
+import org.truenewx.core.exception.BusinessException;
+import org.truenewx.core.util.EncryptUtil;
+import org.truenewx.core.util.JsonUtil;
 
 /**
  * 微信公众平台（mp.weixin.qq.com）应用访问支持
@@ -120,8 +127,35 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
     }
 
     public String signJsApiPage(String noncestr, long timestamp, String url) {
-        String s = "jsapi_ticket=" + getJsApiTicket() + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
+        String s = "jsapi_ticket=" + getJsApiTicket() + "&noncestr=" + noncestr + "&timestamp="
+                + timestamp + "&url=" + url;
         return EncryptUtil.encryptBySha1(s);
+    }
+
+    /**
+     * 校验指定文本内容的合法性
+     *
+     * @param text         文本内容
+     * @param fieldCaption 字段名称
+     * @throws BusinessException 如果非法
+     */
+    public void validateTextLegality(String text, Supplier<String> fieldCaptionSupplier)
+            throws BusinessException {
+        String url = "/wxa/msg_sec_check?access_token=" + getAccessToken();
+        Map<String, Object> params = new HashMap<>();
+        params.put("content", text);
+        Map<String, Object> result = post(url, params);
+        int errcode = (Integer) result.get("errcode");
+        if (errcode != 0) {
+            String fieldCaption = null;
+            if (fieldCaptionSupplier != null) {
+                fieldCaption = fieldCaptionSupplier.get();
+            }
+            if (StringUtils.isBlank(fieldCaption)) {
+                fieldCaption = Strings.EMPTY;
+            }
+            throw new BusinessException("error.openapi.illegal_text", fieldCaption);
+        }
     }
 
     /**

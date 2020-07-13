@@ -1,11 +1,12 @@
 package org.truenewx.support.openapi.service;
 
-import org.apache.commons.lang3.StringUtils;
-import org.truenewx.support.openapi.data.model.WechatTemplateMessage;
-import org.truenewx.support.openapi.data.model.WechatUser;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.LoggerFactory;
+import org.truenewx.support.openapi.data.model.WechatTemplateMessage;
+import org.truenewx.support.openapi.data.model.WechatUser;
 
 /**
  * 微信服务号访问支持
@@ -54,7 +55,11 @@ public abstract class WechatSaAccessSupport extends WechatPublicAppAccessSupport
         }
         params.put("data", message.toMap());
         String url = "/cgi-bin/message/template/send?access_token=" + getAccessToken();
-        post(url, params);
+        Map<String, Object> result = post(url, params);
+        String errorMessage = (String) result.get("errmsg");
+        if (!"ok".equals(errorMessage)) {
+            LoggerFactory.getLogger(getClass()).error(errorMessage);
+        }
     }
 
 }

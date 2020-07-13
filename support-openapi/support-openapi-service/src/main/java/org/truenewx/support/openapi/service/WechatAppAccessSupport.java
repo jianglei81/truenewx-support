@@ -1,13 +1,14 @@
 package org.truenewx.support.openapi.service;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.LoggerFactory;
 import org.truenewx.core.tuple.Binate;
 import org.truenewx.core.util.HttpClientUtil;
 import org.truenewx.core.util.JsonUtil;
 import org.truenewx.support.openapi.data.model.WechatUser;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 微信应用访问支持
@@ -32,20 +33,17 @@ public abstract class WechatAppAccessSupport {
         return new HashMap<>();
     }
 
-    protected void post(String url, Map<String, Object> params) {
+    protected Map<String, Object> post(String url, Map<String, Object> params) {
         try {
             Binate<Integer, String> response = HttpClientUtil.requestByPost(HOST + url, params);
             if (response != null) {
                 String body = response.getRight();
-                Map<String, Object> result = JsonUtil.json2Map(body);
-                String errorMessage = (String) result.get("errmsg");
-                if (!"ok".equals(errorMessage)) {
-                    LoggerFactory.getLogger(getClass()).error(errorMessage);
-                }
+                return JsonUtil.json2Map(body);
             }
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).error(e.getMessage(), e);
         }
+        return Collections.emptyMap();
     }
 
     /**
