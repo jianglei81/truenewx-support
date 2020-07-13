@@ -152,7 +152,7 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
     private void validateLegalityResult(Map<String, Object> result,
             Supplier<String> fieldCaptionSupplier) throws BusinessException {
         int errcode = (Integer) result.get("errcode");
-        if (errcode != 0) {
+        if (errcode == 87014) {
             String fieldCaption = null;
             if (fieldCaptionSupplier != null) {
                 fieldCaption = fieldCaptionSupplier.get();
