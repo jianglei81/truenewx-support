@@ -1,5 +1,6 @@
 package org.truenewx.support.unstructured.web.controller;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -44,7 +45,6 @@ import com.aliyun.oss.internal.Mimetypes;
  * 注意：子类必须用@{@link RpcController}注解标注
  *
  * @author jianglei
- *
  */
 public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         implements UnstructuredReadUrlResolver {
@@ -98,7 +98,8 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         for (FileItem fileItem : fileItems) {
             if (!fileItem.isFormField()) {
                 String filename = fileItem.getName();
-                InputStream in = fileItem.getInputStream();
+                InputStream in = new BufferedInputStream(fileItem.getInputStream()); // 包一层以支持reset
+                validate(authorizeType, in, fileItem.getContentType());
                 // 注意：此处获得的输入流大小与原始文件的大小可能不相同，可能变大或变小
                 U user = getUser();
                 String storageUrl = this.service.write(authorizeType, token, user, filename, in);
@@ -126,6 +127,9 @@ public abstract class UnstructuredControllerTemplate<T extends Enum<T>, U>
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with,content-type");
         response.setHeader("Content-Type", "text/plain;charset=utf-8");
         return JsonUtil.toJson(results);
+    }
+
+    protected void validate(T authorizeType, InputStream in, String mimeType) throws Exception {
     }
 
     @Override

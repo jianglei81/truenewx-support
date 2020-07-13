@@ -1,5 +1,6 @@
 package org.truenewx.support.openapi.service;
 
+import java.io.InputStream;
 import java.security.AlgorithmParameters;
 import java.security.Security;
 import java.util.Arrays;
@@ -135,8 +136,8 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
     /**
      * 校验指定文本内容的合法性
      *
-     * @param text         文本内容
-     * @param fieldCaption 字段名称
+     * @param text                 文本内容
+     * @param fieldCaptionSupplier 字段名称供应者
      * @throws BusinessException 如果非法
      */
     public void validateTextLegality(String text, Supplier<String> fieldCaptionSupplier)
@@ -145,6 +146,11 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
         Map<String, Object> params = new HashMap<>();
         params.put("content", text);
         Map<String, Object> result = post(url, params);
+        validateLegalityResult(result, fieldCaptionSupplier);
+    }
+
+    private void validateLegalityResult(Map<String, Object> result,
+            Supplier<String> fieldCaptionSupplier) throws BusinessException {
         int errcode = (Integer) result.get("errcode");
         if (errcode != 0) {
             String fieldCaption = null;
@@ -154,8 +160,22 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
             if (StringUtils.isBlank(fieldCaption)) {
                 fieldCaption = Strings.EMPTY;
             }
-            throw new BusinessException("error.openapi.illegal_text", fieldCaption);
+            throw new BusinessException("error.openapi.illegal_content", fieldCaption);
         }
+    }
+
+    /**
+     * 校验指定图片的合法性
+     *
+     * @param in                   图片输入流
+     * @param fieldCaptionSupplier 字段名称供应者
+     * @throws BusinessException 如果非法
+     */
+    public void validateImageLegality(InputStream in, String mimeType,
+            Supplier<String> fieldCaptionSupplier) throws BusinessException {
+        String url = "/wxa/img_sec_check?access_token=" + getAccessToken();
+        Map<String, Object> result = postFormData(url, in, mimeType);
+        validateLegalityResult(result, fieldCaptionSupplier);
     }
 
     /**
