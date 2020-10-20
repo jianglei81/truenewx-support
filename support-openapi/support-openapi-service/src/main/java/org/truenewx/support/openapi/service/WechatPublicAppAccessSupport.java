@@ -142,25 +142,29 @@ public abstract class WechatPublicAppAccessSupport extends WechatAppAccessSuppor
      */
     public void validateTextLegality(String text, Supplier<String> fieldCaptionSupplier)
             throws BusinessException {
-        String url = "/wxa/msg_sec_check?access_token=" + getAccessToken();
-        Map<String, Object> params = new HashMap<>();
-        params.put("content", text);
-        Map<String, Object> result = post(url, params);
-        validateLegalityResult(result, fieldCaptionSupplier);
+        if (StringUtils.isNotBlank(text)) {
+            String url = "/wxa/msg_sec_check?access_token=" + getAccessToken();
+            Map<String, Object> params = new HashMap<>();
+            params.put("content", text);
+            Map<String, Object> result = post(url, params);
+            validateLegalityResult(result, fieldCaptionSupplier);
+        }
     }
 
     private void validateLegalityResult(Map<String, Object> result,
             Supplier<String> fieldCaptionSupplier) throws BusinessException {
-        int errcode = (Integer) result.get("errcode");
-        if (errcode == 87014) {
-            String fieldCaption = null;
-            if (fieldCaptionSupplier != null) {
-                fieldCaption = fieldCaptionSupplier.get();
+        if (result != null) {
+            Integer errcode = (Integer) result.get("errcode");
+            if (errcode != null && errcode.intValue() == 87014) {
+                String fieldCaption = null;
+                if (fieldCaptionSupplier != null) {
+                    fieldCaption = fieldCaptionSupplier.get();
+                }
+                if (StringUtils.isBlank(fieldCaption)) {
+                    fieldCaption = Strings.EMPTY;
+                }
+                throw new BusinessException("error.openapi.illegal_content", fieldCaption);
             }
-            if (StringUtils.isBlank(fieldCaption)) {
-                fieldCaption = Strings.EMPTY;
-            }
-            throw new BusinessException("error.openapi.illegal_content", fieldCaption);
         }
     }
 
